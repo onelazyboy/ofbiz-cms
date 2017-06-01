@@ -287,6 +287,11 @@
 		<value xml:lang="zh">多选</value>
 	</property>
 
+	<property key="FindCmsLeaveword">
+		<value xml:lang="en">Leave Word</value>
+		<value xml:lang="zh">留言管理</value>
+	</property>
+
 	<property key="CmsArticleProduct">
 		<value xml:lang="en">CmsArticleProduct</value>
 		<value xml:lang="zh">文章产品</value>

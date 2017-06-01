@@ -344,7 +344,96 @@
 		<field name="userName" type="name"></field>
 		<field name="registerDate" type="date-time"></field>
 		<prim-key field="userId" />
-		
+	</entity>
+
+	<!-- Surpass Li add by 2011-09-15 留言管理表 开始-->
+	
+	<view-entity entity-name="CmsLeavewordStatusItem" package-name="org.ofbiz.hair">
+        <member-entity entity-alias="SI" entity-name="StatusItem"/>
+        <alias-all entity-alias="SI"/>
+        <entity-condition>
+            <condition-expr entity-alias="SI" field-name="statusTypeId" operator="equals" value="CMS_LEAVEWORD_STATUS"/>
+            <order-by field-name="sequenceId"/>
+        </entity-condition>
+    </view-entity>
+	<entity entity-name="CmsLeaveword"
+            package-name="org.ofbiz.cms.Leaveword"
+            title="Leaveword Entity">
+		<field name="leavewordId" type="id-ne">		 
+		    <description>编号</description>
+		</field>
+		<field name="websiteId" type="id-ne">		 
+		    <description>网站ＩＤ</description>
+		</field>
+		<field name="memberId" type="id-ne" >
+	      	<description>会员ＩＤ</description>
+	  	</field>
+	  	<field name="adminId" type="id-ne" >
+	      	<description>管理员ID</description>
+	  	</field>
+	  	<field name="title" type="name" >
+	      	<description>标题</description>
+	  	</field>
+	  	<field name="contentMember" type="very-long" >
+	      	<description>留言内容</description>
+	  	</field>
+	  	<field name="contentAdmin" type="very-long" >
+	      	<description>管理员回复内容</description>
+	  	</field>
+	  	<field name="createTime" type="date-time" >
+	      	<description>创建时间</description>
+	  	</field>
+	  	<field name="replayTime" type="date-time" >
+	      	<description>回复时间</description>
+	  	</field>
+	  	<field name="ip" type="very-long" >
+	      	<description>留言者IP</description>
+	  	</field>
+
+	  	<field name="isRecommend" type="very-short" >
+	      	<description>是否推荐</description>
+	  	</field>
+
+	  	<field name="statusId" type="id-ne" >
+	      	<description>状态</description>
+	  	</field>
+	  	
+	  	<field name="commentNeedCheck" type="very-short" >
+	      	<description>是否需要审核</description>
+	  	</field>
+	  	<field name="commentNeedLogin" type="very-short" >
+	      	<description>是否需要登录</description>
+	  	</field>
+		<prim-key field="leavewordId"/>
+	</entity>
+	<!-- Surpass Li add by 2011-09-15 留言管理表 结束-->
+	<entity entity-name="CmsAdvertiseType" package-name="org.ofbiz.cms.plugin"
+		title="CmsAdvertise Entity">
+		<field name="adTypeId" type="id-ne">
+			<description>编号</description>
+		</field>
+		<field name="description" type="id-long">
+			<description>显示名称</description>
+		</field>
+		<field name="sequenceId" type="very-short">
+			<description>优先级别</description>
+		</field>
+		<prim-key field="adTypeId" />
+	</entity>
+	<entity entity-name="CmsAdvertise" package-name="org.ofbiz.cms.plugin"
+		title="CmsAdvertise Entity">
+		<field name="adId" type="id-ne"></field>
+		<field name="adName" type="name"></field>
+		<field name="url" type="value"></field>
+		<field name="fileName" type="value"></field>
+		<field name="fromDate" type="date-time"></field>
+		<field name="thruDate" type="date-time"></field>
+		<field name="statusId" type="id"></field>
+		<field name="adTypeId" type="id-ne"></field>
+		<prim-key field="adId" />
+		<relation type="one" fk-name="CA_TYP" rel-entity-name="CmsAdvertiseType">
+			<key-map field-name="adTypeId" />
+		</relation>
 	</entity>
 
 </entitymodel>

@@ -238,6 +238,23 @@
         <event type="service" invoke="deleteCmsUserDetail"/>
         <response name="success" type="request-redirect-noparam" value="FindCmsUserDetail"></response>
     </request-map>
+
+	<!-- 留言管理 Request Mappings  Surpass Li by 2011-09-15 开始-->
+    <request-map uri="FindCmsLeaveword"><security https="true" auth="true"/><response name="success" type="view" value="FindCmsLeaveword"/></request-map>
+    <request-map uri="EditCmsLeaveword"><security https="true" auth="true"/><response name="success" type="view" value="EditCmsLeaveword"/></request-map>
+    <request-map uri="createCmsLeaveword">
+        <event type="service" invoke="createCmsLeaveword"/>
+        <response name="success" type="request-redirect-noparam" value="FindCmsLeaveword"></response>
+    </request-map>
+    <request-map uri="updateCmsLeaveword">
+       <event type="service" invoke="updateCmsLeaveword"/>
+       <response name="success" type="request-redirect-noparam" value="FindCmsLeaveword"></response>
+    </request-map>
+    <request-map uri="deleteCmsLeaveword">
+        <event type="service" invoke="deleteCmsLeaveword"/>
+        <response name="success" type="request-redirect-noparam" value="FindCmsLeaveword"></response>
+    </request-map>
+    <!-- 留言管理 Request Mappings  Surpass Li by 2011-09-15 结束-->
     
     
         
@@ -291,5 +308,10 @@
     
    <view-map name="FindCmsUserDetail" type="screen" page="component://cmsbackend/widget/CmsBackendScreens.xml#FindCmsUserDetail"/>
    <view-map name="EditCmsUserDetail" type="screen" page="component://cmsbackend/widget/CmsBackendScreens.xml#EditCmsUserDetail"/> 
+
+   <!-- 留言管理 view Map by Surpass Li  2011-09-15 开始-->
+	<view-map name="FindCmsLeaveword" type="screen" page="component://cmsbackend/widget/CmsBackendScreens.xml#FindCmsLeaveword"/>
+    <view-map name="EditCmsLeaveword" type="screen" page="component://cmsbackend/widget/CmsBackendScreens.xml#EditCmsLeaveword"/>   	
+	<!-- 留言管理 view Map by Surpass Li  2011-09-15 结束-->
     
 </site-conf>

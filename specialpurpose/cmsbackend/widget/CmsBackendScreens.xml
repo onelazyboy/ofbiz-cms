@@ -603,6 +603,59 @@
             </widgets>
         </section>
     </screen>
+
+	<!-- 留言管理 by Surpass Li 2011-09-15 开始-->
+    <screen name="FindCmsLeaveword">
+        <section>
+            <actions>
+                <set field="headerItem" value="CmsLeaveword"/>
+                <set field="titleProperty" value="CmsLeaveword"/>
+                <set field="pCtx" from-field="parameters"/>
+            </actions>
+            <widgets>
+                <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                                <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
+                                    <decorator-section name="menu-bar">
+                                        <container style="button-bar">
+											<link target="EditCmsLeaveword" link-type="anchor" text="${uiLabelMap.EditCmsLeaveword}" style="buttontext search"/>
+										</container>
+                                    </decorator-section>
+                                    <decorator-section name="search-options">
+                                        <include-form name="FindCmsLeaveword" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
+                                    </decorator-section>
+                                    <decorator-section name="search-results">
+                                        <include-form name="ListCmsLeaveword" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
+                                    </decorator-section>
+                                </decorator-screen>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+
+    <screen name="EditCmsLeaveword">
+        <section>
+            <actions>
+                <set field="titleProperty" value="CmsLeaveword"/>
+                <set field="tabButtonItem" value="CmsLeaveword"/>
+                <set field="articleId" from-field="parameters.articleId"/>
+                <entity-one entity-name="CmsLeaveword" value-field="entity"/>
+                <entity-one entity-name="StatusItem" value-field="currentStatus" auto-field-map="false">
+                    <field-map field-name="statusId" from-field="entity.statusId"/>
+                </entity-one>
+            </actions>
+            <widgets>
+                <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
+                    <decorator-section name="body">
+                        <include-form name="EditCmsLeaveword" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
+                        <platform-specific><html ><html-template location="component://cmsbackend/webapp/cmsbackend/article/edit.ftl"></html-template></html></platform-specific>
+                    </decorator-section>
+                </decorator-screen>
+            </widgets>
+        </section>
+    </screen>
+    <!-- 留言管理 by Surpass Li 2011-09-15 结束-->
         
 
 </screens>

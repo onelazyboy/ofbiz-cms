@@ -186,6 +186,21 @@
         <auto-attributes include="pk" mode="IN" optional="false"/>
         <auto-attributes include="nonpk" mode="IN" optional="true"/>
     </service>
-        
+    <!-- 留言管理服务 by Surpass Li 2011-09-15 开始-->
+    <service name="createCmsLeaveword" default-entity-name="CmsLeaveword" engine="entity-auto" invoke="create" auth="true">
+        <description>Create a CmsLeaveword</description>
+        <auto-attributes include="pk" mode="OUT" optional="false"/>
+        <auto-attributes include="nonpk" mode="IN" optional="true"/>
+    </service>
+    <service name="updateCmsLeaveword" default-entity-name="CmsLeaveword" engine="entity-auto" invoke="update" auth="true">
+        <description>Update a CmsLeaveword</description>
+        <auto-attributes include="pk" mode="IN" optional="false"/>
+        <auto-attributes include="nonpk" mode="IN" optional="true"/>
+    </service>
+    <service name="deleteCmsLeaveword" default-entity-name="CmsLeaveword" engine="entity-auto" invoke="delete" auth="true">
+        <description>Delete a CmsLeaveword</description>
+        <auto-attributes include="pk" mode="IN" optional="false"/>
+    </service>
+    <!-- 留言管理服务 by Surpass Li 2011-09-15 结束-->
 
 </services>

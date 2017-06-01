@@ -38,6 +38,13 @@
         
          <menu-item name="FindCmsUserDetail" title="${uiLabelMap.CmsUserDetail}">
 			<link target="FindCmsUserDetail" />
-		</menu-item>       
+		</menu-item>  
+		
+		 <!-- 留言管理 by Surpass Li 2011-09-15  开始--> 
+		<menu-item name="FindCmsLeaveword" title="${uiLabelMap.FindCmsLeaveword}">
+			<link target="FindCmsLeaveword" />
+		</menu-item> 
+
+		<!-- 留言管理 by Surpass Li 2011-09-15 结束-->
 	</menu>
 </menus>
