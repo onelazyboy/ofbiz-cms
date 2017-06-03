@@ -17789,4 +17789,21 @@
         <value xml:lang="fr">Tomahawk: évolution de Dropping Crumbs dans les tons noir et orange</value>
         <value xml:lang="pt_BR">Tomahawk: a evolução do tema Migalhas Descartando</value>
     </property>
+	<property key="VisualTheme.description.INSPINIA">
+        <value xml:lang="en">INSPINIA the evolution of the Dropping Crumbs theme</value>
+        <value xml:lang="fr">INSPINIA évolution de Dropping Crumbs dans les tons noir et orange</value>
+        <value xml:lang="pt_BR">INSPINIA a evolução do tema Migalhas Descartando</value>
+    </property>
+	<property key="VisualTheme.description.BIZZNESS_TIME">
+        <value xml:lang="cs">Bizzness : vertikální menu</value>
+        <value xml:lang="en">It's bizzness, it's bizzness time.  I couldn't have said it better myself. This theme gets down</value>
+        <value xml:lang="es">Bizzness, es hora de bizzness.  No lo podría haber dicho mejor. Este tema lo consigue</value>
+        <value xml:lang="fr">Bizzness : menu principal vertical</value>
+        <value xml:lang="ja">さあ仕事をしよう。自分自身うまく言えない。このテーマはやめた</value>
+        <value xml:lang="pt_BR">É Bizzness, é hora Bizzness. Eu não poderia ter dito melhor sozinho. Este tema fica para baixo</value>
+        <value xml:lang="ru">Это бизнес, это бизнес время. Я не могу сказать что-то лучше о себе. Эта тема получена ниже</value>
+        <value xml:lang="vi">It's bizzness, it's bizzness time.  I couldn't have said it better myself. This theme gets down</value>
+        <value xml:lang="zh">商务时代。我不能自己说它是最好的。本风格搞定</value>
+        <value xml:lang="zh_TW">商務時代.我不能自己說它是最好的.本風格搞定</value>
+    </property>
 </resource>

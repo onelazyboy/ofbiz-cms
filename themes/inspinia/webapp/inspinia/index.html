@@ -1,0 +1,161 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="zh-CN" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>OFBiz&#58; CmsBackend: </title>
+      <link rel="shortcut icon" href="../../../../framework/images/webapp/images/ofbiz.ico" />
+                <!-- <script src="../../../../framework/images/webapp/images/jquery/jquery-1.5.2.min.js" type="text/javascript"></script> -->
+				<script src="js/jquery-2.1.1.min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/ui/development-bundle/ui/i18n/jquery.ui.datepicker-en.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/ui/development-bundle/ui/jquery.ui.datepicker.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/fjTimer/jquerytimer-min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/validate/jquery.validate.min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/jeditable/jquery.jeditable.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/ui/js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/jquery.maskedinput-1.2.2.min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/datetimepicker/jquery-ui-timepicker-addon-0.9.3.min.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/jquery/plugins/asmselect/jquery.asmselect-1.0.4a-beta.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/selectall.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/fieldlookup.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/GooglemapMarkers.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/getDependentDropdownValues.js" type="text/javascript"></script>
+                <script src="../../../../framework/images/webapp/images/selectMultipleRelatedValues.js" type="text/javascript"></script>
+            <script src="js/dropdown.js" type="text/javascript"></script>
+            <link rel="stylesheet" href="../../../../framework/images/webapp/images/jquery/plugins/asmselect/jquery.asmselect-1.0.4a-beta.css" type="text/css"/>
+            <link rel="stylesheet" href="css/style.css" type="text/css"/>
+
+			<!-- <script src="js/jquery.slimscroll.min.js"></script>
+			<script src="js/jquery.metisMenu.js"></script>
+			<link href="static/bootstrap/3.3.4/css_default/bootstrap.min.css" type="text/css" rel="stylesheet" />
+			<script src="static/bootstrap/3.3.4/js/bootstrap.min.js" type="text/javascript"></script>
+			<link href="static/awesome/4.4/css/font-awesome.min.css" rel="stylesheet" />
+			<link href="static/common/css/style.css?v=3.2.0" type="text/css" rel="stylesheet" />
+			<script src="static/layer-v2.3/layer/layer.js"></script>
+			<script src="static/common/inspinia.js?v=3.2.0"></script>
+			<script src="static/common/contabs.js"></script> -->
+</head>
+
+<body>
+    <div id="wait-spinner" style="display:none">
+        <div id="wait-spinner-image"></div>
+    </div>
+    <div class="page-container">
+        <div class="hidden">
+            <a href="#column-container" title="&#36339;&#36807;&#23548;&#33322;" accesskey="2">&#36339;&#36807;&#23548;&#33322;12121212</a></div>
+        <div id="masthead">
+            <ul>
+                <li id="logo-area">
+                    <a href="/cmsbackend/control/main" title="OFBiz&#58; CmsBackend"></a>
+                </li>
+            </ul>
+            <br class="clear" />
+		</div>
+        <div id="navigation">
+            <div id="main-navigation" style="display:none">
+                <h2>应用</h2>
+                <ul>
+                    <li>
+                        <ul class="main">
+                            <li>
+                                <ul class="primary">
+                                    <li>
+                                        <a href="/cms/control/main?externalLoginKey=EL963487662120" title="Cms">Cms</a></li>
+                                    <li class="selected">
+                                        <a href="/cmsbackend/control/main?externalLoginKey=EL963487662120" title="CmsBackend">CmsBackend</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <ul class="secondary">
+                                    <li>
+                                        <a href="/bi/control/main?externalLoginKey=EL963487662120" title="&#21830;&#19994;&#26234;&#33021;">商业智能</a></li>
+                                    <li>
+                                        <a href="/webtools/control/main?externalLoginKey=EL963487662120" title="Web&#31649;&#29702;&#24037;&#20855;">Web工具管理</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div id="app-navigation">
+                <h2>应用程序</h2>
+                <ul>
+                    <li>
+                        <ul>
+                            <li class="selected ">
+                                <a href="/cmsbackend/control/main">主菜单</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsArticle">文章管理1</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsFellowshipLink">文章管理2</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsCatalog">文章管理3</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsCalendarEvents">文章管理4</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsArticleProduct">文章管理5</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsUserDetail">文章管理6</a></li>
+                            <li>
+                                <a href="/cmsbackend/control/FindCmsLeaveword">文章管理7</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <br class="clear" />
+			</div>
+            <div id="control-area" style="display:none">
+                <ul id="preferences-menu">
+                    <li class="expanded">
+                        <a href="javascript:document.setUserPreferenceCompactHeaderY.submit()">&nbsp;关</a>
+                        <form name="setUserPreferenceCompactHeaderY" method="post" action="/cmsbackend/control/setUserPreference">
+                            <input type="hidden" name="userPrefGroupTypeId" value="GLOBAL_PREFERENCES" />
+                            <input type="hidden" name="userPrefTypeId" value="COMPACT_HEADER" />
+                            <input type="hidden" name="userPrefValue" value="Y" /></form>
+                    </li>
+                    <li>
+                        <a href="/cmsbackend/control/logout">注销</a></li>
+                    <li>
+                        <a href="/cmsbackend/control/ListVisualThemes">视觉风格</a></li>
+                    <li class="first">
+                        <a href="/cmsbackend/control/ListLocales">语言</a></li>
+                    <li class="user">admin</li>
+				</ul>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <script type="text/javascript">var mainmenu = new DropDownMenu(jQuery('#main-navigation'));
+            var appmenu = new DropDownMenu(jQuery('#app-navigation'));</script>
+        <div class="contentarea">
+            <div id="column-container">
+                <div id="content-main-section">
+				内容
+				<br>
+				内容
+				<br>
+				内容
+				<br>
+				内容
+				<br>
+				内容
+				<br>
+				</div>
+                <div class="clear">
+				XXX
+				</div>
+            </div>
+        </div>
+
+        <div id="footer">
+            <ul>
+                <li>&#29256;&#26435;&#25152;&#26377; (c) 2001-2017 The Apache Software Foundation -
+                    <a href="http://www.apache.org" target="_blank">www.apache.org</a>
+                    <br/>&#36816;&#34892;&#24179;&#21488;
+                    <a href="http://ofbiz.apache.org" target="_blank">Apache OFBiz</a></li>
+                <li class="opposed">17-6-1 下午10:56 -
+                    <a href="/cmsbackend/control/ListTimezones">&#20013;&#22269;&#26631;&#20934;&#26102;&#38388;</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
