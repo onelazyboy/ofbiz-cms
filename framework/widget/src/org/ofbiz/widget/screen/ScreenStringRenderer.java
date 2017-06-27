@@ -20,8 +20,9 @@ package org.ofbiz.widget.screen;
 
 import java.io.IOException;
 import java.util.Map;
-import org.ofbiz.entity.GenericValue;
 
+import org.ofbiz.entity.GenericValue;
+import org.ofbiz.widget.screen.ModelScreenWidget.PortalPage;
 import org.ofbiz.base.util.GeneralException;
 
 /**
@@ -59,6 +60,16 @@ public interface ScreenStringRenderer {
     public void renderPortalPagePortletBegin(Appendable writer, Map<String, Object> context, ModelScreenWidget.PortalPage portalPage, GenericValue portalPortlet) throws GeneralException, IOException;
     public void renderPortalPagePortletBody(Appendable writer, Map<String, Object> context, ModelScreenWidget.PortalPage portalPage, GenericValue portalPortlet) throws GeneralException, IOException;
     public void renderPortalPagePortletEnd(Appendable writer, Map<String, Object> context, ModelScreenWidget.PortalPage portalPage, GenericValue portalPortlet) throws GeneralException, IOException;
+    
+    public void renderColumnContainerBegin(Appendable writer, Map<String, Object> context, ModelScreenWidget.ColumnContainer columnContainer) throws IOException;
+    public void renderColumnContainerEnd(Appendable writer, Map<String, Object> context, ModelScreenWidget.ColumnContainer columnContainer) throws IOException;
+    
+    public void renderColumnBegin(Appendable writer, Map<String, Object> context, ModelScreenWidget.Column column) throws IOException;
+    public void renderColumnEnd(Appendable writer, Map<String, Object> context, ModelScreenWidget.Column column) throws IOException;
+    public void renderModalPage(Appendable writer, Map<String, Object> context, ModelScreenWidget.ModalPage modalPage)throws IOException;
+    public void renderConfirmModal(Appendable writer, Map<String, Object> context, ModelScreenWidget.ConfirmModal confirmPage)throws IOException;
+	
+    public void renderPortalPageColumnBegin(Appendable writer,Map<String, Object> context, PortalPage portalPage,GenericValue columnValue, int count) throws GeneralException, IOException;
 }
 
 

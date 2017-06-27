@@ -129,4 +129,16 @@ public class BirtViewHandler implements ViewHandler {
             throw new ViewHandlerException(errMsg, pe);
         }
     }
+
+	@Override
+	public String getExtend() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setExtend(String extend) {
+		// TODO Auto-generated method stub
+		
+	}
 }

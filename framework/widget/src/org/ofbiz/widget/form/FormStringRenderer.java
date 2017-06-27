@@ -19,7 +19,10 @@
 package org.ofbiz.widget.form;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+
+import org.ofbiz.widget.form.ModelForm.FieldGroupBase;
 
 /**
  * Widget Library - Form String Renderer interface.
@@ -93,4 +96,9 @@ public interface FormStringRenderer {
     public void renderContainerFindField(Appendable writer, Map<String, Object> context, ModelFormField.ContainerField containerField) throws IOException;
     public void renderFieldGroupOpen(Appendable writer, Map<String, Object> context, ModelForm.FieldGroup fieldGroup) throws IOException;
     public void renderFieldGroupClose(Appendable writer, Map<String, Object> context, ModelForm.FieldGroup fieldGroup) throws IOException;
+	public void renderFileldGroupTabStart(Appendable writer,Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)throws IOException;
+	public void renderFileldGroupTabEnd(Appendable writer,Map<String, Object> context, List<FieldGroupBase> fieldGroup)throws IOException;
+
+	public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField)throws IOException;
+	public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage)throws IOException;
 }

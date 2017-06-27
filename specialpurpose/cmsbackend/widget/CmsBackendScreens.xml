@@ -120,19 +120,22 @@
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
+								 
                                 <decorator-screen name="FindScreenDecorator" location="component://common/widget/CommonScreens.xml">
-                                    <decorator-section name="menu-bar">
+                                    <!-- <decorator-section name="menu-bar">
                                         <container style="button-bar">
                                             <link target="FindCmsArticleType" link-type="anchor" text="${uiLabelMap.CommonFind}${uiLabelMap.CmsArticleType}" style="buttontext search"/>
                                             <link target="EditCmsArticle" link-type="anchor" text="${uiLabelMap.CommonNew}${uiLabelMap.CmsArticle}" style="buttontext create"/>
                                         </container>
-                                    </decorator-section>
-                                    <decorator-section name="search-options">
-                                        <include-form name="FindCmsArticle" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
-                                    </decorator-section>
-                                    <decorator-section name="search-results">
+                                    </decorator-section> -->
+									<platform-specific>
+										<html>
+											<html-template location="component://cmsbackend/webapp/cmsbackend/text.ftl"/>
+										</html>
+									</platform-specific>
+                                    <!-- <decorator-section name="search-results">
                                         <include-form name="ListCmsArticle" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
-                                    </decorator-section>
+                                    </decorator-section> -->
                                 </decorator-screen>
                     </decorator-section>
                 </decorator-screen>

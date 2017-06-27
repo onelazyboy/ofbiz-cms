@@ -462,4 +462,105 @@ public class WidgetWorker {
         Delegator delegator = (Delegator) context.get("delegator");
         return delegator;
     }
+    
+    /**
+     * 获取target type 对应的url
+     * @param target
+     * @param targetType
+     * @param parameterMap
+     * @param prefix
+     * @param fullPath
+     * @param secure
+     * @param encode
+     * @param request
+     * @param response
+     * @param context
+     * @throws IOException
+     */
+    public static String buildHyperlinkUrl(  String target, String targetType, Map<String, String> parameterMap,
+                                         String prefix, boolean fullPath, boolean secure, boolean encode, HttpServletRequest request, HttpServletResponse response, Map<String, Object> context) throws IOException {
+        String localRequestName = UtilHttp.encodeAmpersands(target);
+        StringBuffer localWriter = new StringBuffer();
+        StringBuffer buffer = new StringBuffer();
+        if ("intra-app".equals(targetType)) {
+            if (request != null && response != null) {
+                ServletContext servletContext = request.getSession().getServletContext();
+                RequestHandler rh = (RequestHandler) servletContext.getAttribute("_REQUEST_HANDLER_");
+                buffer.append(rh.makeLink(request, response, "/" + localRequestName, fullPath, secure, encode));
+            } else if (prefix != null) {
+                buffer.append(prefix);
+                buffer.append(localRequestName);
+            } else {
+                buffer.append(localRequestName);
+            }
+        } else if ("inter-app".equals(targetType)) {
+            String fullTarget = localRequestName;
+            localWriter.append(fullTarget);
+            String externalLoginKey = (String) request.getAttribute("externalLoginKey");
+            if (UtilValidate.isNotEmpty(externalLoginKey)) {
+                if (fullTarget.indexOf('?') == -1) {
+                    localWriter.append('?');
+                } else {
+                    localWriter.append("&amp;");
+                }
+                localWriter.append("externalLoginKey=");
+                localWriter.append(externalLoginKey);
+            }
+        } else if ("content".equals(targetType)) {
+            appendContentUrl(localWriter, localRequestName, request);
+        } else if ("plain".equals(targetType)) {
+            localWriter.append(localRequestName);
+        } else {
+            localWriter.append(localRequestName);
+        }
+
+        if (UtilValidate.isNotEmpty(parameterMap)) {
+            String localUrl = localWriter.toString();
+            buffer.append(localUrl);
+            boolean needsAmp = true;
+            if (localUrl.indexOf('?') == -1) {
+                buffer.append('?');
+                needsAmp = false;
+            }
+
+            for (Map.Entry<String, String> parameter: parameterMap.entrySet()) {
+                String parameterValue = null;
+                if (parameter.getValue() instanceof String) {
+                    parameterValue = parameter.getValue();
+                } else {
+                    Object parameterObject = parameter.getValue();
+
+                    // skip null values
+                    if (parameterObject == null) continue;
+
+                    if (parameterObject instanceof String[]) {
+                        // it's probably a String[], just get the first value
+                        String[] parameterArray = (String[]) parameterObject;
+                        parameterValue = parameterArray[0];
+                        Debug.logInfo("Found String array value for parameter [" + parameter.getKey() + "], using first value: " + parameterValue, module);
+                    } else {
+                        // not a String, and not a String[], just use toString
+                        parameterValue = parameterObject.toString();
+                    }
+                }
+
+                if (needsAmp) {
+                    buffer.append("&amp;");
+                } else {
+                    needsAmp = true;
+                }
+                buffer.append(parameter.getKey());
+                buffer.append('=');
+                StringUtil.SimpleEncoder simpleEncoder = (StringUtil.SimpleEncoder) context.get("simpleEncoder");
+                if (simpleEncoder != null) {
+                    buffer.append(simpleEncoder.encode(parameterValue));
+                } else {
+                    buffer.append(parameterValue);
+                }
+            }
+        } else {
+            buffer.append(localWriter.toString());
+        }
+        return buffer.toString();
+    }
 }

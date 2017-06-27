@@ -285,6 +285,32 @@ public class UtilProperties implements Serializable {
         }
         return value == null ? "" : value.trim();
     }
+    
+    /** Returns the values of the specified property name from the specified resource/properties file
+     * @param resource The name of the resource - can be a file, class, or URL
+     * @param name The name of the property in the properties file
+     * @return The value of the property in the properties file
+     */
+    public static String[] getPropertyValues(String resource, String name) {
+        if (resource == null || resource.length() <= 0) return null;
+        if (name == null || name.length() <= 0) return null;
+
+        Properties properties = getProperties(resource);
+        if (properties == null) {
+            return null;
+        }
+
+        String value = null;
+
+        try {
+            value = properties.getProperty(name);
+        } catch (Exception e) {
+            Debug.logInfo(e, module);
+        }
+        if(value==null) value = "";
+        return value.split(",");
+
+    }
 
     /** Returns the specified resource/properties file
      * @param resource The name of the resource - can be a file, class, or URL

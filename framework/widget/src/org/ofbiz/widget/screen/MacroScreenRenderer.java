@@ -22,9 +22,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -33,15 +38,20 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javolution.util.FastList;
 import javolution.util.FastMap;
 
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.GeneralException;
+import org.ofbiz.base.util.StringUtil;
 import org.ofbiz.base.util.UtilFormatOut;
 import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilHttp;
 import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilProperties;
 import org.ofbiz.base.util.UtilValidate;
+import org.ofbiz.base.util.UtilXml;
+import org.ofbiz.base.util.string.FlexibleStringExpander;
 import org.ofbiz.base.util.template.FreeMarkerWorker;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericValue;
@@ -58,12 +68,20 @@ import org.ofbiz.widget.html.HtmlFormRenderer;
 import org.ofbiz.widget.html.HtmlScreenRenderer.ScreenletMenuRenderer;
 import org.ofbiz.widget.menu.MenuStringRenderer;
 import org.ofbiz.widget.screen.ModelScreenWidget;
+import org.ofbiz.widget.screen.ModelScreenWidget.Column;
+import org.ofbiz.widget.screen.ModelScreenWidget.ColumnContainer;
+import org.ofbiz.widget.screen.ModelScreenWidget.ConfirmModal;
+import org.ofbiz.widget.screen.ModelScreenWidget.ModalPage;
+import org.ofbiz.widget.screen.ModelScreenWidget.PortalPage;
 import org.ofbiz.widget.screen.ScreenStringRenderer;
 
 import freemarker.core.Environment;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.ParserConfigurationException;
 
 public class MacroScreenRenderer implements ScreenStringRenderer {
@@ -90,7 +108,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
         return "hsr" + elementId;
     }
 
-    private void executeMacro(Appendable writer, String macro) throws IOException {
+    protected void executeMacro(Appendable writer, String macro) throws IOException {
         try {
             Environment environment = getEnvironment(writer);
             Reader templateReader = new StringReader(macro);
@@ -105,7 +123,7 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
         }
     }
 
-    private void executeMacro(Appendable writer, String macroName, Map<String, Object> parameters) throws IOException {
+    protected void executeMacro(Appendable writer, String macroName, Map<String, Object> parameters) throws IOException {
         StringBuilder sb = new StringBuilder("<@");
         sb.append(macroName);
         if (parameters != null) {
@@ -997,5 +1015,114 @@ public class MacroScreenRenderer implements ScreenStringRenderer {
             }
         }
         modelScreen.renderScreenString(writer, context, this);
+    }
+
+	@Override
+	public void renderColumnContainerBegin(Appendable writer,
+			Map<String, Object> context, ColumnContainer columnContainer)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnContainerEnd(Appendable writer,
+			Map<String, Object> context, ColumnContainer columnContainer)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnBegin(Appendable writer,
+			Map<String, Object> context, Column column) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnEnd(Appendable writer, Map<String, Object> context,
+			Column column) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderModalPage(Appendable writer, Map<String, Object> context,
+			ModalPage modalPage) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderConfirmModal(Appendable writer,
+			Map<String, Object> context, ConfirmModal confirmPage)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void renderPortalPageColumnBegin(Appendable writer, Map<String, Object> context, ModelScreenWidget.PortalPage portalPage, GenericValue portalPageColumn, int count) throws GeneralException, IOException {
+        String portalPageId = portalPage.getActualPortalPageId();
+        String originalPortalPageId = portalPage.getOriginalPortalPageId();
+        String columnSeqId = portalPageColumn.getString("columnSeqId");
+        String columnWidthPercentage = portalPageColumn.getString("columnWidthPercentage");
+        String columnWidthPixels = portalPageColumn.getString("columnWidthPixels");
+        String confMode = portalPage.getConfMode(context);
+
+        Map<String, String> uiLabelMap = UtilGenerics.cast(context.get("uiLabelMap"));
+        String delColumnLabel = "";
+        String delColumnHint = "";
+        String addPortletLabel = "";
+        String addPortletHint = "";
+        String colWidthLabel = "";
+        String setColumnSizeHint = "";
+        
+        if (uiLabelMap == null) {
+            Debug.logWarning("Could not find uiLabelMap in context", module);
+        } else {
+            delColumnLabel = uiLabelMap.get("CommonDeleteColumn");
+            delColumnHint = uiLabelMap.get("CommonDeleteThisColumn");
+
+            addPortletLabel = uiLabelMap.get("CommonAddAPortlet");
+            addPortletHint = uiLabelMap.get("CommonAddPortletToPage");
+            colWidthLabel = uiLabelMap.get("CommonWidth");
+            setColumnSizeHint = uiLabelMap.get("CommonSetColumnWidth");
+        }
+
+        StringWriter sr = new StringWriter();
+        sr.append("<@renderPortalPageColumnBegin ");
+        sr.append("originalPortalPageId=\"");
+        sr.append(originalPortalPageId);
+        sr.append("\" portalPageId=\"");
+        sr.append(portalPageId);
+        sr.append("\" columnSeqId=\"");
+        sr.append(columnSeqId);
+        sr.append("\" ");
+        if (UtilValidate.isNotEmpty(columnWidthPixels)) {
+            sr.append("width=\"");
+            sr.append(columnWidthPixels);
+            sr.append("px\"");
+        } else if (UtilValidate.isNotEmpty(columnWidthPercentage)) {
+            sr.append("width=\"");
+            sr.append(columnWidthPercentage);
+            sr.append("%\"");
+        }
+        sr.append(" confMode=\"");
+        sr.append(confMode);
+        sr.append("\" delColumnLabel=\"");
+        sr.append(delColumnLabel);
+        sr.append("\" delColumnHint=\"");
+        sr.append(delColumnHint);
+        sr.append("\" addPortletLabel=\"");
+        sr.append(addPortletLabel);
+        sr.append("\" addPortletHint=\"");
+        sr.append(addPortletHint);
+        sr.append("\" colWidthLabel=\"");
+        sr.append(colWidthLabel);
+        sr.append("\" setColumnSizeHint=\"");
+        sr.append(setColumnSizeHint);
+        sr.append("\" />");
+        executeMacro(writer, sr.toString());
     }
 }

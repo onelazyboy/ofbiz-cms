@@ -29,8 +29,10 @@ import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.widget.WidgetWorker;
 import org.ofbiz.widget.form.FormStringRenderer;
 import org.ofbiz.widget.form.ModelForm;
+import org.ofbiz.widget.form.ModelForm.FieldGroupBase;
 import org.ofbiz.widget.form.ModelFormField;
 import org.ofbiz.widget.form.ModelFormField.CheckField;
+import org.ofbiz.widget.form.ModelFormField.ConfirmModalField;
 import org.ofbiz.widget.form.ModelFormField.ContainerField;
 import org.ofbiz.widget.form.ModelFormField.DateFindField;
 import org.ofbiz.widget.form.ModelFormField.DateTimeField;
@@ -42,6 +44,7 @@ import org.ofbiz.widget.form.ModelFormField.HyperlinkField;
 import org.ofbiz.widget.form.ModelFormField.IgnoredField;
 import org.ofbiz.widget.form.ModelFormField.ImageField;
 import org.ofbiz.widget.form.ModelFormField.LookupField;
+import org.ofbiz.widget.form.ModelFormField.ModalPage;
 import org.ofbiz.widget.form.ModelFormField.PasswordField;
 import org.ofbiz.widget.form.ModelFormField.RadioField;
 import org.ofbiz.widget.form.ModelFormField.RangeFindField;
@@ -298,4 +301,35 @@ public class TextFormRenderer implements FormStringRenderer {
 
     public void renderContainerFindField(Appendable writer, Map<String, Object> context, ContainerField containerField) throws IOException {
     }
+
+	@Override
+	public void renderFileldGroupTabStart(Appendable writer,
+			Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderFileldGroupTabEnd(Appendable writer,
+			Map<String, Object> context, List<FieldGroupBase> fieldGroup)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderConfirmField(Appendable writer,
+			Map<String, Object> context, ConfirmModalField formField)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderModalPage(Appendable writer, Map<String, Object> context,
+			ModalPage modalPage) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
 }

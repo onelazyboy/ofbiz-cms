@@ -443,6 +443,26 @@ public class UtilMisc {
             return theSet;
         }
     }
+    
+    public static <T> Set<T> toSetWithoutNull(Collection<T> collection) {
+        //add  begin by changsy 2015.09.25
+        collection.remove(null);
+        //add  end by changsy 2015.09.25
+        if (collection == null) return null;
+        if (collection instanceof Set<?>) {
+            return (Set<T>) collection;
+        } else {
+            List list = FastList.newInstance();
+            for (Iterator<T> iterator = collection.iterator(); iterator.hasNext(); ) {
+                T next = iterator.next();
+                if(next!=null)
+                list.add(next);
+            }
+            Set<T> theSet = FastSet.newInstance();
+            theSet.addAll(list);
+            return theSet;
+        }
+    }
 
     public static <T> Set<T> toSetArray(T[] data) {
         if (data == null) {
@@ -1057,5 +1077,19 @@ public class UtilMisc {
             in.close();
             out.close();
         }
+    }
+
+    /**
+     * 去最后一页
+     * @param listSize
+     * @param viewSize
+     * @return
+     */
+    public static int getViewLastIndex(int listSize, int viewSize) {
+        int i = 0;
+        if(listSize % viewSize >0){
+            i++;
+        }
+        return (listSize / viewSize) ;
     }
 }

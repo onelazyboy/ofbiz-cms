@@ -216,7 +216,7 @@ body > #wrap {height: auto; min-height: 100%;}
 
 #header {
     background:url(../images/wrapper-bg.jpg) top left repeat-x;
-    height:120px;
+    height:30px;
     padding:15px 0 0px 0;
 }
 
@@ -248,6 +248,7 @@ body > #wrap {height: auto; min-height: 100%;}
     position:absolute;
     top:0;
     width:39px;
+	display:none;
 }
 
 #main {
@@ -632,6 +633,7 @@ App Navigation
     margin-bottom:0px;
     margin: 0px 0 0 20px;
     padding: 0;
+	display:none;
 }
 
 #app-navigation {
@@ -661,7 +663,7 @@ div#app-navigation[id] {
     width:230px;
     padding:5px;
     position:absolute;
-    top:60px;
+    top:-20px;
     left:-18px;
     margin:0;
     z-index:3000;

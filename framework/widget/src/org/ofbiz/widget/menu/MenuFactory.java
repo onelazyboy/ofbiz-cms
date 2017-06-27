@@ -93,6 +93,23 @@ public class MenuFactory {
          }
         return modelMenuMap;
     }
+    
+    public static Map<String, ModelMenu> readMenuDocument(Document menuFileDoc, String menuLocation,String menuName) {
+        Map<String, ModelMenu> modelMenuMap = new HashMap<String, ModelMenu>();
+        if (menuFileDoc != null) {
+            // read document and construct ModelMenu for each menu element
+            Element rootElement = menuFileDoc.getDocumentElement();
+            for (Element menuElement: UtilXml.childElementList(rootElement, "menu")){
+                if(menuElement.getAttribute("name").equals(menuName)) {
+                    ModelMenu modelMenu = new ModelMenu(menuElement);
+                    modelMenu.setMenuLocation(menuLocation);
+                    modelMenuMap.put(modelMenu.getName(), modelMenu);
+                    break;
+                }
+            }
+        }
+        return modelMenuMap;
+    }
 
     @Deprecated
     public static Map<String, ModelMenu> readMenuDocument(Document menuFileDoc, Delegator delegator, LocalDispatcher dispatcher, String menuLocation) {
@@ -134,6 +151,37 @@ public class MenuFactory {
     public static ModelMenu getMenuFromLocation(String resourceName, String menuName, Delegator delegator, LocalDispatcher dispatcher)
             throws IOException, SAXException, ParserConfigurationException {
         return getMenuFromLocation(resourceName, menuName);
+    }
+    
+    public static ModelMenu getMenuFromLocation1(String resourceName, String menuName) throws IOException, SAXException, ParserConfigurationException {
+        Map<String, ModelMenu> modelMenuMap = menuLocationCache.get(resourceName);
+        if (modelMenuMap == null) {
+            synchronized (MenuFactory.class) {
+                modelMenuMap = menuLocationCache.get(resourceName);
+                if (modelMenuMap == null) {
+                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                    if (loader == null) {
+                        loader = MenuFactory.class.getClassLoader();
+                    }
+
+                    URL menuFileUrl = null;
+                    menuFileUrl = FlexibleLocation.resolveLocation(resourceName); //, loader);
+                    Document menuFileDoc = UtilXml.readXmlDocument(menuFileUrl, true, true);
+                    modelMenuMap = readMenuDocument(menuFileDoc, resourceName,menuName);
+                    menuLocationCache.put(resourceName, modelMenuMap);
+                }
+            }
+        }
+
+        if (UtilValidate.isEmpty(modelMenuMap)) {
+            throw new IllegalArgumentException("Could not find menu file in location [" + resourceName + "]");
+        }
+
+        ModelMenu modelMenu = modelMenuMap.get(menuName);
+        if (modelMenu == null) {
+            throw new IllegalArgumentException("Could not find menu with name [" + menuName + "] in location [" + resourceName + "]");
+        }
+        return modelMenu;
     }
 
 }

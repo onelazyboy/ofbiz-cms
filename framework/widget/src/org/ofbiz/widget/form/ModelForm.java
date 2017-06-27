@@ -128,6 +128,7 @@ public class ModelForm extends ModelWidget {
     protected boolean hideHeader = false;
     protected boolean overridenListSize = false;
     protected boolean clientAutocompleteFields = true;
+    protected boolean validate = true;
 
     protected List<AltTarget> altTargets = FastList.newInstance();
     protected List<AutoFieldsService> autoFieldsServices = FastList.newInstance();
@@ -292,6 +293,7 @@ public class ModelForm extends ModelWidget {
                 this.targetWindowExdr = parent.targetWindowExdr;
                 this.hideHeader = parent.hideHeader;
                 this.clientAutocompleteFields = parent.clientAutocompleteFields;
+                this.validate = parent.validate;
                 this.paginateTarget = parent.paginateTarget;
 
                 this.altTargets.addAll(parent.altTargets);
@@ -461,6 +463,7 @@ public class ModelForm extends ModelWidget {
         this.skipEnd = "true".equals(formElement.getAttribute("skip-end"));
         this.hideHeader = "true".equals(formElement.getAttribute("hide-header"));
         this.clientAutocompleteFields = !"false".equals(formElement.getAttribute("client-autocomplete-fields"));
+        this.validate = !"false".equals(formElement.getAttribute("validate"));
         if (formElement.hasAttribute("separate-columns")) {
             String sepColumns = formElement.getAttribute("separate-columns");
             if (sepColumns != null && sepColumns.equalsIgnoreCase("true"))
@@ -2525,6 +2528,14 @@ public class ModelForm extends ModelWidget {
 
     public boolean getClientAutocompleteFields() {
         return this.clientAutocompleteFields;
+    }
+    
+    public boolean getValidate() {
+        return validate;
+    }
+
+    public void setValidate(boolean validate) {
+        this.validate = validate;
     }
 
     public void setPaginate(boolean val) {

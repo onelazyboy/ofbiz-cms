@@ -23,6 +23,7 @@ package org.ofbiz.webapp.view;
  */
 public abstract class AbstractViewHandler implements ViewHandler {
     protected String name = null;
+    protected String extend = null; //获取扩展的类型 ，如果amaze，bootstrap
 
     public String getName() {
         return name;
@@ -30,5 +31,14 @@ public abstract class AbstractViewHandler implements ViewHandler {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getExtend() {
+        return extend;
+    }
+
+    public void setExtend(String extend) {
+        this.extend= extend;
+
     }
 }

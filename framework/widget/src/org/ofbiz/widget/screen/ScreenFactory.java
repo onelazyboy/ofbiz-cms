@@ -19,6 +19,7 @@
 package org.ofbiz.widget.screen;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +30,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import javolution.util.FastMap;
 
+import org.apache.commons.beanutils.ConstructorUtils;
 import org.ofbiz.base.location.FlexibleLocation;
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.GeneralException;
+import org.ofbiz.base.util.ObjectType;
 import org.ofbiz.base.util.UtilHttp;
+import org.ofbiz.base.util.UtilStrings;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.base.util.UtilXml;
 import org.ofbiz.base.util.cache.UtilCache;
@@ -104,6 +108,17 @@ public class ScreenFactory {
         }
         return modelScreen;
     }
+    
+    public static ModelScreen getScreenFromLocation(String resourceName, String screenName,String extend)
+            throws IOException, SAXException, ParserConfigurationException {
+        Map<String, ModelScreen> modelScreenMap = getScreensFromLocation(resourceName,extend);
+        ModelScreen modelScreen = modelScreenMap.get(screenName);
+        if (modelScreen == null) {
+            throw new IllegalArgumentException("Could not find screen with name [" + screenName + "] in class resource [" + resourceName + "]");
+        }
+        return modelScreen;
+    }
+    
 
     public static Map<String, ModelScreen> getScreensFromLocation(String resourceName)
             throws IOException, SAXException, ParserConfigurationException {
@@ -134,6 +149,93 @@ public class ScreenFactory {
 
         if (modelScreenMap == null) {
             throw new IllegalArgumentException("Could not find screen file with name [" + resourceName + "]");
+        }
+        return modelScreenMap;
+    }
+    
+    /**
+     * cache 保存的是extend.resourceName
+     * @param resourceName
+     * @param extend
+     * @return
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
+    public static Map<String, ModelScreen> getScreensFromLocation(String resourceName,String extend)
+            throws IOException, SAXException, ParserConfigurationException {
+        String cacheResourceName = extend+"."+resourceName;
+        Map<String, ModelScreen> modelScreenMap = screenLocationCache.get(cacheResourceName);
+        if (modelScreenMap == null) {
+            synchronized (ScreenFactory.class) {
+                modelScreenMap = screenLocationCache.get(cacheResourceName);
+                if (modelScreenMap == null) {
+                    long startTime = System.currentTimeMillis();
+                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                    if (loader == null) {
+                        loader = ScreenFactory.class.getClassLoader();
+                    }
+
+                    URL screenFileUrl = null;
+                    screenFileUrl = FlexibleLocation.resolveLocation(resourceName, loader);
+                    if (screenFileUrl == null) {
+                        throw new IllegalArgumentException("Could not resolve location to URL: " + resourceName);
+                    }
+                    Document screenFileDoc = UtilXml.readXmlDocument(screenFileUrl, true, true);
+                    modelScreenMap = readScreenDocument(screenFileDoc, resourceName,extend);
+                    screenLocationCache.put(cacheResourceName, modelScreenMap);
+                    double totalSeconds = (System.currentTimeMillis() - startTime)/1000.0;
+                    Debug.logInfo("Got " + modelScreenMap.size() + " screens in " + totalSeconds + "s from: " + screenFileUrl.toExternalForm(), module);
+                }
+            }
+        }
+        if (modelScreenMap == null) {
+            throw new IllegalArgumentException("Could not find screen file with name [" + resourceName + "]");
+        }
+        return modelScreenMap;
+    }
+    
+    /**
+     * 扩展amaze情况，需要根据
+     * @param screenFileDoc
+     * @param sourceLocation
+     * @return
+     */
+    public static Map<String, ModelScreen> readScreenDocument(Document screenFileDoc, String sourceLocation,String extend) {
+        Map<String, ModelScreen> modelScreenMap = FastMap.newInstance();
+        if (screenFileDoc != null) {
+            // read document and construct ModelScreen for each screen element
+            Element rootElement = screenFileDoc.getDocumentElement();
+            List<? extends Element> screenElements = UtilXml.childElementList(rootElement, "screen");
+            for (Element screenElement: screenElements) {
+
+                ModelScreen modelScreen = null;
+                try {
+                    String className = UtilStrings.firstUpperCase(extend);
+                    String fullClassName = "org.ofbiz."+extend+".widget.screen."+className+"ModelScreen";
+//                    modelScreen = (ModelScreen) ObjectType.getInstance(fullClassName, new Object[]{(Element)screenElement, (Map)modelScreenMap, sourceLocation});
+                    modelScreen = (ModelScreen) ConstructorUtils.invokeConstructor(ObjectType.loadClass(fullClassName),new Object[]{screenElement,modelScreenMap, sourceLocation},new Class[]{Element.class,Map.class,String.class});
+                } catch (ClassNotFoundException e) {
+                    String errMsg = "Error create modelScreen object named [" + extend + "ModelScreen" + "] at method readScreenDocument " + e.toString();
+                    Debug.logError(e, errMsg, module);
+                } catch (InstantiationException e) {
+                    String errMsg = "Error create modelScreen object named [" + extend + "ModelScreen" + "] at method readScreenDocument " + e.toString();
+                    Debug.logError(e, errMsg, module);
+                } catch (IllegalAccessException e) {
+                    String errMsg = "Error create modelScreen object named [" + extend + "ModelScreen" + "] at method readScreenDocument " + e.toString();
+                    Debug.logError(e, errMsg, module);
+                } catch (NoSuchMethodException e) {
+                    String errMsg = "Error create modelScreen object named [" + extend + "ModelScreen" + "] at method readScreenDocument " + e.toString();
+                    Debug.logError(e, errMsg, module);
+                } catch (InvocationTargetException e) {
+                    String errMsg = "Error create modelScreen object named [" + extend + "ModelScreen" + "] at method readScreenDocument " + e.toString();
+                    Debug.logError(e, errMsg, module);
+                }
+                modelScreenMap.put(modelScreen.getName(), modelScreen);
+
+                //Debug.logInfo("Read Screen with name: " + modelScreen.getName(), module);
+
+            }
         }
         return modelScreenMap;
     }
@@ -193,6 +295,41 @@ public class ScreenFactory {
         if (UtilValidate.isNotEmpty(location)) {
             try {
                 modelScreen = ScreenFactory.getScreenFromLocation(location, name);
+            } catch (IOException e) {
+                String errMsg = "Error rendering included screen named [" + name + "] at location [" + location + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            } catch (SAXException e) {
+                String errMsg = "Error rendering included screen named [" + name + "] at location [" + location + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            } catch (ParserConfigurationException e) {
+                String errMsg = "Error rendering included screen named [" + name + "] at location [" + location + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            }
+        } else {
+            modelScreen = parentWidget.getModelScreen().modelScreenMap.get(name);
+            if (modelScreen == null) {
+                throw new IllegalArgumentException("Could not find screen with name [" + name + "] in the same file as the screen with name [" + parentWidget.getModelScreen().getName() + "]");
+            }
+        }
+        //Debug.logInfo("parent(" + parentWidget + ") rendering(" + modelScreen + ")", module);
+        modelScreen.renderScreenString(writer, context, screenStringRenderer);
+    }
+    
+    public static void renderReferencedScreen(String name, String location, ModelScreenWidget parentWidget, Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer,String extend) throws GeneralException, IOException {
+        // check to see if the name is a composite name separated by a #, if so split it up and get it by the full loc#name
+        if (ScreenFactory.isCombinedName(name)) {
+            String combinedName = name;
+            location = ScreenFactory.getResourceNameFromCombined(combinedName);
+            name = ScreenFactory.getScreenNameFromCombined(combinedName);
+        }
+
+        ModelScreen modelScreen = null;
+        if (UtilValidate.isNotEmpty(location)) {
+            try {
+                modelScreen = ScreenFactory.getScreenFromLocation(location, name, extend);
             } catch (IOException e) {
                 String errMsg = "Error rendering included screen named [" + name + "] at location [" + location + "]: " + e.toString();
                 Debug.logError(e, errMsg, module);

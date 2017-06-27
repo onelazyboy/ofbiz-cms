@@ -46,10 +46,13 @@ import org.ofbiz.base.util.UtilHttp;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilObject;
 import org.ofbiz.base.util.UtilProperties;
+import org.ofbiz.base.util.UtilStrings;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.service.GenericServiceException;
+import org.ofbiz.service.LocalDispatcher;
 import org.ofbiz.webapp.event.EventFactory;
 import org.ofbiz.webapp.event.EventHandler;
 import org.ofbiz.webapp.event.EventHandlerException;
@@ -840,16 +843,43 @@ public class RequestHandler {
            UtilHttp.setResponseBrowserProxyNoCache(resp);
            if (Debug.verboseOn()) Debug.logVerbose("Sending no-cache headers for view [" + nextPage + "]", module);
         }
-
+        
         try {
             if (Debug.verboseOn()) Debug.logVerbose("Rendering view [" + nextPage + "] of type [" + viewMap.type + "]", module);
             ViewHandler vh = viewFactory.getViewHandler(viewMap.type);
+
+            //增加amaze等extend 获取用户的themeId
+            LocalDispatcher dispatchContext = (LocalDispatcher) req.getAttribute("dispatcher");
+            Map<String, Object> result = dispatchContext.runSync("getUserPreferenceGroup", UtilMisc.toMap("userLogin", userLogin, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
+            Map userPreMap = (Map) result.get("userPrefMap");
+            String themeId = (String) userPreMap.get("VISUAL_THEME");
+            req.setAttribute("VISUAL_THEME",themeId);
+//            此处设置extend为空
+            vh.setExtend(null);
+            String url = "./framework/widget/config/widget.properties";
+            String[] themeIds =  UtilProperties.getPropertyValues("widget.properties", "widget.themeId.extends");
+            if(UtilValidate.isNotEmpty(themeId) && UtilStrings.contains(themeIds, themeId)){
+                vh.setExtend(themeId.toLowerCase());
+            }
             vh.render(view, nextPage, viewMap.info, contentType, charset, req, resp);
         } catch (ViewHandlerException e) {
             Throwable throwable = e.getNested() != null ? e.getNested() : e;
-
             throw new RequestHandlerException(e.getNonNestedMessage(), throwable);
+        } catch (GenericServiceException e) {
+            Throwable throwable = e.getNested() != null ? e.getNested() : e;
+            throw new RequestHandlerException(e.getNonNestedMessage(),throwable);
+
         }
+
+//        try {
+//            if (Debug.verboseOn()) Debug.logVerbose("Rendering view [" + nextPage + "] of type [" + viewMap.type + "]", module);
+//            ViewHandler vh = viewFactory.getViewHandler(viewMap.type);
+//            vh.render(view, nextPage, viewMap.info, contentType, charset, req, resp);
+//        } catch (ViewHandlerException e) {
+//            Throwable throwable = e.getNested() != null ? e.getNested() : e;
+//
+//            throw new RequestHandlerException(e.getNonNestedMessage(), throwable);
+//        }
 
         // before getting the view generation time flush the response output to get more consistent results
         try {

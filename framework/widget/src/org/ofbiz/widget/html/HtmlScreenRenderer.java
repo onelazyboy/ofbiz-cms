@@ -52,6 +52,11 @@ import org.ofbiz.widget.form.ModelForm;
 import org.ofbiz.widget.menu.MenuStringRenderer;
 import org.ofbiz.widget.menu.ModelMenu;
 import org.ofbiz.widget.screen.ModelScreenWidget;
+import org.ofbiz.widget.screen.ModelScreenWidget.Column;
+import org.ofbiz.widget.screen.ModelScreenWidget.ColumnContainer;
+import org.ofbiz.widget.screen.ModelScreenWidget.ConfirmModal;
+import org.ofbiz.widget.screen.ModelScreenWidget.ModalPage;
+import org.ofbiz.widget.screen.ModelScreenWidget.PortalPage;
 import org.ofbiz.widget.screen.ScreenStringRenderer;
 
 /**
@@ -903,4 +908,57 @@ public class HtmlScreenRenderer extends HtmlWidgetRenderer implements ScreenStri
     public void renderPortalPagePortletBody(Appendable writer, Map<String, Object> context, ModelScreenWidget.PortalPage portalPage, GenericValue portalPortlet) throws GeneralException, IOException {
         // TODO: not implemented
     }
+
+	@Override
+	public void renderColumnContainerBegin(Appendable writer,
+			Map<String, Object> context, ColumnContainer columnContainer)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnContainerEnd(Appendable writer,
+			Map<String, Object> context, ColumnContainer columnContainer)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnBegin(Appendable writer,
+			Map<String, Object> context, Column column) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderColumnEnd(Appendable writer, Map<String, Object> context,
+			Column column) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderModalPage(Appendable writer, Map<String, Object> context,
+			ModalPage modalPage) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderConfirmModal(Appendable writer,
+			Map<String, Object> context, ConfirmModal confirmPage)
+			throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void renderPortalPageColumnBegin(Appendable writer,
+			Map<String, Object> context, PortalPage portalPage,
+			GenericValue columnValue, int count) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -19,6 +19,10 @@
 package org.ofbiz.widget.screen;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +42,7 @@ import org.ofbiz.base.util.StringUtil;
 import org.ofbiz.base.util.UtilFormatOut;
 import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
+import org.ofbiz.base.util.UtilProperties;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.base.util.UtilXml;
 import org.ofbiz.base.util.collections.MapStack;
@@ -73,7 +78,7 @@ import org.ofbiz.entity.condition.*;
 public abstract class ModelScreenWidget extends ModelWidget {
     public static final String module = ModelScreenWidget.class.getName();
 
-    protected ModelScreen modelScreen;
+    public ModelScreen modelScreen;
 
     public ModelScreenWidget(ModelScreen modelScreen, Element widgetElement) {
         super(widgetElement);
@@ -92,16 +97,43 @@ public abstract class ModelScreenWidget extends ModelWidget {
         }
         return subWidgets;
     }
+    
+    public static List<ModelScreenWidget> readSubWidgets(ModelScreen modelScreen, List<? extends Element> subElementList, String extend) {
+        List<ModelScreenWidget> subWidgets = FastList.newInstance();
+        for (Element subElement : subElementList) {
+            subWidgets.add(WidgetFactory.getModelScreenWidget(modelScreen, subElement, extend));
+        }
+        return subWidgets;
+    }
 
     public static void renderSubWidgetsString(List<ModelScreenWidget> subWidgets, Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer) throws GeneralException, IOException {
         if (subWidgets == null) {
             return;
         }
-        for (ModelScreenWidget subWidget: subWidgets) {
+//        for (ModelScreenWidget subWidget: subWidgets) {
+//            if (Debug.verboseOn()) Debug.logVerbose("Rendering screen " + subWidget.modelScreen.getName() + "; widget class is " + subWidget.getClass().getName(), module);
+//
+//            // render the sub-widget itself
+//            subWidget.renderWidgetString(writer, context, screenStringRenderer);
+//        }
+      //增加获取end的widget
+        for (int i = 0; i < subWidgets.size(); i++) {
+            ModelScreenWidget subWidget = subWidgets.get(i);
             if (Debug.verboseOn()) Debug.logVerbose("Rendering screen " + subWidget.modelScreen.getName() + "; widget class is " + subWidget.getClass().getName(), module);
-
             // render the sub-widget itself
-            subWidget.renderWidgetString(writer, context, screenStringRenderer);
+            if (i == (subWidgets.size() - 1)) {
+                //add by changsy 2015/2/5 amaze 设置 am-g 是最后一个div class add am-g-end
+                context.put("isEnd", true);
+                subWidget.renderWidgetString(writer, context, screenStringRenderer);
+                context.remove("isEnd");
+            } else if (i == 0) {
+                context.put("isFirst", true);
+                subWidget.renderWidgetString(writer, context, screenStringRenderer);
+                context.remove("isFirst");
+            } else {
+                subWidget.renderWidgetString(writer, context, screenStringRenderer);
+            }
+
         }
     }
 
@@ -286,6 +318,95 @@ public abstract class ModelScreenWidget extends ModelWidget {
         @Override
         public String rawString() {
             return "<container id=\"" + this.idExdr.getOriginal() + "\" style=\"" + this.styleExdr.getOriginal() + "\" auto-update-target=\"" + this.autoUpdateTargetExdr.getOriginal() + "\">";
+        }
+    }
+    
+    public static class ColumnContainer extends ModelScreenWidget {
+        public static final String TAG_NAME = "column-container";
+        protected FlexibleStringExpander idExdr;
+        protected FlexibleStringExpander styleExdr;
+        protected List<ModelScreenWidget> subWidgets;
+
+        public ColumnContainer(ModelScreen modelScreen, Element containerElement) {
+            super(modelScreen, containerElement);
+            this.idExdr = FlexibleStringExpander.getInstance(containerElement.getAttribute("id"));
+            this.styleExdr = FlexibleStringExpander.getInstance(containerElement.getAttribute("style"));
+            // read sub-widgets
+            List<? extends Element> subElementList = UtilXml.childElementList(containerElement);
+            this.subWidgets = ModelScreenWidget.readSubWidgets(this.modelScreen, subElementList);
+        }
+
+        @Override
+        public void renderWidgetString(Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer) throws GeneralException, IOException {
+            try {
+                screenStringRenderer.renderColumnContainerBegin(writer, context, this);
+                // render sub-widgets
+                renderSubWidgetsString(this.subWidgets, writer, context, screenStringRenderer);
+                screenStringRenderer.renderColumnContainerEnd(writer, context, this);
+            } catch (IOException e) {
+                String errMsg = "Error rendering container in screen named [" + this.modelScreen.getName() + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        public String getId(Map<String, Object> context) {
+            return this.idExdr.expandString(context);
+        }
+
+        public String getStyle(Map<String, Object> context) {
+            return this.styleExdr.expandString(context);
+        }
+
+
+        @Override
+        public String rawString() {
+            return "<column-container id=\"" + this.idExdr.getOriginal() + "\" style=\"" + this.styleExdr.getOriginal() + "\" >";
+        }
+    }
+    
+    public static class Column extends ModelScreenWidget {
+        public static final String TAG_NAME = "column";
+        protected FlexibleStringExpander idExdr;
+        protected FlexibleStringExpander styleExdr;
+        protected FlexibleStringExpander autoUpdateTargetExdr;
+        protected String autoUpdateInterval = "2";
+        protected List<ModelScreenWidget> subWidgets;
+
+        public Column(ModelScreen modelScreen, Element containerElement) {
+            super(modelScreen, containerElement);
+            this.idExdr = FlexibleStringExpander.getInstance(containerElement.getAttribute("id"));
+            this.styleExdr = FlexibleStringExpander.getInstance(containerElement.getAttribute("style"));
+            // read sub-widgets
+            List<? extends Element> subElementList = UtilXml.childElementList(containerElement);
+            this.subWidgets = ModelScreenWidget.readSubWidgets(this.modelScreen, subElementList);
+        }
+
+        @Override
+        public void renderWidgetString(Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer) throws GeneralException, IOException {
+            try {
+                screenStringRenderer.renderColumnBegin(writer, context, this);
+                // render sub-widgets
+                renderSubWidgetsString(this.subWidgets, writer, context, screenStringRenderer);
+                screenStringRenderer.renderColumnEnd(writer, context, this);
+            } catch (IOException e) {
+                String errMsg = "Error rendering container in screen named [" + this.modelScreen.getName() + "]: " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        public String getId(Map<String, Object> context) {
+            return this.idExdr.expandString(context);
+        }
+
+        public String getStyle(Map<String, Object> context) {
+            return this.styleExdr.expandString(context);
+        }
+
+        @Override
+        public String rawString() {
+            return "<column id=\"" + this.idExdr.getOriginal() + "\" style=\"" + this.styleExdr.getOriginal() + "\" >";
         }
     }
 
@@ -604,6 +725,7 @@ public abstract class ModelScreenWidget extends ModelWidget {
             super(modelScreen, decoratorSectionElement);
             // read sub-widgets
             List<? extends Element> subElementList = UtilXml.childElementList(decoratorSectionElement);
+            System.out.println("#################"+this.modelScreen.toString());
             this.subWidgets = ModelScreenWidget.readSubWidgets(this.modelScreen, subElementList);
         }
 
@@ -1759,6 +1881,500 @@ public abstract class ModelScreenWidget extends ModelWidget {
         @Override
         public String rawString() {
             return "<include-portal-page id=\"" + this.idExdr.getOriginal() + "\" name=\"" + this.idExdr.getOriginal() + "\">";
+        }
+    }
+    
+    public static class ModalPage extends ModelScreenWidget {
+        public static final String TAG_NAME = "modal-page";
+        protected boolean ajaxEnabled;
+        protected FlexibleStringExpander modalUrl;
+        protected FlexibleStringExpander returnUrl;
+        protected String confirmPresentation;
+        protected String width;
+        protected String height;
+        protected String position;
+        protected String fadeBackground;
+        protected FlexibleStringExpander description;
+        protected boolean requestConfirmation;
+        protected FlexibleStringExpander confirmationMsgExdr;
+        protected FlexibleStringExpander confirmationTitleExdr;
+        protected String targetType;
+        protected String buttonType;
+        protected List<WidgetWorker.Parameter> parameterList = FastList.newInstance();
+        protected FlexibleStringExpander idExdr;
+        protected FlexibleStringExpander nameExdr;
+        protected FlexibleStringExpander returnParametersMapAcsr;
+        protected String modalType ;
+        protected String buttonStyle;
+        protected String buttonSpanStyle;
+        protected String modalStyle;
+
+
+        public ModalPage(ModelScreen modelScreen, Element element) {
+            super(modelScreen, element);
+            this.modalUrl = FlexibleStringExpander.getInstance(element.getAttribute("modal-url"));
+            this.returnUrl = FlexibleStringExpander.getInstance(element.getAttribute("return-url"));
+            this.buttonType = element.getAttribute("button-type");
+            setDescription(element.getAttribute("description"));
+            setConfirmationTitle(element.getAttribute("confirm-title"));
+            setConfirmationMsg(element.getAttribute("confirm-message"));
+            this.ajaxEnabled = "true".equals(element.getAttribute("ajaxEnabled"));
+            this.position = element.getAttribute("position");
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            this.confirmPresentation = element.getAttribute("presentation");
+            this.fadeBackground = element.getAttribute("fade-background");
+            this.height = element.getAttribute("height");
+            this.width = element.getAttribute("width");
+            this.targetType = element.getAttribute("target-type");
+            this.buttonStyle = element.getAttribute("button-style");
+            this.buttonSpanStyle = element.getAttribute("button-span-type");
+            this.modalStyle = element.getAttribute("modal-style");
+            setId(element.getAttribute("id"));
+            setName(element.getAttribute("name"));
+            List<? extends Element> parameterElementList = UtilXml.childElementList(element, "parameter");
+            for (Element parameterElement : parameterElementList) {
+                this.parameterList.add(new WidgetWorker.Parameter(parameterElement));
+            }
+            this.returnParametersMapAcsr = FlexibleStringExpander.getInstance(element.getAttribute("return-parameters-map"));
+            this.modalType = element.getAttribute("modal-type");
+
+        }
+        public void setId(String id){
+            this.idExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getId(Map<String,Object> context){
+            return idExdr.expandString(context);
+        }
+        public void setName(String id){
+            this.nameExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getName(Map<String,Object> context){
+            return nameExdr.expandString(context);
+        }
+        public List<WidgetWorker.Parameter> getParameterList() {
+            return parameterList;
+        }
+
+        public void setParameterList(List<WidgetWorker.Parameter> parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public void setTargetType(String targetType) {
+            this.targetType = targetType;
+        }
+
+        public boolean isAjaxEnabled() {
+            return ajaxEnabled;
+        }
+
+        public void setAjaxEnabled(boolean ajaxEnabled) {
+            this.ajaxEnabled = ajaxEnabled;
+        }
+
+        public String getModalUrl(Map<String, Object> context) {
+            return this.modalUrl.expandString(context);
+        }
+        public String getReturnUrl(Map<String, Object> context) {
+            return this.returnUrl.expandString(context);
+        }
+        public String getModalType() {
+            return modalType;
+        }
+
+        public void setModalType(String modalType) {
+            this.modalType = modalType;
+        }
+
+        public void setModalUrl(String str) {
+            this.modalUrl = FlexibleStringExpander.getInstance(str);
+        }
+        public void setReturnUrl(String str) {
+            this.returnUrl = FlexibleStringExpander.getInstance(str);
+        }
+
+        public String getFadeBackground() {
+            return this.fadeBackground;
+        }
+
+        public void setFadeBackground(String str) {
+            this.fadeBackground = str;
+        }
+
+        public String getConfirmPresentation() {
+            return confirmPresentation;
+        }
+
+        public String getWidth() {
+            return width;
+        }
+
+        public void setWidth(String width) {
+            this.width = width;
+        }
+
+        public String getHeight() {
+            return height;
+        }
+
+        public void setHeight(String height) {
+            this.height = height;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = position;
+        }
+
+        public String getDescription(Map<String, Object> context) {
+            return description.expandString(context);
+        }
+
+        public void setDescription(String val) {
+            this.description = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getConfirmation(Map<String, Object> context) {
+            String message = getConfirmationMsg(context);
+            if (UtilValidate.isNotEmpty(message)) return message;
+            if (getRequestConfirmation()) {
+                String defaultMessage = UtilProperties.getPropertyValue("general", "default.confirmation.message", "${uiLabelMap.CommonConfirm}");
+                setConfirmationMsg(defaultMessage);
+                return getConfirmationMsg(context);
+            }
+            return "";
+        }
+
+        public String getModalStyle() {
+            return modalStyle;
+        }
+
+        public void setModalStyle(String modalStyle) {
+            this.modalStyle = modalStyle;
+        }
+
+        public String getButtonStyle() {
+            return buttonStyle;
+        }
+
+        public void setButtonStyle(String buttonStyle) {
+            this.buttonStyle = buttonStyle;
+        }
+
+        public String getButtonSpanStyle() {
+            return buttonSpanStyle;
+        }
+
+        public void setButtonSpanStyle(String buttonSpanStyle) {
+            this.buttonSpanStyle = buttonSpanStyle;
+        }
+
+        public void setConfirmationMsg(String val) {
+            this.confirmationMsgExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+        public void setConfirmationTitle(String val) {
+            this.confirmationTitleExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getConfirmTitle(Map<String, Object> context) {
+            return StringUtil.wrapString(confirmationTitleExdr.expandString(context)).toString();
+        }
+
+        public String getButtonType() {
+            return buttonType;
+        }
+
+        public void setButtonType(String buttonType) {
+            this.buttonType = buttonType;
+        }
+
+        public boolean getRequestConfirmation() {
+            return requestConfirmation;
+        }
+
+        public void setRequestConfirmation(boolean requestConfirmation) {
+            this.requestConfirmation = requestConfirmation;
+        }
+
+        public String getConfirmationMsg(Map<String, Object> context) {
+            return StringUtil.wrapString(this.confirmationMsgExdr.expandString(context)).toString();
+        }
+
+        public String getTargetType() {
+            if (UtilValidate.isNotEmpty(this.targetType)) return this.targetType;
+            return "intra-app";
+        }
+
+        public String getParameterMapString(Map<String, Object> context) {
+            List<String> params = new ArrayList<String>();
+            for (WidgetWorker.Parameter parameter : this.parameterList) {
+                try {
+                    params.add(parameter.getName() + ":'" + URLDecoder.decode(parameter.getValue(context), Charset.forName("UTF-8").displayName())+"'");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            return StringUtil.join(params, ",");
+        }
+        public String getReturnParameters(Map<String, Object> context) {
+            return returnParametersMapAcsr.expandString(context);
+        }
+        @Override
+        public void renderWidgetString(Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer) throws GeneralException, IOException {
+
+            try {
+                screenStringRenderer.renderModalPage(writer, context, this);
+            } catch (IOException e) {
+                String errMsg = "Error rendering modal Page : " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        @Override
+        public String rawString() {
+              return "<modal-page id=\"" + this.idExdr.getOriginal() + "\" name=\"" + this.idExdr.getOriginal() + "\">";
+
+        }
+    }
+    
+    /**
+     * 增加modal confirm field
+     *target-form-name, presentation,confirmation-message, position, request-confirmation, fade-background, description=, height="" width=""
+     */
+    public static class ConfirmModal extends ModelScreenWidget {
+        public static final String TAG_NAME = "confirm-modal";
+        protected boolean ajaxEnabled ;
+        protected FlexibleStringExpander confirmUrl;
+        protected String confirmPresentation;
+        protected String width;
+        protected String height;
+        protected String position;
+        protected String fadeBackground;
+        protected FlexibleStringExpander description;
+        protected boolean requestConfirmation;
+        protected FlexibleStringExpander confirmationMsgExdr;
+        protected FlexibleStringExpander confirmationTitleExdr;
+        protected FlexibleStringExpander confirmationReturnUrlExdr;
+        protected String targetType;
+        protected String buttonType;
+        protected List<WidgetWorker.Parameter> parameterList = FastList.newInstance();
+        protected FlexibleStringExpander returnParametersMapAcsr;
+        protected FlexibleStringExpander idExdr;
+        protected FlexibleStringExpander nameExdr;
+        protected String buttonStyle;
+        protected String buttonSpanStyle;
+
+        public ConfirmModal(ModelScreen modelScreen, Element element) {
+            super(modelScreen, element);
+            this.confirmUrl = FlexibleStringExpander.getInstance(element.getAttribute("confirm-url"));
+            this.confirmPresentation = element.getAttribute("presentation");
+            this.buttonType = element.getAttribute("button-type");
+            setDescription(element.getAttribute("description"));
+            this.buttonSpanStyle = element.getAttribute("button-span-style");
+            this.buttonStyle = element.getAttribute("button-style");
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            setConfirmationMsg(element.getAttribute("confirm-message"));
+            setConfirmationTitle(element.getAttribute("confirm-title"));
+            setReturnUrl(element.getAttribute("return-url"));
+            this.ajaxEnabled = "true".equals(element.getAttribute("ajaxEnabled"));
+            this.position = element.getAttribute("position");
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            this.fadeBackground = element.getAttribute("fade-background");
+            this.height = element.getAttribute("height");
+            this.width = element.getAttribute("width");
+            this.targetType = element.getAttribute("target-type");
+            this.returnParametersMapAcsr = FlexibleStringExpander.getInstance(element.getAttribute("return-parameters-map"));
+
+            List<? extends Element> parameterElementList = UtilXml.childElementList(element, "parameter");
+            for (Element parameterElement: parameterElementList) {
+                this.parameterList.add(new WidgetWorker.Parameter(parameterElement));
+            }
+            setId(element.getAttribute("id"));
+            setName(element.getAttribute("name"));
+        }
+        public void setId(String id){
+            this.idExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getId(Map<String,Object> context){
+            return idExdr.expandString(context);
+        }
+        public void setName(String id){
+            this.nameExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getName(Map<String,Object> context){
+            return nameExdr.expandString(context);
+        }
+        public String getReturnParameters(Map<String, Object> context) {
+            return returnParametersMapAcsr.expandString(context);
+        }
+        public List<WidgetWorker.Parameter> getParameterList() {
+            return parameterList;
+        }
+    
+        public String getButtonStyle() {
+            return buttonStyle;
+        }
+    
+        public void setButtonStyle(String buttonStyle) {
+            this.buttonStyle = buttonStyle;
+        }
+    
+        public String getButtonSpanStyle() {
+            return buttonSpanStyle;
+        }
+    
+        public void setButtonSpanStyle(String buttonSpanStyle) {
+            this.buttonSpanStyle = buttonSpanStyle;
+        }
+    
+        public void setParameterList(List<WidgetWorker.Parameter> parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public void setTargetType(String targetType) {
+            this.targetType = targetType;
+        }
+
+        public boolean isAjaxEnabled() {
+            return ajaxEnabled;
+        }
+
+        public void setAjaxEnabled(boolean ajaxEnabled) {
+            this.ajaxEnabled = ajaxEnabled;
+        }
+
+        public String getConfirmUrl(Map<String, Object> context) {
+            return this.confirmUrl.expandString(context);
+        }
+        public void setConfirmUrl(String str) {
+            this.confirmUrl = FlexibleStringExpander.getInstance(str);
+        }
+
+        public String getFadeBackground() {
+            return this.fadeBackground;
+        }
+        public void setFadeBackground(String str) {
+            this.fadeBackground = str;
+        }
+
+
+        public String getConfirmPresentation() {
+            return confirmPresentation;
+        }
+
+
+        public String getWidth() {
+            return width;
+        }
+
+        public void setWidth(String width) {
+            this.width = width;
+        }
+
+        public String getHeight() {
+            return height;
+        }
+
+        public void setHeight(String height) {
+            this.height = height;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = position;
+        }
+
+        public String getDescription(Map<String,Object> context) {
+            return description.expandString(context);
+        }
+
+        public void setDescription(String val) {
+            this.description = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getConfirmation(Map<String, Object> context) {
+            String message = getConfirmationMsg(context);
+            if (UtilValidate.isNotEmpty(message)) return message;
+            if (getRequestConfirmation()) {
+                String defaultMessage = UtilProperties.getPropertyValue("general", "default.confirmation.message", "${uiLabelMap.CommonConfirm}");
+                setConfirmationMsg(defaultMessage);
+                return getConfirmationMsg(context);
+            }
+            return "";
+        }
+        public void setConfirmationMsg(String val) {
+            this.confirmationMsgExdr = FlexibleStringExpander.getInstance(val);
+        }
+        public void setConfirmationTitle(String val) {
+            this.confirmationTitleExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+
+        public void setReturnUrl(String val){
+            this.confirmationReturnUrlExdr = FlexibleStringExpander.getInstance(val);
+        }
+        public String getReturnUrl(Map<String,Object> context){
+            return this.confirmationReturnUrlExdr.expandString(context);
+        }
+        public String getConfirmTitle(Map<String,Object> context) {
+            return StringUtil.wrapString(confirmationTitleExdr.expandString(context)).toString();
+        }
+
+        public String getButtonType() {
+            return buttonType;
+        }
+
+        public void setButtonType(String buttonType) {
+            this.buttonType = buttonType;
+        }
+
+        public boolean getRequestConfirmation() {
+            return requestConfirmation;
+        }
+        public void setRequestConfirmation(boolean requestConfirmation) {
+            this.requestConfirmation = requestConfirmation;
+        }
+        public String getConfirmationMsg(Map<String, Object> context) {
+            return StringUtil.wrapString(this.confirmationMsgExdr.expandString(context)).toString();
+        }
+        public String getTargetType() {
+            if (UtilValidate.isNotEmpty(this.targetType)) return this.targetType;
+            return "intra-app";
+        }
+        public String getParameterMapString(Map<String, Object> context) {
+            List<String> params = new ArrayList<String>();
+            for (WidgetWorker.Parameter parameter: this.parameterList) {
+                try {
+                    params.add(parameter.getName()+":'"+ URLDecoder.decode(parameter.getValue(context), Charset.forName("UTF-8").displayName()) + "'");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            return  StringUtil.join(params,",");
+        }
+
+        @Override
+        public void renderWidgetString(Appendable writer, Map<String, Object> context, ScreenStringRenderer screenStringRenderer) throws GeneralException, IOException {
+
+            try {
+                screenStringRenderer.renderConfirmModal(writer, context, this);
+            } catch (IOException e) {
+                String errMsg = "Error rendering modal Page : " + e.toString();
+                Debug.logError(e, errMsg, module);
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        @Override
+        public String rawString() {
+            return "<confirm-modal id=\"" + this.idExdr.getOriginal() + "\" name=\"" + this.idExdr.getOriginal() + "\">";
         }
     }
 

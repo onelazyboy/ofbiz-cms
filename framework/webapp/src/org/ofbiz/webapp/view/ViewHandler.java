@@ -60,4 +60,12 @@ public interface ViewHandler {
      * @throws ViewHandlerException
      */
     public void render(String name, String page, String info, String contentType, String encoding, HttpServletRequest request, HttpServletResponse response) throws ViewHandlerException;
+
+    /**
+     * …Ë÷√extend view screen
+     * @return
+     */
+    public String getExtend();
+
+    public void setExtend(String extend);
 }

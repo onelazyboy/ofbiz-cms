@@ -124,7 +124,7 @@ under the License.
         <#else>
         <div id="logo"></div>
     </#if>
-    <div id="shelf"></div>
+    <!-- <div id="shelf"></div> -->
     <div id="controls">
             <span id="prefBtn">
                 <a href="#" class="contracted">${uiLabelMap.CommonPreferences}</a>

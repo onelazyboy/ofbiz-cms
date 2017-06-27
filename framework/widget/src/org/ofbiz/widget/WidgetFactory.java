@@ -82,6 +82,28 @@ public class WidgetFactory {
             throw new IllegalArgumentException(e.getMessage() + " for element " + element.getTagName());
         }
     }
+    
+    /**
+     * 增加amaze.menu方式
+     * @param modelScreen
+     * @param element
+     * @param extend
+     * @return
+     */
+    public static ModelScreenWidget getModelScreenWidget(ModelScreen modelScreen, Element element,String extend) {
+        Assert.notNull("modelScreen", modelScreen, "element", element);
+        Constructor<? extends ModelScreenWidget> widgetConst = screenWidgets.get(extend+"."+element.getTagName());
+        if (widgetConst == null) {
+            throw new IllegalArgumentException("ModelScreenWidget class not found for element " + element.getTagName());
+        }
+        try {
+            return widgetConst.newInstance(modelScreen, element);
+        } catch (Exception e) {
+            // log the original exception since the rethrown exception doesn't include much info about it and hides the cause
+            Debug.logError(e, "Error getting widget for element " + element.getTagName(), module);
+            throw new IllegalArgumentException(e.getMessage() + " for element " + element.getTagName());
+        }
+    }
 
     /**
      * Loads the standard OFBiz screen widgets.

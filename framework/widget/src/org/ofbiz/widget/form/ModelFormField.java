@@ -19,10 +19,14 @@
 package org.ofbiz.widget.form;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -116,6 +120,12 @@ public class ModelFormField {
     protected Boolean sortField = null;
     protected String headerLink;
     protected String headerLinkStyle;
+    
+    protected String fieldValidateType;
+    protected FlexibleStringExpander fieldValidateRemote;
+    protected FlexibleStringExpander fieldValidateRemoteValidator;
+    protected FlexibleStringExpander fieldValidateRemoteOptions;
+    protected FlexibleStringExpander fieldValidateValue;
 
     /** On Change Event areas to be updated. */
     protected List<UpdateArea> onChangeUpdateAreas;
@@ -229,7 +239,11 @@ public class ModelFormField {
                 this.fieldInfo = new ContainerField(subElement, this);
             } else if ("on-field-event-update-area".equals(subElementName)) {
                 addOnEventUpdateArea(new UpdateArea(subElement));
-            } else {
+            } else if("confirm-modal".equals(subElementName)){
+            	this.fieldInfo = new ConfirmModalField(subElement,this);
+            } else if("modal-page".equals(subElementName)){
+            	this.fieldInfo = new ModalPage(subElement,this);
+            }else {
                 throw new IllegalArgumentException("The field sub-element with name " + subElementName + " is not supported");
             }
         }
@@ -323,6 +337,13 @@ public class ModelFormField {
         if (overrideFormField.onClickUpdateAreas != null) {
             this.onClickUpdateAreas = overrideFormField.onClickUpdateAreas;
         }
+        
+        if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateRemote))) this.fieldValidateRemote = overrideFormField.fieldValidateRemote;
+        if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateType))) this.fieldValidateType = overrideFormField.fieldValidateType;
+        if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateRemoteOptions))) this.fieldValidateRemoteOptions = overrideFormField.fieldValidateRemoteOptions;
+        if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateRemoteValidator))) this.fieldValidateRemoteValidator = overrideFormField.fieldValidateRemoteValidator;
+        if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateValue))) this.fieldValidateValue = overrideFormField.fieldValidateValue;
+        
         this.encodeOutput = overrideFormField.encodeOutput;
     }
 
@@ -1433,6 +1454,8 @@ public class ModelFormField {
         public static final int PASSWORD = 18;
         public static final int IMAGE = 19;
         public static final int DISPLAY_ENTITY = 20;
+        public static final int CONFIRM_MODAL = 24;
+        public static final int MODAL_PAGE = 25;
 
         // the numbering here represents the priority of the source;
         //when setting a new fieldInfo on a modelFormField it will only set
@@ -2373,6 +2396,7 @@ public class ModelFormField {
         protected String linkType;
         protected String targetType;
         protected String size;
+        protected String imgStyle;
         protected FlexibleStringExpander target;
         protected FlexibleStringExpander description;
         protected FlexibleStringExpander alternate;
@@ -2407,6 +2431,7 @@ public class ModelFormField {
             this.alsoHidden = !"false".equals(element.getAttribute("also-hidden"));
             this.linkType = element.getAttribute("link-type");
             this.targetType = element.getAttribute("target-type");
+            this.imgStyle = element.getAttribute("img-style");
             this.targetWindowExdr = FlexibleStringExpander.getInstance(element.getAttribute("target-window"));
             this.parametersMapAcsr = FlexibleMapAccessor.getInstance(element.getAttribute("parameters-map"));
             this.size = element.getAttribute("size");
@@ -2463,6 +2488,14 @@ public class ModelFormField {
         public String getTargetWindow(Map<String, Object> context) {
             String targetWindow = this.targetWindowExdr.expandString(context);
             return targetWindow;
+        }
+        
+        public String getImgStyle() {
+            return imgStyle;
+        }
+
+        public void setImgStyle(String imgStyle) {
+            this.imgStyle = imgStyle;
         }
 
         public String getDescription(Map<String, Object> context) {
@@ -4028,6 +4061,518 @@ public class ModelFormField {
         @Deprecated
         public void setId(String id) {
             this.id = id;
+        }
+    }
+    
+    public String getFieldValidateRemote(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemote))
+        return fieldValidateRemote.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemote(String fieldValidateRemote) {
+        this.fieldValidateRemote = FlexibleStringExpander.getInstance(fieldValidateRemote);
+    }
+    
+    public String getFieldValidateType() {
+        return fieldValidateType;
+    }
+
+    public void setFieldValidateType(String fieldValidateType) {
+        this.fieldValidateType = fieldValidateType;
+    }
+
+    public String getFieldValidateRemoteValidator(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteValidator))
+        return fieldValidateRemoteValidator.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemoteValidator(String fieldValidateRemoteValidator) {
+        this.fieldValidateRemoteValidator = FlexibleStringExpander.getInstance(fieldValidateRemoteValidator) ;
+    }
+
+    public String getFieldValidateRemoteOptions(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteOptions))
+        return fieldValidateRemoteOptions.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemoteOptions(String fieldValidateRemoteOptions) {
+        this.fieldValidateRemoteOptions = FlexibleStringExpander.getInstance(fieldValidateRemoteOptions);
+    }
+
+    public String getFieldValidateValue(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateValue))
+        return fieldValidateValue.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateValue(String fieldValidateValue) {
+        this.fieldValidateValue = FlexibleStringExpander.getInstance(fieldValidateValue);
+    }
+    
+    /**
+     * Ôö¼Ómodal confirm field
+     *target-form-name, presentation,confirmation-message, position, request-confirmation, fade-background, description=, height="" width=""
+     */
+    public static class ConfirmModalField extends FieldInfo {
+        protected boolean ajaxEnabled ;
+        protected FlexibleStringExpander confirmUrl;
+        protected String confirmPresentation;
+        protected String width;
+        protected String height;
+        protected String position;
+        protected String fadeBackground;
+        protected FlexibleStringExpander description;
+        protected boolean requestConfirmation;
+        protected FlexibleStringExpander confirmationMsgExdr;
+        protected FlexibleStringExpander confirmationTitleExdr;
+        protected FlexibleStringExpander confirmationReturnUrlExdr;
+        protected String targetType;
+        protected String buttonType;
+        protected String buttonStyle;
+        protected String buttonSpanStyle;
+        protected List<WidgetWorker.Parameter> parameterList = FastList.newInstance();
+        protected FlexibleStringExpander returnParametersMapAcsr;
+
+        public ConfirmModalField(int fieldSource, ModelFormField modelFormField) {
+            super(fieldSource, FieldInfo.CONFIRM_MODAL, modelFormField);
+        }
+
+        public ConfirmModalField(Element element, ModelFormField modelFormField) {
+            super(element, modelFormField);
+            this.confirmUrl = FlexibleStringExpander.getInstance(element.getAttribute("confirm-url"));
+            this.confirmPresentation = element.getAttribute("presentation");
+            this.buttonType = element.getAttribute("button-type");
+            this.buttonStyle = element.getAttribute("button-style");
+            this.buttonSpanStyle =  element.getAttribute("button-span-style");
+            setDescription(element.getAttribute("description"));
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            setConfirmationMsg(element.getAttribute("confirm-message"));
+            setConfirmationTitle(element.getAttribute("confirm-title"));
+            setReturnUrl(element.getAttribute("return-url"));
+            this.ajaxEnabled = "true".equals(element.getAttribute("ajaxEnabled"));
+            this.position = element.getAttribute("position");
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            this.fadeBackground = element.getAttribute("fade-background");
+            this.height = element.getAttribute("height");
+            this.width = element.getAttribute("width");
+            this.targetType = element.getAttribute("target-type");
+            this.returnParametersMapAcsr = FlexibleStringExpander.getInstance(element.getAttribute("return-parameters-map"));
+
+            List<? extends Element> parameterElementList = UtilXml.childElementList(element, "parameter");
+            for (Element parameterElement: parameterElementList) {
+                this.parameterList.add(new WidgetWorker.Parameter(parameterElement));
+            }
+        }
+
+        public String getReturnParameters(Map<String, Object> context) {
+            return returnParametersMapAcsr.expandString(context);
+        }
+        public List<WidgetWorker.Parameter> getParameterList() {
+            return parameterList;
+        }
+
+        public void setParameterList(List<WidgetWorker.Parameter> parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public void setTargetType(String targetType) {
+            this.targetType = targetType;
+        }
+
+        public boolean isAjaxEnabled() {
+            return ajaxEnabled;
+        }
+
+        public void setAjaxEnabled(boolean ajaxEnabled) {
+            this.ajaxEnabled = ajaxEnabled;
+        }
+
+
+        @Override
+        public void renderFieldString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderConfirmField(writer, context, this);
+        }
+
+        public String getConfirmUrl(Map<String, Object> context) {
+            return this.confirmUrl.expandString(context);
+        }
+        public void setConfirmUrl(String str) {
+            this.confirmUrl = FlexibleStringExpander.getInstance(str);
+        }
+
+        public String getFadeBackground() {
+            return this.fadeBackground;
+        }
+        public void setFadeBackground(String str) {
+            this.fadeBackground = str;
+        }
+
+
+        public String getConfirmPresentation() {
+            return confirmPresentation;
+        }
+
+
+        public String getWidth() {
+            return width;
+        }
+
+        public void setWidth(String width) {
+            this.width = width;
+        }
+
+        public String getHeight() {
+            return height;
+        }
+
+        public void setHeight(String height) {
+            this.height = height;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = position;
+        }
+
+        public String getDescription(Map<String,Object> context) {
+            return description.expandString(context);
+        }
+
+        public void setDescription(String val) {
+            this.description = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getConfirmation(Map<String, Object> context) {
+            String message = getConfirmationMsg(context);
+            if (UtilValidate.isNotEmpty(message)) return message;
+            if (getRequestConfirmation()) {
+                String defaultMessage = UtilProperties.getPropertyValue("general", "default.confirmation.message", "${uiLabelMap.CommonConfirm}");
+                setConfirmationMsg(defaultMessage);
+                return getConfirmationMsg(context);
+            }
+            return "";
+        }
+        public void setConfirmationMsg(String val) {
+            this.confirmationMsgExdr = FlexibleStringExpander.getInstance(val);
+        }
+        public void setConfirmationTitle(String val) {
+            this.confirmationTitleExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+
+        public void setReturnUrl(String val){
+            this.confirmationReturnUrlExdr = FlexibleStringExpander.getInstance(val);
+        }
+        public String getReturnUrl(Map<String,Object> context){
+            return this.confirmationReturnUrlExdr.expandString(context);
+        }
+        public String getConfirmTitle(Map<String,Object> context) {
+            return StringUtil.wrapString(confirmationTitleExdr.expandString(context)).toString();
+        }
+    
+        public String getButtonStyle() {
+            return buttonStyle;
+        }
+    
+        public void setButtonStyle(String buttonStyle) {
+            this.buttonStyle = buttonStyle;
+        }
+    
+        public String getButtonSpanStyle() {
+            return buttonSpanStyle;
+        }
+    
+        public void setButtonSpanStyle(String buttonSpanStyle) {
+            this.buttonSpanStyle = buttonSpanStyle;
+        }
+    
+        public String getButtonType() {
+            return buttonType;
+        }
+
+        public void setButtonType(String buttonType) {
+            this.buttonType = buttonType;
+        }
+
+        public boolean getRequestConfirmation() {
+            return requestConfirmation;
+        }
+        public void setRequestConfirmation(boolean requestConfirmation) {
+            this.requestConfirmation = requestConfirmation;
+        }
+        public String getConfirmationMsg(Map<String, Object> context) {
+            return StringUtil.wrapString(this.confirmationMsgExdr.expandString(context)).toString();
+        }
+        public String getTargetType() {
+            if (UtilValidate.isNotEmpty(this.targetType)) return this.targetType;
+            return HyperlinkField.DEFAULT_TARGET_TYPE;
+        }
+        public String getParameterMapString(Map<String, Object> context) {
+            List<String> params = new ArrayList<String>();
+            for (WidgetWorker.Parameter parameter: this.parameterList) {
+                try {
+                    params.add(parameter.getName()+":'"+ URLDecoder.decode(parameter.getValue(context), Charset.forName("UTF-8").displayName()) + "'");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+           return  StringUtil.join(params,",");
+        }
+    }
+    public static class ModalPage extends FieldInfo {
+        public static final String TAG_NAME = "modal-page";
+        protected boolean ajaxEnabled;
+        protected FlexibleStringExpander modalUrl;
+        protected FlexibleStringExpander returnUrl;
+        protected String confirmPresentation;
+        protected String width;
+        protected String height;
+        protected String position;
+        protected String fadeBackground;
+        protected FlexibleStringExpander description;
+        protected boolean requestConfirmation;
+        protected FlexibleStringExpander confirmationMsgExdr;
+        protected FlexibleStringExpander confirmationTitleExdr;
+        protected String targetType;
+        protected String buttonType;
+        protected String buttonStyle;
+        protected String buttonSpanStyle;
+        protected List<WidgetWorker.Parameter> parameterList = FastList.newInstance();
+        protected FlexibleStringExpander idExdr;
+        protected FlexibleStringExpander nameExdr;
+        protected FlexibleStringExpander returnParametersMapAcsr;
+        protected String modalType ;
+        protected String modalStyle;
+
+        public ModalPage(int fieldSource, ModelFormField modelFormField) {
+            super(fieldSource, FieldInfo.MODAL_PAGE, modelFormField);
+        }
+
+
+        public ModalPage(Element element, ModelFormField modelFormField) {
+            super(element,modelFormField);
+            this.modalUrl = FlexibleStringExpander.getInstance(element.getAttribute("modal-url"));
+            this.returnUrl = FlexibleStringExpander.getInstance(element.getAttribute("return-url"));
+            this.buttonType = element.getAttribute("button-type");
+            setDescription(element.getAttribute("description"));
+            setConfirmationTitle(element.getAttribute("confirm-title"));
+            setConfirmationMsg(element.getAttribute("confirm-message"));
+            this.ajaxEnabled = "true".equals(element.getAttribute("ajaxEnabled"));
+            this.position = element.getAttribute("position");
+            setRequestConfirmation("true".equals(element.getAttribute("request-confirmation")));
+            this.confirmPresentation = element.getAttribute("presentation");
+            this.fadeBackground = element.getAttribute("fade-background");
+            this.height = element.getAttribute("height");
+            this.width = element.getAttribute("width");
+            this.targetType = element.getAttribute("target-type");
+            this.buttonStyle = element.getAttribute("button-style");
+            this.buttonSpanStyle = element.getAttribute("button-span-type");
+            setId(element.getAttribute("id"));
+            setName(element.getAttribute("name"));
+            List<? extends Element> parameterElementList = UtilXml.childElementList(element, "parameter");
+            for (Element parameterElement : parameterElementList) {
+                this.parameterList.add(new WidgetWorker.Parameter(parameterElement));
+            }
+            this.returnParametersMapAcsr = FlexibleStringExpander.getInstance(element.getAttribute("return-parameters-map"));
+            this.modalType = element.getAttribute("modal-type");
+            this.modalStyle = element.getAttribute("modal-style");
+        }
+        public void setId(String id){
+            this.idExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getId(Map<String,Object> context){
+            return idExdr.expandString(context);
+        }
+        public void setName(String id){
+            this.nameExdr = FlexibleStringExpander.getInstance(id);
+        }
+        public String getName(Map<String,Object> context){
+            return nameExdr.expandString(context);
+        }
+        public List<WidgetWorker.Parameter> getParameterList() {
+            return parameterList;
+        }
+
+        public String getModalType() {
+            return modalType;
+        }
+
+        public void setModalType(String modalType) {
+            this.modalType = modalType;
+        }
+
+        public void setParameterList(List<WidgetWorker.Parameter> parameterList) {
+            this.parameterList = parameterList;
+        }
+
+        public void setTargetType(String targetType) {
+            this.targetType = targetType;
+        }
+
+        public boolean isAjaxEnabled() {
+            return ajaxEnabled;
+        }
+
+        public void setAjaxEnabled(boolean ajaxEnabled) {
+            this.ajaxEnabled = ajaxEnabled;
+        }
+
+        public String getModalUrl(Map<String, Object> context) {
+            return this.modalUrl.expandString(context);
+        }
+        public String getReturnUrl(Map<String, Object> context) {
+            return this.returnUrl.expandString(context);
+        }
+
+
+        public void setModalUrl(String str) {
+            this.modalUrl = FlexibleStringExpander.getInstance(str);
+        }
+        public void setReturnUrl(String str) {
+            this.returnUrl = FlexibleStringExpander.getInstance(str);
+        }
+
+        public String getFadeBackground() {
+            return this.fadeBackground;
+        }
+
+        public void setFadeBackground(String str) {
+            this.fadeBackground = str;
+        }
+
+        public String getConfirmPresentation() {
+            return confirmPresentation;
+        }
+
+        public String getWidth() {
+            return width;
+        }
+
+        public void setWidth(String width) {
+            this.width = width;
+        }
+
+        public String getHeight() {
+            return height;
+        }
+
+        public void setHeight(String height) {
+            this.height = height;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public void setPosition(String position) {
+            this.position = position;
+        }
+
+        public String getDescription(Map<String, Object> context) {
+            return description.expandString(context);
+        }
+
+        public void setDescription(String val) {
+            this.description = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getButtonStyle() {
+            return buttonStyle;
+        }
+
+        public void setButtonStyle(String buttonStyle) {
+            this.buttonStyle = buttonStyle;
+        }
+
+        public String getButtonSpanStyle() {
+            return buttonSpanStyle;
+        }
+
+        public void setButtonSpanStyle(String buttonSpanStyle) {
+            this.buttonSpanStyle = buttonSpanStyle;
+        }
+
+        public String getConfirmation(Map<String, Object> context) {
+            String message = getConfirmationMsg(context);
+            if (UtilValidate.isNotEmpty(message)) return message;
+            if (getRequestConfirmation()) {
+                String defaultMessage = UtilProperties.getPropertyValue("general", "default.confirmation.message", "${uiLabelMap.CommonConfirm}");
+                setConfirmationMsg(defaultMessage);
+                return getConfirmationMsg(context);
+            }
+            return "";
+        }
+        public String getReturnParameters(Map<String, Object> context) {
+            return returnParametersMapAcsr.expandString(context);
+        }
+
+        public void setConfirmationMsg(String val) {
+            this.confirmationMsgExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+        public void setConfirmationTitle(String val) {
+            this.confirmationTitleExdr = FlexibleStringExpander.getInstance(val);
+        }
+
+        public String getConfirmTitle(Map<String, Object> context) {
+            return StringUtil.wrapString(confirmationTitleExdr.expandString(context)).toString();
+        }
+
+        public String getButtonType() {
+            return buttonType;
+        }
+
+        public void setButtonType(String buttonType) {
+            this.buttonType = buttonType;
+        }
+
+        public boolean getRequestConfirmation() {
+            return requestConfirmation;
+        }
+
+        public void setRequestConfirmation(boolean requestConfirmation) {
+            this.requestConfirmation = requestConfirmation;
+        }
+
+        public String getConfirmationMsg(Map<String, Object> context) {
+            return StringUtil.wrapString(this.confirmationMsgExdr.expandString(context)).toString();
+        }
+
+        public String getModalStyle() {
+            return modalStyle;
+        }
+
+        public void setModalStyle(String modalStyle) {
+            this.modalStyle = modalStyle;
+        }
+
+        public String getTargetType() {
+            if (UtilValidate.isNotEmpty(this.targetType)) return this.targetType;
+            return "intra-app";
+        }
+
+        public String getParameterMapString(Map<String, Object> context) {
+            List<String> params = new ArrayList<String>();
+            for (WidgetWorker.Parameter parameter : this.parameterList) {
+                try {
+                    if(UtilValidate.isNotEmpty(parameter.getValue(context)))
+                    params.add(parameter.getName() + ":'" +  URLDecoder.decode(parameter.getValue(context), Charset.forName("UTF-8").displayName()) + "'");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+            return StringUtil.join(params, ",");
+        }
+
+        @Override
+        public void renderFieldString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderModalPage(writer, context, this);
         }
     }
 }
