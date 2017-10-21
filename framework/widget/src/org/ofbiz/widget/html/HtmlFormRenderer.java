@@ -41,11 +41,14 @@ import org.ofbiz.base.util.UtilProperties;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.base.util.StringUtil.SimpleEncoder;
 import org.ofbiz.base.util.string.FlexibleStringExpander;
+import org.ofbiz.base.util.template.FreeMarkerWorker;
+import org.ofbiz.entity.Delegator;
 import org.ofbiz.webapp.control.RequestHandler;
 import org.ofbiz.webapp.taglib.ContentUrlTag;
 import org.ofbiz.widget.ModelWidget;
 import org.ofbiz.widget.WidgetWorker;
 import org.ofbiz.widget.form.FormStringRenderer;
+import org.ofbiz.widget.form.MacroFormRenderer;
 import org.ofbiz.widget.form.ModelForm;
 import org.ofbiz.widget.form.ModelForm.FieldGroupBase;
 import org.ofbiz.widget.form.ModelFormField;
@@ -72,8 +75,11 @@ import org.ofbiz.widget.form.ModelFormField.SubmitField;
 import org.ofbiz.widget.form.ModelFormField.TextField;
 import org.ofbiz.widget.form.ModelFormField.TextFindField;
 import org.ofbiz.widget.form.ModelFormField.TextareaField;
+import org.ofbiz.widget.form.UtilHelpText;
 
 import com.ibm.icu.util.Calendar;
+
+import freemarker.template.TemplateException;
 
 /**
  * Widget Library - HTML Form Renderer implementation
@@ -490,8 +496,8 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         writer.append("</textarea>");
 
         if (textareaField.getVisualEditorEnable()) {
-            writer.append("<script language=\"javascript\" src=\"/images/jquery/plugins/elrteEditor/elrte.min.js\" type=\"text/javascript\"></script>");
-            writer.append("<link href=\"/images/jquery/plugins/elrteEditor/css/elrte.full.css\" rel=\"stylesheet\" type=\"text/css\">");
+            writer.append("<script language=\"javascript\" src=\"/images/jquery/plugins/elrte-1.3/js/elrte.min.js\" type=\"text/javascript\"></script>");
+            writer.append("<link href=\"/images/jquery/plugins/elrte-1.3/css/elrte.min.css\" rel=\"stylesheet\" type=\"text/css\">");
             writer.append("<script language=\"javascript\" type=\"text/javascript\"> var opts = { cssClass : 'el-rte', toolbar : ");
             // define the toolsbar
             String buttons = textareaField.getVisualEditorButtons(context);
@@ -501,7 +507,7 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
                 writer.append("maxi");
             }
             writer.append(", doctype  : '<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">', //'<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\">'");
-            writer.append(", cssfiles : ['/images/jquery/plugins/elrteEditor/css/elrte-inner.css'] ");
+            writer.append(", cssfiles : ['/images/jquery/plugins/elrte-1.3/css/elrte-inner.css'] ");
             writer.append("}");
             // load the wysiwyg editor
             writer.append("jQuery('#");
@@ -525,202 +531,15 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
      * @see org.ofbiz.widget.form.FormStringRenderer#renderDateTimeField(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelFormField.DateTimeField)
      */
     public void renderDateTimeField(Appendable writer, Map<String, Object> context, DateTimeField dateTimeField) throws IOException {
-        ModelFormField modelFormField = dateTimeField.getModelFormField();
-        String paramName = modelFormField.getParameterName(context);
-        String defaultDateTimeString = dateTimeField.getDefaultDateTimeString(context);
-
-        String event = modelFormField.getEvent();
-        String action = modelFormField.getAction(context);
-
-        Map<String, String> uiLabelMap = UtilGenerics.checkMap(context.get("uiLabelMap"));
-        if (uiLabelMap == null) {
-            Debug.logWarning("Could not find uiLabelMap in context", module);
+        String macroLibraryPath = UtilProperties.getPropertyValue("widget", "screen.formrenderer");
+        try {
+            MacroFormRenderer macroFormRenderer = new MacroFormRenderer(macroLibraryPath, this.request, this.response);
+            macroFormRenderer.renderDateTimeField(writer, context, dateTimeField);
+        } catch (TemplateException e) {
+            Debug.logError(e, "Error rendering screen thru ftl macro: renderDateTimeField", module);
+        } catch (IOException e) {
+            Debug.logError(e, "Error rendering screen thru ftl, macro: renderDateTimeField", module);
         }
-        String localizedInputTitle = "" , localizedIconTitle = "";
-
-        // whether the date field is short form, yyyy-mm-dd
-        boolean shortDateInput = ("date".equals(dateTimeField.getType()) || "time-dropdown".equals(dateTimeField.getInputMethod()) ? true : false);
-
-        writer.append("<input type=\"text\"");
-
-        appendClassNames(writer, context, modelFormField);
-
-        writer.append(" name=\"");
-        if ("time-dropdown".equals(dateTimeField.getInputMethod())) {
-            writer.append(UtilHttp.makeCompositeParam(paramName, "date"));
-        } else {
-            writer.append(paramName);
-        }
-        writer.append('"');
-
-        // the default values for a timestamp
-        int size = 25;
-        int maxlength = 30;
-
-        if (shortDateInput) {
-            size = maxlength = 10;
-            if (uiLabelMap != null) {
-                localizedInputTitle = uiLabelMap.get("CommonFormatDate");
-            }
-        } else if ("time".equals(dateTimeField.getType())) {
-            size = maxlength = 8;
-            if (uiLabelMap != null) {
-                localizedInputTitle = uiLabelMap.get("CommonFormatTime");
-            }
-        } else {
-            if (uiLabelMap != null) {
-                localizedInputTitle = uiLabelMap.get("CommonFormatDateTime");
-            }
-        }
-        writer.append(" title=\"");
-        writer.append(localizedInputTitle);
-        writer.append('"');
-
-        String value = modelFormField.getEntry(context, dateTimeField.getDefaultValue(context));
-        if (UtilValidate.isNotEmpty(value)) {
-            if (value.length() > maxlength) {
-                value = value.substring(0, maxlength);
-            }
-            writer.append(" value=\"");
-            writer.append(value);
-            writer.append('"');
-        }
-
-        writer.append(" size=\"");
-        writer.append(Integer.toString(size));
-        writer.append('"');
-
-        writer.append(" maxlength=\"");
-        writer.append(Integer.toString(maxlength));
-        writer.append('"');
-
-        String idName = modelFormField.getCurrentContainerId(context);
-        if (UtilValidate.isNotEmpty(idName)) {
-            writer.append(" id=\"");
-            writer.append(idName);
-            writer.append('"');
-        }
-
-        if (UtilValidate.isNotEmpty(event) && UtilValidate.isNotEmpty(action)) {
-            writer.append(" ");
-            writer.append(event);
-            writer.append("=\"");
-            writer.append(action);
-            writer.append('"');
-        }
-
-        writer.append("/>");
-
-        // search for a localized label for the icon
-        if (uiLabelMap != null) {
-            localizedIconTitle = uiLabelMap.get("CommonViewCalendar");
-        }
-
-        // add calendar pop-up button and seed data IF this is not a "time" type date-time
-        if (!"time".equals(dateTimeField.getType())) {
-            if (shortDateInput) {
-                writer.append("<a href=\"javascript:call_cal_notime(document.");
-            } else {
-                writer.append("<a href=\"javascript:call_cal(document.");
-            }
-            writer.append(modelFormField.getModelForm().getCurrentFormName(context));
-            writer.append('.');
-            if ("time-dropdown".equals(dateTimeField.getInputMethod())) {
-                writer.append(UtilHttp.makeCompositeParam(paramName, "date"));
-            } else {
-                writer.append(paramName);
-            }
-            writer.append(",'");
-            writer.append(UtilHttp.encodeBlanks(modelFormField.getEntry(context, defaultDateTimeString)));
-            writer.append("');\">");
-
-            writer.append("<img src=\"");
-            this.appendContentUrl(writer, "/images/cal.gif");
-            writer.append("\" width=\"16\" height=\"16\" border=\"0\" alt=\"");
-            writer.append(localizedIconTitle);
-            writer.append("\" title=\"");
-            writer.append(localizedIconTitle);
-            writer.append("\"/></a>");
-        }
-
-        // if we have an input method of time-dropdown, then render two dropdowns
-        if ("time-dropdown".equals(dateTimeField.getInputMethod())) {
-            String className = modelFormField.getWidgetStyle();
-            String classString = (className != null ? " class=\"" + className + "\" " : "");
-            boolean isTwelveHour = "12".equals(dateTimeField.getClock());
-
-            // set the Calendar to the default time of the form or now()
-            Calendar cal = null;
-            try {
-                Timestamp defaultTimestamp = Timestamp.valueOf(modelFormField.getEntry(context, defaultDateTimeString));
-                cal = Calendar.getInstance();
-                cal.setTime(defaultTimestamp);
-            } catch (IllegalArgumentException e) {
-                Debug.logWarning("Form widget field [" + paramName + "] with input-method=\"time-dropdown\" was not able to understand the default time ["
-                        + defaultDateTimeString + "]. The parsing error was: " + e.getMessage(), module);
-            }
-
-            // write the select for hours
-            writer.append("&nbsp;<select name=\"").append(UtilHttp.makeCompositeParam(paramName, "hour")).append("\"");
-            writer.append(classString).append(">");
-
-            // keep the two cases separate because it's hard to understand a combined loop
-            if (isTwelveHour) {
-                for (int i = 1; i <= 12; i++) {
-                    writer.append("<option value=\"").append(Integer.toString(i)).append("\"");
-                    if (cal != null) {
-                        int hour = cal.get(Calendar.HOUR_OF_DAY);
-                        if (hour == 0) hour = 12;
-                        if (hour > 12) hour -= 12;
-                        if (i == hour) writer.append(" selected");
-                    }
-                    writer.append(">").append(Integer.toString(i)).append("</option>");
-                }
-            } else {
-                for (int i = 0; i < 24; i++) {
-                    writer.append("<option value=\"").append(Integer.toString(i)).append("\"");
-                    if (cal != null && i == cal.get(Calendar.HOUR_OF_DAY)) {
-                        writer.append(" selected");
-                    }
-                    writer.append(">").append(Integer.toString(i)).append("</option>");
-                }
-            }
-
-            // write the select for minutes
-            writer.append("</select>:<select name=\"");
-            writer.append(UtilHttp.makeCompositeParam(paramName, "minutes")).append("\"");
-            writer.append(classString).append(">");
-            for (int i = 0; i < 60; i++) {
-                writer.append("<option value=\"").append(Integer.toString(i)).append("\"");
-                if (cal != null && i == cal.get(Calendar.MINUTE)) {
-                    writer.append(" selected");
-                }
-                writer.append(">").append(Integer.toString(i)).append("</option>");
-            }
-            writer.append("</select>");
-
-            // if 12 hour clock, write the AM/PM selector
-            if (isTwelveHour) {
-                String amSelected = ((cal != null && cal.get(Calendar.AM_PM) == Calendar.AM) ? "selected" : "");
-                String pmSelected = ((cal != null && cal.get(Calendar.AM_PM) == Calendar.PM) ? "selected" : "");
-                writer.append("<select name=\"").append(UtilHttp.makeCompositeParam(paramName, "ampm")).append("\"");
-                writer.append(classString).append(">");
-                writer.append("<option value=\"AM\" ").append(amSelected).append(">AM</option>");
-                writer.append("<option value=\"PM\" ").append(pmSelected).append(">PM</option>");
-                writer.append("</select>");
-            }
-
-            // create a hidden field for the composite type, which is a Timestamp
-            writer.append("<input type=\"hidden\" name=\"");
-            writer.append(UtilHttp.makeCompositeParam(paramName, "compositeType"));
-            writer.append("\" value=\"Timestamp\"/>");
-        }
-
-        this.addAsterisks(writer, context, modelFormField);
-
-        this.appendTooltip(writer, context, modelFormField);
-
-        //appendWhitespace(writer);
     }
 
     /* (non-Javadoc)
@@ -1274,9 +1093,26 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         String titleText = UtilHttp.encodeAmpersands(tempTitleText);
 
         if (UtilValidate.isNotEmpty(titleText)) {
-            if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
-                writer.append("<span class=\"");
-                writer.append(modelFormField.getTitleStyle());
+            // copied from MacroFormRenderer renderFieldTitle
+            String displayHelpText = UtilProperties.getPropertyValue("widget.properties", "widget.form.displayhelpText");
+            String helpText = null;
+            if ("Y".equals(displayHelpText)) {
+                Delegator delegator = WidgetWorker.getDelegator(context);
+                Locale locale = (Locale)context.get("locale");
+                String entityName = modelFormField.getEntityName();
+                String fieldName = modelFormField.getFieldName();
+                helpText = UtilHelpText.getEntityFieldDescription(entityName, fieldName, delegator, locale);
+            }
+            if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle()) || UtilValidate.isNotEmpty(helpText)) {
+                writer.append("<span");
+                if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())){
+                    writer.append(" class=\"");
+                    writer.append(modelFormField.getTitleStyle());
+                }
+                if (UtilValidate.isNotEmpty(helpText)){
+                    writer.append(" title=\"");
+                    writer.append(FreeMarkerWorker.encodeDoubleQuotes(helpText));
+                }
                 writer.append("\">");
             }
             if (" ".equals(titleText)) {
@@ -1388,9 +1224,88 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
     }
 
     /* (non-Javadoc)
+     * @see org.ofbiz.widget.form.FormStringRenderer#renderFormOpen(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelForm)
+     */
+    public void renderListFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+        this.widgetCommentsEnabled = ModelWidget.widgetBoundaryCommentsEnabled(context);
+        renderBeginningBoundaryComment(writer, "Form Widget - Form Element", modelForm);
+        writer.append("<form method=\"post\" ");
+        String targetType = modelForm.getTargetType();
+        String targ = modelForm.getTarget(context, targetType);
+        // The 'action' attribute is mandatory in a form definition,
+        // even if it is empty.
+        writer.append(" action=\"");
+        if (UtilValidate.isNotEmpty(targ)) {
+            //this.appendOfbizUrl(writer, "/" + targ);
+            WidgetWorker.buildHyperlinkUrl(writer, targ, targetType, null, null, false, false, true, request, response, context);
+        }
+        writer.append("\" ");
+
+        String formType = modelForm.getType();
+        if (formType.equals("upload")) {
+            writer.append(" enctype=\"multipart/form-data\"");
+        }
+
+        String targetWindow = modelForm.getTargetWindow(context);
+        if (UtilValidate.isNotEmpty(targetWindow)) {
+            writer.append(" target=\"");
+            writer.append(targetWindow);
+            writer.append("\"");
+        }
+
+        String containerId =  modelForm.getCurrentContainerId(context);
+        if (UtilValidate.isNotEmpty(containerId)) {
+            writer.append(" id=\"");
+            writer.append(containerId);
+            writer.append("\"");
+        }
+
+        writer.append(" class=\"");
+        String containerStyle =  modelForm.getContainerStyle();
+        if (UtilValidate.isNotEmpty(containerStyle)) {
+            writer.append(containerStyle);
+        } else {
+            writer.append("basic-form");
+        }
+        writer.append("\"");
+
+        writer.append(" onsubmit=\"javascript:submitFormDisableSubmits(this)\"");
+
+        if (!modelForm.getClientAutocompleteFields()) {
+            writer.append(" autocomplete=\"off\"");
+        }
+
+        writer.append(" name=\"");
+        writer.append(modelForm.getCurrentFormName(context));
+        writer.append("\">");
+
+        boolean useRowSubmit = modelForm.getUseRowSubmit();
+        if (useRowSubmit) {
+            writer.append("<input type=\"hidden\" name=\"_useRowSubmit\" value=\"Y\"/>");
+        }
+
+        appendWhitespace(writer);
+    }
+
+    /* (non-Javadoc)
      * @see org.ofbiz.widget.form.FormStringRenderer#renderFormClose(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelForm)
      */
     public void renderFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+        writer.append("</form>");
+        String focusFieldName = modelForm.getfocusFieldName();
+        if (UtilValidate.isNotEmpty(focusFieldName)) {
+            appendWhitespace(writer);
+            writer.append("<script language=\"JavaScript\" type=\"text/javascript\">");
+            appendWhitespace(writer);
+            writer.append("document.").append(modelForm.getCurrentFormName(context)).append(".");
+            writer.append(focusFieldName).append(".focus();");
+            appendWhitespace(writer);
+            writer.append("</script>");
+        }
+        appendWhitespace(writer);
+        renderEndingBoundaryComment(writer, "Form Widget - Form Element", modelForm);
+    }
+    public void renderInputGroupFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
         writer.append("</form>");
         String focusFieldName = modelForm.getfocusFieldName();
         if (UtilValidate.isNotEmpty(focusFieldName)) {
@@ -1462,7 +1377,7 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         renderBeginningBoundaryComment(writer, "Form Widget", modelForm);
 
         if (this.renderPagination) {
-            this.renderNextPrev(writer, context, modelForm);
+//            this.renderNextPrev(writer, context, modelForm);
         }
         writer.append(" <table cellspacing=\"0\" class=\"");
         if (UtilValidate.isNotEmpty(modelForm.getDefaultTableStyle())) {
@@ -1742,6 +1657,15 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
     }
 
     /* (non-Javadoc)
+    * @see org.ofbiz.widget.form.FormStringRenderer#renderFormatFieldRowTitleCellOpen(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelFormField)
+    */
+    public void renderFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField,int maxPosition) throws IOException {
+        renderFieldTitle(writer,context,modelFormField);
+    }
+
+
+
+    /* (non-Javadoc)
      * @see org.ofbiz.widget.form.FormStringRenderer#renderFormatFieldRowSpacerCell(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelFormField)
      */
     public void renderFormatFieldRowSpacerCell(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) throws IOException {
@@ -1755,6 +1679,33 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
      * @see org.ofbiz.widget.form.FormStringRenderer#renderFormatFieldRowWidgetCellOpen(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelFormField, int)
      */
     public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow) throws IOException {
+//        writer.append("<td width=\"");
+//        if (nextPositionInRow != null || modelFormField.getPosition() > 1) {
+//            writer.append("30");
+//        } else {
+//            writer.append("80");
+//        }
+//        writer.append("%\"");
+        writer.append("   <td");
+        if (positionSpan > 0) {
+            writer.append(" colspan=\"");
+            // do a span of 1 for this column, plus 3 columns for each spanned
+            //position or each blank position that this will be filling in
+            writer.append(Integer.toString(1 + (positionSpan * 3)));
+            writer.append("\"");
+        }
+        String areaStyle = modelFormField.getWidgetAreaStyle();
+        if (UtilValidate.isNotEmpty(areaStyle)) {
+            writer.append(" class=\"");
+            writer.append(areaStyle);
+            writer.append("\"");
+        }
+        writer.append(">");
+
+        //appendWhitespace(writer);
+    }
+
+    public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow,int maxPosition) throws IOException {
 //        writer.append("<td width=\"");
 //        if (nextPositionInRow != null || modelFormField.getPosition() > 1) {
 //            writer.append("30");
@@ -2201,6 +2152,421 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         //appendWhitespace(writer);
     }
 
+    /**
+     * 增加对开始时间的查询判断，大于等于开始时间（暂与renderDateFindField保持一致）
+     * @param writer
+     * @param context
+     * @param dateFindField
+     * @throws IOException
+     */
+    public void renderStartDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.StartDateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+
+        Locale locale = (Locale)context.get("locale");
+        String opEquals = UtilProperties.getMessage("conditional", "equals", locale);
+        String opGreaterThan = UtilProperties.getMessage("conditional", "greater_than", locale);
+        String opSameDay = UtilProperties.getMessage("conditional", "same_day", locale);
+        String opGreaterThanFromDayStart = UtilProperties.getMessage("conditional",
+                "greater_than_from_day_start", locale);
+        String opLessThan = UtilProperties.getMessage("conditional", "less_than", locale);
+        String opUpToDay = UtilProperties.getMessage("conditional", "up_to_day", locale);
+        String opUpThruDay = UtilProperties.getMessage("conditional", "up_thru_day", locale);
+        String opIsEmpty = UtilProperties.getMessage("conditional", "is_empty", locale);
+
+        Map<String, String> uiLabelMap = UtilGenerics.checkMap(context.get("uiLabelMap"));
+        if (uiLabelMap == null) {
+            Debug.logWarning("Could not find uiLabelMap in context", module);
+        }
+        String localizedInputTitle = "", localizedIconTitle = "";
+
+        writer.append("<input type=\"text\"");
+
+        appendClassNames(writer, context, modelFormField);
+
+        writer.append(" name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld0_value\"");
+
+        // the default values for a timestamp
+        int size = 25;
+        int maxlength = 30;
+
+        if ("date".equals(dateFindField.getType())) {
+            size = maxlength = 10;
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatDate");
+            }
+        } else if ("time".equals(dateFindField.getType())) {
+            size = maxlength = 8;
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatTime");
+            }
+        } else {
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatDateTime");
+            }
+        }
+        writer.append(" title=\"");
+        writer.append(localizedInputTitle);
+        writer.append('"');
+
+        String value = modelFormField.getEntry(context, dateFindField.getDefaultValue(context));
+        if (UtilValidate.isNotEmpty(value)) {
+            if (value.length() > maxlength) {
+                value = value.substring(0, maxlength);
+            }
+            writer.append(" value=\"");
+            writer.append(value);
+            writer.append('"');
+        }
+
+        writer.append(" size=\"");
+        writer.append(Integer.toString(size));
+        writer.append('"');
+
+        writer.append(" maxlength=\"");
+        writer.append(Integer.toString(maxlength));
+        writer.append('"');
+
+        writer.append("/>");
+
+        // search for a localized label for the icon
+        if (uiLabelMap != null) {
+            localizedIconTitle = uiLabelMap.get("CommonViewCalendar");
+        }
+
+        // add calendar pop-up button and seed data IF this is not a "time" type date-find
+        if (!"time".equals(dateFindField.getType())) {
+            if ("date".equals(dateFindField.getType())) {
+                writer.append("<a href=\"javascript:call_cal_notime(document.");
+            } else {
+                writer.append("<a href=\"javascript:call_cal(document.");
+            }
+            writer.append(modelFormField.getModelForm().getCurrentFormName(context));
+            writer.append('.');
+            writer.append(modelFormField.getParameterName(context));
+            writer.append("_fld0_value,'");
+            writer.append(UtilHttp.encodeBlanks(modelFormField.getEntry(context, dateFindField.getDefaultDateTimeString(context))));
+            writer.append("');\">");
+
+            writer.append("<img src=\"");
+            this.appendContentUrl(writer, "/images/cal.gif");
+            writer.append("\" width=\"16\" height=\"16\" border=\"0\" alt=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\" title=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\"/></a>");
+        }
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" <span class=\"");
+            writer.append(modelFormField.getTitleStyle());
+            writer.append("\">");
+        }
+
+        String defaultOptionFrom = dateFindField.getDefaultOptionFrom();
+        writer.append(" <select name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld0_op\" class=\"selectBox\">");
+        writer.append("<option value=\"equals\"").append(("equals".equals(defaultOptionFrom)? " selected": "")).append(">").append(opEquals).append("</option>");
+        writer.append("<option value=\"sameDay\"").append(("sameDay".equals(defaultOptionFrom)? " selected": "")).append(">").append(opSameDay).append("</option>");
+        writer.append("<option value=\"greaterThanFromDayStart\"").append(("greaterThanFromDayStart".equals(defaultOptionFrom)? " selected": "")).append(">").append(opGreaterThanFromDayStart).append("</option>");
+        writer.append("<option value=\"greaterThan\"").append(("greaterThan".equals(defaultOptionFrom)? " selected": "")).append(">").append(opGreaterThan).append("</option>");
+        writer.append("</select>");
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" </span>");
+        }
+
+        writer.append(" <br/> ");
+
+        writer.append("<input type=\"text\"");
+
+        appendClassNames(writer, context, modelFormField);
+
+        writer.append(" name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld1_value\"");
+
+        writer.append(" title=\"");
+        writer.append(localizedInputTitle);
+        writer.append('"');
+
+        value = modelFormField.getEntry(context);
+        if (UtilValidate.isNotEmpty(value)) {
+            if (value.length() > maxlength) {
+                value = value.substring(0, maxlength);
+            }
+            writer.append(" value=\"");
+            writer.append(value);
+            writer.append('"');
+        }
+
+        writer.append(" size=\"");
+        writer.append(Integer.toString(size));
+        writer.append('"');
+
+        writer.append(" maxlength=\"");
+        writer.append(Integer.toString(maxlength));
+        writer.append('"');
+
+        writer.append("/>");
+
+        // add calendar pop-up button and seed data IF this is not a "time" type date-find
+        if (!"time".equals(dateFindField.getType())) {
+            if ("date".equals(dateFindField.getType())) {
+                writer.append("<a href=\"javascript:call_cal_notime(document.");
+            } else {
+                writer.append("<a href=\"javascript:call_cal(document.");
+            }
+            writer.append(modelFormField.getModelForm().getCurrentFormName(context));
+            writer.append('.');
+            writer.append(modelFormField.getParameterName(context));
+            writer.append("_fld1_value,'");
+            writer.append(UtilHttp.encodeBlanks(modelFormField.getEntry(context, dateFindField.getDefaultDateTimeString(context))));
+            writer.append("');\">");
+
+            writer.append("<img src=\"");
+            this.appendContentUrl(writer, "/images/cal.gif");
+            writer.append("\" width=\"16\" height=\"16\" border=\"0\" alt=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\" title=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\"/></a>");
+        }
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" <span class=\"");
+            writer.append(modelFormField.getTitleStyle());
+            writer.append("\">");
+        }
+
+        String defaultOptionThru = dateFindField.getDefaultOptionThru();
+        writer.append(" <select name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld1_op\" class=\"selectBox\">");
+        writer.append("<option value=\"lessThan\"").append(("lessThan".equals(defaultOptionThru)? " selected": "")).append(">").append(opLessThan).append("</option>");
+        writer.append("<option value=\"upToDay\"").append(("upToDay".equals(defaultOptionThru)? " selected": "")).append(">").append(opUpToDay).append("</option>");
+        writer.append("<option value=\"upThruDay\"").append(("upThruDay".equals(defaultOptionThru)? " selected": "")).append(">").append(opUpThruDay).append("</option>");
+        writer.append("<option value=\"empty\"").append(("empty".equals(defaultOptionThru)? " selected": "")).append(">").append(opIsEmpty).append("</option>");
+        writer.append("</select>");
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append("</span>");
+        }
+
+        this.appendTooltip(writer, context, modelFormField);
+
+        //appendWhitespace(writer);
+    }
+    /**
+     * 增加对结束时间的查询判断，小于等于开始时间（暂与renderDateFindField保持一致）
+     * @param writer
+     * @param context
+     * @param dateFindField
+     * @throws IOException
+     */
+    public void renderEndDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.EndDateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+
+        Locale locale = (Locale)context.get("locale");
+        String opEquals = UtilProperties.getMessage("conditional", "equals", locale);
+        String opGreaterThan = UtilProperties.getMessage("conditional", "greater_than", locale);
+        String opSameDay = UtilProperties.getMessage("conditional", "same_day", locale);
+        String opGreaterThanFromDayStart = UtilProperties.getMessage("conditional",
+                "greater_than_from_day_start", locale);
+        String opLessThan = UtilProperties.getMessage("conditional", "less_than", locale);
+        String opUpToDay = UtilProperties.getMessage("conditional", "up_to_day", locale);
+        String opUpThruDay = UtilProperties.getMessage("conditional", "up_thru_day", locale);
+        String opIsEmpty = UtilProperties.getMessage("conditional", "is_empty", locale);
+
+        Map<String, String> uiLabelMap = UtilGenerics.checkMap(context.get("uiLabelMap"));
+        if (uiLabelMap == null) {
+            Debug.logWarning("Could not find uiLabelMap in context", module);
+        }
+        String localizedInputTitle = "", localizedIconTitle = "";
+
+        writer.append("<input type=\"text\"");
+
+        appendClassNames(writer, context, modelFormField);
+
+        writer.append(" name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld0_value\"");
+
+        // the default values for a timestamp
+        int size = 25;
+        int maxlength = 30;
+
+        if ("date".equals(dateFindField.getType())) {
+            size = maxlength = 10;
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatDate");
+            }
+        } else if ("time".equals(dateFindField.getType())) {
+            size = maxlength = 8;
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatTime");
+            }
+        } else {
+            if (uiLabelMap != null) {
+                localizedInputTitle = uiLabelMap.get("CommonFormatDateTime");
+            }
+        }
+        writer.append(" title=\"");
+        writer.append(localizedInputTitle);
+        writer.append('"');
+
+        String value = modelFormField.getEntry(context, dateFindField.getDefaultValue(context));
+        if (UtilValidate.isNotEmpty(value)) {
+            if (value.length() > maxlength) {
+                value = value.substring(0, maxlength);
+            }
+            writer.append(" value=\"");
+            writer.append(value);
+            writer.append('"');
+        }
+
+        writer.append(" size=\"");
+        writer.append(Integer.toString(size));
+        writer.append('"');
+
+        writer.append(" maxlength=\"");
+        writer.append(Integer.toString(maxlength));
+        writer.append('"');
+
+        writer.append("/>");
+
+        // search for a localized label for the icon
+        if (uiLabelMap != null) {
+            localizedIconTitle = uiLabelMap.get("CommonViewCalendar");
+        }
+
+        // add calendar pop-up button and seed data IF this is not a "time" type date-find
+        if (!"time".equals(dateFindField.getType())) {
+            if ("date".equals(dateFindField.getType())) {
+                writer.append("<a href=\"javascript:call_cal_notime(document.");
+            } else {
+                writer.append("<a href=\"javascript:call_cal(document.");
+            }
+            writer.append(modelFormField.getModelForm().getCurrentFormName(context));
+            writer.append('.');
+            writer.append(modelFormField.getParameterName(context));
+            writer.append("_fld0_value,'");
+            writer.append(UtilHttp.encodeBlanks(modelFormField.getEntry(context, dateFindField.getDefaultDateTimeString(context))));
+            writer.append("');\">");
+
+            writer.append("<img src=\"");
+            this.appendContentUrl(writer, "/images/cal.gif");
+            writer.append("\" width=\"16\" height=\"16\" border=\"0\" alt=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\" title=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\"/></a>");
+        }
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" <span class=\"");
+            writer.append(modelFormField.getTitleStyle());
+            writer.append("\">");
+        }
+
+        String defaultOptionFrom = dateFindField.getDefaultOptionFrom();
+        writer.append(" <select name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld0_op\" class=\"selectBox\">");
+        writer.append("<option value=\"equals\"").append(("equals".equals(defaultOptionFrom)? " selected": "")).append(">").append(opEquals).append("</option>");
+        writer.append("<option value=\"sameDay\"").append(("sameDay".equals(defaultOptionFrom)? " selected": "")).append(">").append(opSameDay).append("</option>");
+        writer.append("<option value=\"greaterThanFromDayStart\"").append(("greaterThanFromDayStart".equals(defaultOptionFrom)? " selected": "")).append(">").append(opGreaterThanFromDayStart).append("</option>");
+        writer.append("<option value=\"greaterThan\"").append(("greaterThan".equals(defaultOptionFrom)? " selected": "")).append(">").append(opGreaterThan).append("</option>");
+        writer.append("</select>");
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" </span>");
+        }
+
+        writer.append(" <br/> ");
+
+        writer.append("<input type=\"text\"");
+
+        appendClassNames(writer, context, modelFormField);
+
+        writer.append(" name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld1_value\"");
+
+        writer.append(" title=\"");
+        writer.append(localizedInputTitle);
+        writer.append('"');
+
+        value = modelFormField.getEntry(context);
+        if (UtilValidate.isNotEmpty(value)) {
+            if (value.length() > maxlength) {
+                value = value.substring(0, maxlength);
+            }
+            writer.append(" value=\"");
+            writer.append(value);
+            writer.append('"');
+        }
+
+        writer.append(" size=\"");
+        writer.append(Integer.toString(size));
+        writer.append('"');
+
+        writer.append(" maxlength=\"");
+        writer.append(Integer.toString(maxlength));
+        writer.append('"');
+
+        writer.append("/>");
+
+        // add calendar pop-up button and seed data IF this is not a "time" type date-find
+        if (!"time".equals(dateFindField.getType())) {
+            if ("date".equals(dateFindField.getType())) {
+                writer.append("<a href=\"javascript:call_cal_notime(document.");
+            } else {
+                writer.append("<a href=\"javascript:call_cal(document.");
+            }
+            writer.append(modelFormField.getModelForm().getCurrentFormName(context));
+            writer.append('.');
+            writer.append(modelFormField.getParameterName(context));
+            writer.append("_fld1_value,'");
+            writer.append(UtilHttp.encodeBlanks(modelFormField.getEntry(context, dateFindField.getDefaultDateTimeString(context))));
+            writer.append("');\">");
+
+            writer.append("<img src=\"");
+            this.appendContentUrl(writer, "/images/cal.gif");
+            writer.append("\" width=\"16\" height=\"16\" border=\"0\" alt=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\" title=\"");
+            writer.append(localizedIconTitle);
+            writer.append("\"/></a>");
+        }
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append(" <span class=\"");
+            writer.append(modelFormField.getTitleStyle());
+            writer.append("\">");
+        }
+
+        String defaultOptionThru = dateFindField.getDefaultOptionThru();
+        writer.append(" <select name=\"");
+        writer.append(modelFormField.getParameterName(context));
+        writer.append("_fld1_op\" class=\"selectBox\">");
+        writer.append("<option value=\"lessThan\"").append(("lessThan".equals(defaultOptionThru)? " selected": "")).append(">").append(opLessThan).append("</option>");
+        writer.append("<option value=\"upToDay\"").append(("upToDay".equals(defaultOptionThru)? " selected": "")).append(">").append(opUpToDay).append("</option>");
+        writer.append("<option value=\"upThruDay\"").append(("upThruDay".equals(defaultOptionThru)? " selected": "")).append(">").append(opUpThruDay).append("</option>");
+        writer.append("<option value=\"empty\"").append(("empty".equals(defaultOptionThru)? " selected": "")).append(">").append(opIsEmpty).append("</option>");
+        writer.append("</select>");
+
+        if (UtilValidate.isNotEmpty(modelFormField.getTitleStyle())) {
+            writer.append("</span>");
+        }
+
+        this.appendTooltip(writer, context, modelFormField);
+
+        //appendWhitespace(writer);
+    }
+
     /* (non-Javadoc)
      * @see org.ofbiz.widget.form.FormStringRenderer#renderLookupField(java.io.Writer, java.util.Map, org.ofbiz.widget.form.ModelFormField.LookupField)
      */
@@ -2306,7 +2672,7 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         if (questionIndex == -1) {
             result += sessionId;
         } else {
-            result.replace("?", sessionId + "?");
+            result = result.replace("?", sessionId + "?");
         }
         return result;
     }
@@ -2503,11 +2869,12 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         // Last button
         writer.append("  <li class=\"").append(modelForm.getPaginateLastStyle());
         if (highIndex < listSize) {
+            int lastIndex = UtilMisc.getViewLastIndex(listSize, viewSize);
             writer.append("\"><a href=\"");
             if (ajaxEnabled) {
-                writer.append("javascript:ajaxUpdateAreas('").append(createAjaxParamsFromUpdateAreas(updateAreas, prepLinkText + (listSize / viewSize) + anchor, context)).append("')");
+                writer.append("javascript:ajaxUpdateAreas('").append(createAjaxParamsFromUpdateAreas(updateAreas, prepLinkText + lastIndex + anchor, context)).append("')");
             } else {
-                linkText = prepLinkText + (listSize / viewSize) + anchor;
+                linkText = prepLinkText + lastIndex + anchor;
                 appendOfbizUrl(writer, urlPath + linkText);
             }
             writer.append("\">").append(modelForm.getPaginateLastLabel(context)).append("</a>");
@@ -2719,22 +3086,11 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
             appendContentUrl(writer, value);
             writer.append('"');
         }
-
-        writer.append(" border=\"");
-        writer.append(Integer.toString(imageField.getBorder()));
-        writer.append('"');
-
-        Integer width = imageField.getWidth();
-        if (width != null) {
-            writer.append(" width=\"");
-            writer.append(width.toString());
-            writer.append('"');
-        }
-
-        Integer height = imageField.getHeight();
-        if (height != null) {
-            writer.append(" height=\"");
-            writer.append(height.toString());
+        
+        value = modelFormField.getEntry(context, imageField.getStyle(context));
+        if (UtilValidate.isNotEmpty(value)) {
+            writer.append(" class=\"");
+            appendContentUrl(writer, value);
             writer.append('"');
         }
 
@@ -2980,34 +3336,70 @@ public class HtmlFormRenderer extends HtmlWidgetRenderer implements FormStringRe
         return ajaxUrl.toString();
     }
 
-	@Override
-	public void renderFileldGroupTabStart(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderFileldGroupTabStart(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
 
-	@Override
-	public void renderFileldGroupTabEnd(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroup)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	@Override
-	public void renderConfirmField(Appendable writer,
-			Map<String, Object> context, ConfirmModalField formField)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderInputGroupWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
 
-	@Override
-	public void renderModalPage(Appendable writer, Map<String, Object> context,
-			ModalPage modalPage) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void rendeInputGroupWrapperEnd(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
+
+    }
+
+    @Override
+    public void renderFileldGroupTabEnd(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
+
+    }
+    @Override
+    public void renderInputGroupFieldRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupFieldRowClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm)throws IOException{
+
+    }
+
+
+    @Override
+    public void renderInputGroupBtnRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+
+    @Override
+    public void renderInputGroupBtnRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupBtnRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+
+    @Override
+    public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField) throws IOException {
+
+    }
+
+    @Override
+    public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage) throws IOException {
+
+    }
 }

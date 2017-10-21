@@ -172,12 +172,15 @@ public class ModelFormField {
         this.headerLink = fieldElement.getAttribute("header-link");
         this.headerLinkStyle = fieldElement.getAttribute("header-link-style");
 
+        this.fieldValidateType = fieldElement.getAttribute("field-validate-type");
+        this.setFieldValidateRemote(fieldElement.hasAttribute("field-validate-remote")?fieldElement.getAttribute("field-validate-remote"):null);
+        this.setFieldValidateRemoteValidator(fieldElement.hasAttribute("field-validate-remote-validator")?fieldElement.getAttribute("field-validate-remote-validator"):null);
+        this.setFieldValidateRemoteOptions(fieldElement.hasAttribute("field-validate-remote-options")?fieldElement.getAttribute("field-validate-remote-options"):null);
+        this.setFieldValidateValue(fieldElement.hasAttribute("field-validate-value")?fieldElement.getAttribute("field-validate-value"):null);
 
         String positionStr = fieldElement.getAttribute("position");
         try {
-            if (UtilValidate.isNotEmpty(positionStr)) {
-                position = Integer.valueOf(positionStr);
-            }
+            if (UtilValidate.isNotEmpty(positionStr)) position = Integer.valueOf(positionStr);
         } catch (Exception e) {
             Debug.logError(
                 e,
@@ -225,7 +228,11 @@ public class ModelFormField {
                 this.fieldInfo = new TextFindField(subElement, this);
             } else if ("date-find".equals(subElementName)) {
                 this.fieldInfo = new DateFindField(subElement, this);
-            } else if ("range-find".equals(subElementName)) {
+            } else if("startDate-find".equals(subElementName)){
+            	this.fieldInfo = new StartDateFindField(subElement, this);
+            } else if("endDate-find".equals(subElementName)){
+            	this.fieldInfo = new EndDateFindField(subElement, this);
+            }else if ("range-find".equals(subElementName)) {
                 this.fieldInfo = new RangeFindField(subElement, this);
             } else if ("lookup".equals(subElementName)) {
                 this.fieldInfo = new LookupField(subElement, this);
@@ -343,7 +350,9 @@ public class ModelFormField {
         if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateRemoteOptions))) this.fieldValidateRemoteOptions = overrideFormField.fieldValidateRemoteOptions;
         if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateRemoteValidator))) this.fieldValidateRemoteValidator = overrideFormField.fieldValidateRemoteValidator;
         if (UtilValidate.isNotEmpty((overrideFormField.fieldValidateValue))) this.fieldValidateValue = overrideFormField.fieldValidateValue;
-        
+
+        if (overrideFormField.onChangeUpdateAreas != null) this.onChangeUpdateAreas = overrideFormField.onChangeUpdateAreas;
+        if (overrideFormField.onClickUpdateAreas != null) this.onClickUpdateAreas = overrideFormField.onClickUpdateAreas;
         this.encodeOutput = overrideFormField.encodeOutput;
     }
 
@@ -637,6 +646,54 @@ public class ModelFormField {
         return modelForm;
     }
 
+    public String getFieldValidateType() {
+        return fieldValidateType;
+    }
+
+    public void setFieldValidateType(String fieldValidateType) {
+        this.fieldValidateType = fieldValidateType;
+    }
+
+    public String getFieldValidateRemote(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemote))
+        return fieldValidateRemote.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemote(String fieldValidateRemote) {
+        this.fieldValidateRemote = FlexibleStringExpander.getInstance(fieldValidateRemote);
+    }
+
+    public String getFieldValidateRemoteValidator(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteValidator))
+        return fieldValidateRemoteValidator.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemoteValidator(String fieldValidateRemoteValidator) {
+        this.fieldValidateRemoteValidator = FlexibleStringExpander.getInstance(fieldValidateRemoteValidator) ;
+    }
+
+    public String getFieldValidateRemoteOptions(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteOptions))
+        return fieldValidateRemoteOptions.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateRemoteOptions(String fieldValidateRemoteOptions) {
+        this.fieldValidateRemoteOptions = FlexibleStringExpander.getInstance(fieldValidateRemoteOptions);
+    }
+
+    public String getFieldValidateValue(Map<String, ? extends Object> context) {
+        if (UtilValidate.isNotEmpty(this.fieldValidateValue))
+        return fieldValidateValue.expandString(context);
+        return "";
+    }
+
+    public void setFieldValidateValue(String fieldValidateValue) {
+        this.fieldValidateValue = FlexibleStringExpander.getInstance(fieldValidateValue);
+    }
+
     /**
      * @param fieldInfo
      */
@@ -735,7 +792,7 @@ public class ModelFormField {
                 dataMapIsContext = true;
             }
             Object retVal = null;
-            if (this.entryAcsr != null && !this.entryAcsr.isEmpty()) {
+            if (UtilValidate.isNotEmpty(this.entryAcsr)) {
                 //Debug.logInfo("Getting entry, using entryAcsr for field " + this.getName() + " of form " + this.modelForm.getName(), module);
                 if (dataMap instanceof GenericEntity) {
                     GenericEntity genEnt = (GenericEntity) dataMap;
@@ -757,11 +814,8 @@ public class ModelFormField {
             if (dataMapIsContext && retVal == null && !Boolean.FALSE.equals(useRequestParameters)) {
                 Map<String, ? extends Object> parameters = UtilGenerics.checkMap(context.get("parameters"));
                 if (parameters != null) {
-                    if (this.entryAcsr != null && !this.entryAcsr.isEmpty()) {
-                        retVal = this.entryAcsr.get(parameters);
-                    } else {
-                        retVal = parameters.get(this.name);
-                    }
+                    if (UtilValidate.isNotEmpty(this.entryAcsr))  retVal = this.entryAcsr.get(parameters);
+                    else retVal = parameters.get(this.name);
                 }
             }
 
@@ -1489,6 +1543,10 @@ public class ModelFormField {
             fieldTypeByName.put("image", Integer.valueOf(19));
             fieldTypeByName.put("display-entity", Integer.valueOf(20));
             fieldTypeByName.put("container", Integer.valueOf(21));
+            fieldTypeByName.put("startDate-find", Integer.valueOf(22));
+            fieldTypeByName.put("endDate-find", Integer.valueOf(23));
+            fieldTypeByName.put("confirm-modal", Integer.valueOf(24));
+            fieldTypeByName.put("modal-page", Integer.valueOf(25));
         }
 
         protected int fieldType;
@@ -2243,6 +2301,12 @@ public class ModelFormField {
                     throw new IllegalArgumentException(errMsg);
                 }
             }
+            if (UtilValidate.isNotEmpty(this.description) && retVal != null && this.getModelFormField().getEncodeOutput()) {
+                StringUtil.SimpleEncoder simpleEncoder = (StringUtil.SimpleEncoder) context.get("simpleEncoder");
+                if (simpleEncoder != null) {
+                    retVal = simpleEncoder.encode(retVal);
+                }
+            }
             return retVal;
         }
 
@@ -2332,9 +2396,7 @@ public class ModelFormField {
             this.cache = !"false".equals(element.getAttribute("cache"));
             this.size = element.getAttribute("size");
 
-            if (this.description == null || this.description.isEmpty()) {
-                this.setDescription("${description}");
-            }
+            if (UtilValidate.isEmpty(this.description))  this.setDescription("${description}");
 
             Element subHyperlinkElement = UtilXml.firstChildElement(element, "sub-hyperlink");
             if (subHyperlinkElement != null) {
@@ -2366,7 +2428,10 @@ public class ModelFormField {
             if (value != null) {
                 // expanding ${} stuff, passing locale explicitly to expand value string because it won't be found in the Entity
                 MapStack<String> localContext = MapStack.create(context);
-                localContext.push(value);
+                // Rendering code might try to modify the GenericEntity instance,
+                // so we make a copy of it.
+                Map<String, Object> genericEntityClone = UtilGenerics.cast(value.clone());
+                localContext.push(genericEntityClone);
 
                 // expand with the new localContext, which is locale aware
                 retVal = this.description.expandString(localContext, locale);
@@ -3142,6 +3207,7 @@ public class ModelFormField {
         protected String clock;
         protected String step;
         protected String mask;
+        protected String required;
 
         protected DateTimeField() {
             super();
@@ -3159,6 +3225,7 @@ public class ModelFormField {
             super(element, modelFormField);
             this.setDefaultValue(element.getAttribute("default-value"));
             type = element.getAttribute("type");
+            required = element.getAttribute("required");
             inputMethod = element.getAttribute("input-method");
             clock = element.getAttribute("clock");
             mask = element.getAttribute("mask");
@@ -3600,7 +3667,7 @@ public class ModelFormField {
         }
 
         public String getValue(Map<String, Object> context) {
-            if (this.value != null && !this.value.isEmpty()) {
+            if (UtilValidate.isNotEmpty(this.value)) {
                 String valueEnc = this.value.expandString(context);
                 StringUtil.SimpleEncoder simpleEncoder = (StringUtil.SimpleEncoder) context.get("simpleEncoder");
                 if (simpleEncoder != null) {
@@ -3703,6 +3770,61 @@ public class ModelFormField {
         @Override
         public void renderFieldString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
             formStringRenderer.renderDateFindField(writer, context, this);
+        }
+
+        public String getDefaultOptionFrom() {
+            return this.defaultOptionFrom;
+        }
+
+        public String getDefaultOptionThru() {
+            return this.defaultOptionThru;
+        }
+    }
+    
+    public static class StartDateFindField extends DateTimeField {
+        protected String defaultOptionFrom = "greaterThanEqualTo";
+        protected String defaultOptionThru = "lessThanEqualTo";
+
+        public StartDateFindField(Element element, ModelFormField modelFormField) {
+            super(element, modelFormField);
+            this.defaultOptionFrom = element.getAttribute("default-option-from");
+            this.defaultOptionThru = element.getAttribute("default-option-thru");
+        }
+
+        public StartDateFindField(int fieldSource, ModelFormField modelFormField) {
+            super(fieldSource, modelFormField);
+        }
+
+        @Override
+        public void renderFieldString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderStartDateFindField(writer, context, this);
+        }
+
+        public String getDefaultOptionFrom() {
+            return this.defaultOptionFrom;
+        }
+
+        public String getDefaultOptionThru() {
+            return this.defaultOptionThru;
+        }
+    }
+    public static class EndDateFindField extends DateTimeField {
+        protected String defaultOptionFrom = "greaterThanEqualTo";
+        protected String defaultOptionThru = "lessThanEqualTo";
+
+        public EndDateFindField(Element element, ModelFormField modelFormField) {
+            super(element, modelFormField);
+            this.defaultOptionFrom = element.getAttribute("default-option-from");
+            this.defaultOptionThru = element.getAttribute("default-option-thru");
+        }
+
+        public EndDateFindField(int fieldSource, ModelFormField modelFormField) {
+            super(fieldSource, modelFormField);
+        }
+
+        @Override
+        public void renderFieldString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderEndDateFindField(writer, context, this);
         }
 
         public String getDefaultOptionFrom() {
@@ -3898,6 +4020,7 @@ public class ModelFormField {
         protected SubHyperlink subHyperlink;
         protected FlexibleStringExpander description;
         protected FlexibleStringExpander alternate;
+        protected FlexibleStringExpander style;
 
         protected ImageField() {
             super();
@@ -3916,7 +4039,7 @@ public class ModelFormField {
             this.setValue(element.getAttribute("value"));
             this.setDescription(element.getAttribute("description"));
             this.setAlternate(element.getAttribute("alternate"));
-
+            this.setStyle(element.getAttribute("style"));
             String borderStr = element.getAttribute("border");
             try {
                 border = Integer.parseInt(borderStr);
@@ -4029,6 +4152,15 @@ public class ModelFormField {
         public void setAlternate(String alternate) {
             this.alternate = FlexibleStringExpander.getInstance(alternate);
         }
+        
+        public String getStyle(Map<String, Object> context) {
+            if (UtilValidate.isNotEmpty(this.style)) return this.style.expandString(context);
+            return "";
+        }
+
+        public void setStyle(String style) {
+            this.style = FlexibleStringExpander.getInstance(style);
+        }
 
     }
 
@@ -4064,56 +4196,8 @@ public class ModelFormField {
         }
     }
     
-    public String getFieldValidateRemote(Map<String, ? extends Object> context) {
-        if (UtilValidate.isNotEmpty(this.fieldValidateRemote))
-        return fieldValidateRemote.expandString(context);
-        return "";
-    }
-
-    public void setFieldValidateRemote(String fieldValidateRemote) {
-        this.fieldValidateRemote = FlexibleStringExpander.getInstance(fieldValidateRemote);
-    }
-    
-    public String getFieldValidateType() {
-        return fieldValidateType;
-    }
-
-    public void setFieldValidateType(String fieldValidateType) {
-        this.fieldValidateType = fieldValidateType;
-    }
-
-    public String getFieldValidateRemoteValidator(Map<String, ? extends Object> context) {
-        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteValidator))
-        return fieldValidateRemoteValidator.expandString(context);
-        return "";
-    }
-
-    public void setFieldValidateRemoteValidator(String fieldValidateRemoteValidator) {
-        this.fieldValidateRemoteValidator = FlexibleStringExpander.getInstance(fieldValidateRemoteValidator) ;
-    }
-
-    public String getFieldValidateRemoteOptions(Map<String, ? extends Object> context) {
-        if (UtilValidate.isNotEmpty(this.fieldValidateRemoteOptions))
-        return fieldValidateRemoteOptions.expandString(context);
-        return "";
-    }
-
-    public void setFieldValidateRemoteOptions(String fieldValidateRemoteOptions) {
-        this.fieldValidateRemoteOptions = FlexibleStringExpander.getInstance(fieldValidateRemoteOptions);
-    }
-
-    public String getFieldValidateValue(Map<String, ? extends Object> context) {
-        if (UtilValidate.isNotEmpty(this.fieldValidateValue))
-        return fieldValidateValue.expandString(context);
-        return "";
-    }
-
-    public void setFieldValidateValue(String fieldValidateValue) {
-        this.fieldValidateValue = FlexibleStringExpander.getInstance(fieldValidateValue);
-    }
-    
     /**
-     * Ôö¼Ómodal confirm field
+     * ï¿½ï¿½ï¿½ï¿½modal confirm field
      *target-form-name, presentation,confirmation-message, position, request-confirmation, fade-background, description=, height="" width=""
      */
     public static class ConfirmModalField extends FieldInfo {

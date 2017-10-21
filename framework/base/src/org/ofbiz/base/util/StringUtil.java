@@ -349,6 +349,27 @@ public class StringUtil {
 
         return newList;
     }
+    
+    /**
+     * Reads a String version of a List (should contain only strings) and creates a new List
+     *
+     * @param s String value of a Map ({n1=v1, n2=v2})
+     * @return new List
+     */
+    public static List<String> toList(String s,String prefix,String suffix) {
+        List<String> newList = FastList.newInstance();
+        if (s.startsWith(prefix) && s.endsWith(suffix)) {
+            s = s.substring(1, s.length() - 1);
+            String[] entries = s.split("\\,\\s");
+            for (String entry: entries) {
+                newList.add(entry);
+            }
+        } else {
+            throw new IllegalArgumentException("String is not from List.toString()");
+        }
+
+        return newList;
+    }
 
     /**
      * Reads a String version of a Set (should contain only strings) and creates a new Set

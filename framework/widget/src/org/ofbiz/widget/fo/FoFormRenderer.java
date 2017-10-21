@@ -176,10 +176,6 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
         String tempTitleText = modelFormField.getTitle(context);
         writer.append(tempTitleText);
     }
-    public void renderFieldTitle1(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) throws IOException {
-        String tempTitleText = modelFormField.getTitle(context);
-        writer.append(tempTitleText);
-    }
 
     public void renderSingleFormFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) throws IOException {
         renderFieldTitle(writer, context, modelFormField);
@@ -193,9 +189,16 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
     public void renderFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
         renderEndingBoundaryComment(writer, "Form Widget", modelForm);
     }
+    public void renderInputGroupFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+        renderEndingBoundaryComment(writer, "Form Widget", modelForm);
+    }
 
     public void renderMultiFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
         renderEndingBoundaryComment(writer, "Form Widget", modelForm);
+    }
+    public void renderListFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+        this.widgetCommentsEnabled = ModelWidget.widgetBoundaryCommentsEnabled(context);
+        renderBeginningBoundaryComment(writer, "Form Widget", modelForm);
     }
 
     public void renderFormatListWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
@@ -346,6 +349,10 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
         appendWhitespace(writer);
     }
 
+    public void renderFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField,int maxPosition) throws IOException {
+       renderFieldTitle(writer,context,modelFormField);
+    }
+
     public void renderFormatFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) throws IOException {
         writer.append("</fo:block>");
         writer.append("</fo:table-cell>");
@@ -356,6 +363,11 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
     }
 
     public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow) throws IOException {
+        writer.append("<fo:table-cell text-align=\"left\" padding=\"2pt\" padding-left=\"5pt\">");
+        appendWhitespace(writer);
+    }
+
+    public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow,int maxPosition) throws IOException {
         writer.append("<fo:table-cell text-align=\"left\" padding=\"2pt\" padding-left=\"5pt\">");
         appendWhitespace(writer);
     }
@@ -382,6 +394,18 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
     }
 
     public void renderDateFindField(Appendable writer, Map<String, Object> context, DateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+        this.makeBlockString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
+        appendWhitespace(writer);
+    }
+
+    public void renderStartDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.StartDateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+        this.makeBlockString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
+        appendWhitespace(writer);
+    }
+
+    public void renderEndDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.EndDateFindField dateFindField) throws IOException {
         ModelFormField modelFormField = dateFindField.getModelFormField();
         this.makeBlockString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
         appendWhitespace(writer);
@@ -430,34 +454,72 @@ public class FoFormRenderer extends HtmlWidgetRenderer implements FormStringRend
     public void renderContainerFindField(Appendable writer, Map<String, Object> context, ContainerField containerField) throws IOException {
     }
 
-	@Override
-	public void renderFileldGroupTabStart(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderFileldGroupTabStart(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
 
-	@Override
-	public void renderFileldGroupTabEnd(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroup)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	@Override
-	public void renderConfirmField(Appendable writer,
-			Map<String, Object> context, ConfirmModalField formField)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderInputGroupWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
 
-	@Override
-	public void renderModalPage(Appendable writer, Map<String, Object> context,
-			ModalPage modalPage) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void rendeInputGroupWrapperEnd(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
+
+    }
+
+    @Override
+    public void renderFileldGroupTabEnd(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
+
+    }
+
+    @Override
+    public void renderInputGroupFieldRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupFieldRowClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+
+    @Override
+    public void renderInputGroupFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+        System.out.println("writer = " + writer);
+    }
+
+    @Override
+    public void renderInputGroupBtnRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+
+    @Override
+    public void renderInputGroupBtnRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+
+    @Override
+    public void renderInputGroupBtnRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+
+    @Override
+    public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField) throws IOException {
+
+    }
+
+    @Override
+    public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage) throws IOException {
+
+    }
 }

@@ -32,7 +32,6 @@ public class AdminletMacroFormRenderer extends MacroFormRenderer {
     public AdminletMacroFormRenderer(String macroLibraryPath, Appendable writer, HttpServletRequest request, HttpServletResponse response) throws TemplateException, IOException {
         super(macroLibraryPath, writer, request, response);
     }
-    /*
     public void renderFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) throws IOException {
         String tempTitleText = modelFormField.getTitle(context);
         String titleText = UtilHttp.encodeAmpersands(tempTitleText);
@@ -82,7 +81,13 @@ public class AdminletMacroFormRenderer extends MacroFormRenderer {
                     executeMacro(writer, sr.toString());
                 } else {
                     //<label for="doc-ipt-3" class="am-u-sm-2 am-form-label">电子邮件</label>
-                    sb.append(titleText);
+                    //sb.append(titleText);
+                	StringWriter sr = new StringWriter();
+                    sr.append("<@renderInputGroupFieldTitleCellOpen ");
+                    sr.append(" title=\"");
+                    sr.append(titleText);
+                    sr.append("\"/>");
+                    executeMacro(writer, sr.toString());
                 }
             }
         }
@@ -135,7 +140,6 @@ public class AdminletMacroFormRenderer extends MacroFormRenderer {
             executeMacro(writer, sr.toString());
         }
     }
-    */
     public void renderLookupField(Appendable writer, Map<String, Object> context, ModelFormField.LookupField lookupField,int maxPosition) throws IOException {
 
         ModelFormField modelFormField = lookupField.getModelFormField();

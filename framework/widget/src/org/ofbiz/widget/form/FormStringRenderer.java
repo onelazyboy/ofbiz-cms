@@ -51,7 +51,9 @@ public interface FormStringRenderer {
 
     public void renderFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
     public void renderFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+    public void renderInputGroupFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
     public void renderMultiFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+    public void renderListFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
 
     public void renderFormatListWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
     public void renderFormatListWrapperClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
@@ -87,6 +89,8 @@ public interface FormStringRenderer {
 
     public void renderTextFindField(Appendable writer, Map<String, Object> context, ModelFormField.TextFindField textField) throws IOException;
     public void renderDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.DateFindField textField) throws IOException;
+    public void renderStartDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.StartDateFindField textField) throws IOException;
+    public void renderEndDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.EndDateFindField textField) throws IOException;
     public void renderRangeFindField(Appendable writer, Map<String, Object> context, ModelFormField.RangeFindField textField) throws IOException;
     public void renderLookupField(Appendable writer, Map<String, Object> context, ModelFormField.LookupField textField) throws IOException;
     public void renderFileField(Appendable writer, Map<String, Object> context, ModelFormField.FileField textField) throws IOException;
@@ -99,6 +103,19 @@ public interface FormStringRenderer {
 	public void renderFileldGroupTabStart(Appendable writer,Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)throws IOException;
 	public void renderFileldGroupTabEnd(Appendable writer,Map<String, Object> context, List<FieldGroupBase> fieldGroup)throws IOException;
 
-	public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField)throws IOException;
-	public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage)throws IOException;
+	/*add input group form */
+	public void renderFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int maxPosition) throws IOException;
+	public void renderInputGroupWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupFieldRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException;
+	public void renderInputGroupFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException;
+	public void rendeInputGroupWrapperEnd(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupFieldRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupFieldRowClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupBtnRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException;
+	public void renderInputGroupBtnRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException;
+	public void renderInputGroupBtnRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException;
+	
+	public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField) throws IOException;
+	public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage) throws IOException;
 }

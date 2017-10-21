@@ -164,8 +164,11 @@ public class TextFormRenderer implements FormStringRenderer {
 
     public void renderFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
     }
-
+    public void renderListFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
+    }
     public void renderFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
+    }
+    public void renderInputGroupFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
     }
 
     public void renderMultiFormClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
@@ -232,7 +235,8 @@ public class TextFormRenderer implements FormStringRenderer {
 
     public void renderFormatFieldRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) {
     }
-
+    public void renderFieldTitle(Appendable writer, Map<String, Object> context, ModelFormField modelFormField,int maxPosition) {
+    }
     public void renderFormatFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField modelFormField) {
     }
 
@@ -240,6 +244,8 @@ public class TextFormRenderer implements FormStringRenderer {
     }
 
     public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow) {
+    }
+    public void renderFormatFieldRowWidgetCellOpen(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow,int maxPosition) {
     }
 
     public void renderFormatFieldRowWidgetCellClose(Appendable writer, Map<String, Object> context, ModelFormField modelFormField, int positions, int positionSpan, Integer nextPositionInRow) {
@@ -260,6 +266,14 @@ public class TextFormRenderer implements FormStringRenderer {
     }
 
     public void renderDateFindField(Appendable writer, Map<String, Object> context, DateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+        this.makeTextString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
+    }
+    public void renderStartDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.StartDateFindField dateFindField) throws IOException {
+        ModelFormField modelFormField = dateFindField.getModelFormField();
+        this.makeTextString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
+    }
+    public void renderEndDateFindField(Appendable writer, Map<String, Object> context, ModelFormField.EndDateFindField dateFindField) throws IOException {
         ModelFormField modelFormField = dateFindField.getModelFormField();
         this.makeTextString(writer, modelFormField.getWidgetStyle(), modelFormField.getEntry(context, dateFindField.getDefaultValue(context)));
     }
@@ -302,34 +316,69 @@ public class TextFormRenderer implements FormStringRenderer {
     public void renderContainerFindField(Appendable writer, Map<String, Object> context, ContainerField containerField) throws IOException {
     }
 
-	@Override
-	public void renderFileldGroupTabStart(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroupBases)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderFileldGroupTabStart(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
 
-	@Override
-	public void renderFileldGroupTabEnd(Appendable writer,
-			Map<String, Object> context, List<FieldGroupBase> fieldGroup)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	@Override
-	public void renderConfirmField(Appendable writer,
-			Map<String, Object> context, ConfirmModalField formField)
-			throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void renderInputGroupWrapperOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
 
-	@Override
-	public void renderModalPage(Appendable writer, Map<String, Object> context,
-			ModalPage modalPage) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void renderInputGroupFieldRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) {
+
+    }
+
+    @Override
+    public void rendeInputGroupWrapperEnd(Appendable writer, Map<String, Object> context, ModelForm modelForm) {
+
+    }
+
+    @Override
+    public void renderFileldGroupTabEnd(Appendable writer, Map<String, Object> context, List<ModelForm.FieldGroupBase> fieldGroup) {
+
+    }
+    @Override
+    public void renderInputGroupFieldRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupFieldRowClose(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupFormOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm)throws IOException{
+
+    }
+
+
+    @Override
+    public void renderInputGroupBtnRowOpen(Appendable writer, Map<String, Object> context, ModelForm modelForm) throws IOException {
+
+    }
+
+    @Override
+    public void renderInputGroupBtnRowTitleCellOpen(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+    @Override
+    public void renderInputGroupBtnRowTitleCellClose(Appendable writer, Map<String, Object> context, ModelFormField currentFormField) throws IOException {
+
+    }
+
+    @Override
+    public void renderConfirmField(Appendable writer, Map<String, Object> context, ModelFormField.ConfirmModalField formField) throws IOException {
+
+    }
+    @Override
+    public void renderModalPage(Appendable writer, Map<String, Object> context, ModelFormField.ModalPage modalPage) throws IOException {
+
+    }
 }

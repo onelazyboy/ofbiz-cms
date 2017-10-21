@@ -381,7 +381,7 @@
 </#macro>
 
 <#macro renderSubmitField buttonType className alert formName title name event action imgSrc confirmation containerId ajaxUrl>
-<div class="input-group clearfix pull-right">
+<!-- <div class="input-group clearfix pull-right"> -->
     <#if buttonType=="text-link">
         <a <@renderClass className alert /> href="javascript:document.${formName}.submit()"
                                             <#if confirmation?has_content>onclick="return confirm('${confirmation?js_string}');"</#if>><#if title?has_content>${title}</#if> </a>
@@ -620,10 +620,11 @@
 
 
 <#macro renderFormatEmptySpace>
-    <div class=" col-md-5 col-lg-5">&nbsp;</div></#macro>
+    <!-- <div class=" col-md-5 col-lg-5">&nbsp;</div> -->
+</#macro>
 
 <#macro renderTextFindField name value defaultOption opEquals opBeginsWith opContains opIsEmpty opNotEqual className alert size maxlength autocomplete titleStyle hideIgnoreCase ignCase ignoreCase>
-    <div class="row">
+    <div class="input-group">
         <#if opEquals?has_content>
         <div class="col-md-12 col-lg-12">
             <select <#if name?has_content>name="${name}_op"</#if> class="form-control input-sm"><#rt/>
@@ -635,10 +636,11 @@
             </select>
 
         <#else>
+			<div id="0_lookupId_orderId_auto"></div>
             <input type="hidden" name=<#if name?has_content> "${name}_op"</#if> value="${defaultOption}"/><#rt/>
         </#if>
-
-        <input type="text" class="form-control input-sm" name="${name}"<#if value?has_content> value="${value}"</#if><#if size?has_content> size="${size}"</#if><#if maxlength?has_content>
+		
+        <input type="text" class="form-control input-sm ui-autocomplete-input" name="${name}"<#if value?has_content> value="${value}"</#if><#if size?has_content> size="${size}"</#if><#if maxlength?has_content>
                maxlength="${maxlength}"</#if><#if autocomplete?has_content> autocomplete="off"</#if>/>
     </div><#rt/>
             <input type="hidden" name="${name}_ic" value=<#if ignCase>"Y"<#else> ""</#if>/><#rt/>
@@ -1401,9 +1403,11 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
         </#if>
     </#if>
 </#macro>
-
+<#macro renderInputGroupFieldTitleCellOpen  title>
+<span class="input-group-addon">${title}</span>
+</#macro>
 <#macro renderInputGroupFieldRowTitleCellOpen  style>
-<div class="input-group-addon">
+<!-- <div class="input-group-addon"> -->
 </#macro>
 <#macro renderInputGroupFieldRowTitleCellClose>
 </div>
@@ -1425,7 +1429,7 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
 <div class="input-group m-b-10">
 </#macro>
 <#macro renderInputGroupBtnRowTitleCellOpen  style>
-<div class="col-md-2">
+<!-- <div class="col-md-2"> -->
 </#macro>
 <#macro renderInputGroupBtnRowTitleCellClose  style>
 </div>

@@ -725,7 +725,6 @@ public abstract class ModelScreenWidget extends ModelWidget {
             super(modelScreen, decoratorSectionElement);
             // read sub-widgets
             List<? extends Element> subElementList = UtilXml.childElementList(decoratorSectionElement);
-            System.out.println("#################"+this.modelScreen.toString());
             this.subWidgets = ModelScreenWidget.readSubWidgets(this.modelScreen, subElementList);
         }
 

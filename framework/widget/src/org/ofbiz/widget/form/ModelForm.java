@@ -41,11 +41,13 @@ import org.ofbiz.base.util.StringUtil;
 import org.ofbiz.base.util.UtilGenerics;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilProperties;
+import org.ofbiz.base.util.UtilStrings;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.base.util.UtilXml;
 import org.ofbiz.base.util.collections.FlexibleMapAccessor;
 import org.ofbiz.base.util.collections.MapStack;
 import org.ofbiz.base.util.string.FlexibleStringExpander;
+import org.ofbiz.entity.GenericEntity;
 import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.model.ModelEntity;
 import org.ofbiz.entity.model.ModelField;
@@ -78,6 +80,7 @@ public class ModelForm extends ModelWidget {
     protected String formLocation;
     protected String parentFormName;
     protected String parentFormLocation;
+    protected ModelForm parentModelForm;
     protected String type;
     protected FlexibleStringExpander target;
     protected String targetType;
@@ -133,7 +136,8 @@ public class ModelForm extends ModelWidget {
     protected List<AltTarget> altTargets = FastList.newInstance();
     protected List<AutoFieldsService> autoFieldsServices = FastList.newInstance();
     protected List<AutoFieldsEntity> autoFieldsEntities = FastList.newInstance();
-    protected List<String> sortOrderFields = FastList.newInstance();
+    protected List<String> lastOrderFields = FastList.newInstance();
+    protected List<SortField> sortOrderFields = FastList.newInstance();
     protected List<AltRowStyle> altRowStyles = FastList.newInstance();
 
     /** This List will contain one copy of each field for each field name in the order
@@ -201,6 +205,8 @@ public class ModelForm extends ModelWidget {
     /** On Paginate areas to be updated. */
     protected List<UpdateArea> onPaginateUpdateAreas;
 
+    protected List<UpdateArea> onAjaxUpdateAreas;
+
     // ===== CONSTRUCTORS =====
     /** Default Constructor */
     public ModelForm() {}
@@ -262,6 +268,7 @@ public class ModelForm extends ModelWidget {
             }
 
             if (parent != null) {
+                this.parentModelForm = parent;
                 this.type = parent.type;
                 this.target = parent.target;
                 this.containerId = parent.containerId;
@@ -320,6 +327,7 @@ public class ModelForm extends ModelWidget {
 
                 this.fieldGroupMap = parent.fieldGroupMap;
                 this.fieldGroupList = parent.fieldGroupList;
+                this.lastOrderFields = parent.lastOrderFields;
 
             }
         }
@@ -541,8 +549,13 @@ public class ModelForm extends ModelWidget {
                 String tagName = sortFieldElement.getTagName();
                 if (tagName.equals("sort-field")) {
                     String fieldName = sortFieldElement.getAttribute("name");
-                    this.sortOrderFields.add(fieldName);
+                    String position = sortFieldElement.getAttribute("position");
+                    this.sortOrderFields.add(new SortField(fieldName, position));
                     this.fieldGroupMap.put(fieldName, lastFieldGroup);
+                } else if (tagName.equals("last-field")) {
+                    String fieldName = sortFieldElement.getAttribute("name");
+                    this.fieldGroupMap.put(fieldName, lastFieldGroup);
+                    this.lastOrderFields.add(fieldName);
                 } else if (tagName.equals("banner")) {
                     Banner thisBanner = new Banner(sortFieldElement, this);
                     this.fieldGroupList.add(thisBanner);
@@ -562,7 +575,8 @@ public class ModelForm extends ModelWidget {
         // reorder fields according to sort order
         if (sortOrderFields.size() > 0) {
             List<ModelFormField> sortedFields = FastList.newInstance();
-            for (String fieldName: this.sortOrderFields) {
+            for (SortField sortField : this.sortOrderFields) {
+                String fieldName = sortField.getFieldName();
                 if (UtilValidate.isEmpty(fieldName)) {
                     continue;
                 }
@@ -573,6 +587,9 @@ public class ModelForm extends ModelWidget {
                     ModelFormField modelFormField = fieldIter.next();
                     if (fieldName.equals(modelFormField.getName())) {
                         // matched the name; remove from the original last and add to the sorted list
+                        if (UtilValidate.isNotEmpty(sortField.getPosition())) {
+                            modelFormField.setPosition(sortField.getPosition());
+                        }
                         fieldIter.remove();
                         sortedFields.add(modelFormField);
                     }
@@ -582,6 +599,27 @@ public class ModelForm extends ModelWidget {
             sortedFields.addAll(this.fieldList);
             // sortedFields all done, set fieldList
             this.fieldList = sortedFields;
+        }
+
+        if (UtilValidate.isNotEmpty(this.lastOrderFields)) {
+            List<ModelFormField> lastedFields = FastList.newInstance();
+            for (String fieldName : this.lastOrderFields) {
+                if (UtilValidate.isEmpty(fieldName)) {
+                    continue;
+                }
+                // get all fields with the given name from the existing list and put them in the lasted list
+                Iterator<ModelFormField> fieldIter = this.fieldList.iterator();
+                while (fieldIter.hasNext()) {
+                    ModelFormField modelFormField = fieldIter.next();
+                    if (fieldName.equals(modelFormField.getName())) {
+                        // matched the name; remove from the original last and add to the lasted list
+                        fieldIter.remove();
+                        lastedFields.add(modelFormField);
+                    }
+                }
+            }
+            //now put all lastedFields at the field list end
+            this.fieldList.addAll(lastedFields);
         }
 
         // read all actions under the "actions" element
@@ -653,6 +691,8 @@ public class ModelForm extends ModelWidget {
             addOnPaginateUpdateArea(updateArea);
         } else if ("submit".equals(updateArea.getEventType())) {
             addOnSubmitUpdateArea(updateArea);
+        }else if("ajax".equals(updateArea.getEventType())){
+            addOnAjaxUpdateArea(updateArea);
         }
     }
 
@@ -682,6 +722,23 @@ public class ModelForm extends ModelWidget {
             }
         } else {
             onPaginateUpdateAreas.add(updateArea);
+        }
+    }
+
+    protected void addOnAjaxUpdateArea(UpdateArea updateArea) {
+        if (onAjaxUpdateAreas == null) {
+            onAjaxUpdateAreas = FastList.newInstance();
+        }
+        int index = onAjaxUpdateAreas.indexOf(updateArea);
+        if (index != -1) {
+            if (UtilValidate.isNotEmpty(updateArea.areaTarget)) {
+                onAjaxUpdateAreas.set(index, updateArea);
+            } else {
+                // blank target indicates a removing override
+                onAjaxUpdateAreas.remove(index);
+            }
+        } else {
+            onAjaxUpdateAreas.add(updateArea);
         }
     }
 
@@ -852,6 +909,8 @@ public class ModelForm extends ModelWidget {
             this.renderMultiFormString(writer, context, formStringRenderer, positions);
         } else if ("upload".equals(this.type)) {
             this.renderSingleFormString(writer, context, formStringRenderer, positions);
+        } else if ("inputgroup".equals(this.type)) {
+            this.renderInputGroupFormString(writer, context, formStringRenderer, positions);
         } else {
             if (UtilValidate.isEmpty(this.getType())) {
                 throw new IllegalArgumentException("The form 'type' tag is missing or empty on the form with the name " + this.getName());
@@ -921,10 +980,11 @@ public class ModelForm extends ModelWidget {
                 currentFieldGroupName = currentFieldGroup.getId();
             }
         }
-
-
+        //获取
         boolean isFirstPass = true;
         boolean haveRenderedOpenFieldRow = false;
+        boolean isTabCss = false;
+        boolean isOver = false;
         while (currentFormField != null) {
             // do the check/get next stuff at the beginning so we can still use the continue stuff easily
             // don't do it on the first pass though...
@@ -937,7 +997,14 @@ public class ModelForm extends ModelWidget {
                     }
                 }
                 if (currentFieldGroup != null && (lastFieldGroup == null || !lastFieldGroupName.equals(currentFieldGroupName))) {
-                    currentFieldGroup.renderStartString(writer, context, formStringRenderer);
+                    //in sort-order case add type=tab style
+                    String style = currentFieldGroup.getStyle();
+                    if (style != null && style.equals("tabs")) {
+                        isTabCss = true;
+                        currentFieldGroup.renderTabStartString(writer, context, formStringRenderer);
+                    } else {
+                        currentFieldGroup.renderStartString(writer, context, formStringRenderer);
+                    }
                     lastFieldGroup = currentFieldGroup;
                 }
             } else {
@@ -966,7 +1033,7 @@ public class ModelForm extends ModelWidget {
                     currentFieldGroup = defaultFieldGroup;
                 }
                 currentFieldGroupName = currentFieldGroup.getId();
-
+                //关掉之前的fieldGroup
                 if (lastFieldGroup != null) {
                     lastFieldGroupName = lastFieldGroup.getId();
                     if (!lastFieldGroupName.equals(currentFieldGroupName)) {
@@ -974,8 +1041,21 @@ public class ModelForm extends ModelWidget {
                             formStringRenderer.renderFormatFieldRowClose(writer, context, this);
                             haveRenderedOpenFieldRow = false;
                         }
-                        lastFieldGroup.renderEndString(writer, context, formStringRenderer);
 
+                        ModelFormField.FieldInfo fieldInfo = currentFormField.getFieldInfo();
+                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.HIDDEN && fieldInfo.getFieldType() != ModelFormField.FieldInfo.IGNORED
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.SUBMIT && fieldInfo.getFieldType() != ModelFormField.FieldInfo.RESET
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.MODAL_PAGE && fieldInfo.getFieldType() != ModelFormField.FieldInfo.CONFIRM_MODAL) {
+                            currentFieldGroup.renderEndString(writer, context, formStringRenderer);
+                        } else {
+                            //对于原生的适合，boots amaze 不需要                           
+                        	String themeId = (String) context.get("visualThemeId");
+                            String[] themeIds = UtilProperties.getPropertyValues("widget.properties", "widget.themeId.extends");
+                            if (!UtilStrings.contains(themeIds, themeId)) {
+                                currentFieldGroup.renderEndString(writer, context, formStringRenderer);
+                            }
+                        }
+//                        lastFieldGroup.renderEndString(writer, context, formStringRenderer);
                         List<FieldGroupBase> inbetweenList = getInbetweenList(lastFieldGroup, currentFieldGroup);
                         for (FieldGroupBase obj: inbetweenList) {
                             if (obj instanceof ModelForm.Banner) {
@@ -985,9 +1065,31 @@ public class ModelForm extends ModelWidget {
                     }
                 }
 
+                //if form field is submit or reset then if isTabCss do 默认最后一个是submit button ，在之前先tab close bug(是否存在两个button，或者没�??
+                if (nextFormField != null) {
+                    ModelFormField.FieldInfo fieldInfo = nextFormField.getFieldInfo();
+                    if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.SUBMIT || fieldInfo.getFieldType() == ModelFormField.FieldInfo.RESET
+                            || fieldInfo.getFieldType() == ModelFormField.FieldInfo.CONFIRM_MODAL || fieldInfo.getFieldType() == ModelFormField.FieldInfo.MODAL_PAGE) {
+                        if (isTabCss && (!isOver)) {
+                            //在submit或reset之前的那个field执行close amaze tab
+                            isOver = true;
+                            lastFieldGroup.renderTabEndString(writer, context, formStringRenderer);
+                        }
+                    }
+                }
+                //开始当前的fieldGroup
                 if (lastFieldGroup == null || !lastFieldGroupName.equals(currentFieldGroupName)) {
-                        currentFieldGroup.renderStartString(writer, context, formStringRenderer);
-                        lastFieldGroup = currentFieldGroup;
+                    //if form field is submit or reset then if isTabCss do 默认最后一个是submit button ，在之前先tab close bug(是否存在两个button，或者没�??
+                    //创建fieldGroup start
+                    if (!isOver) {
+                        ModelFormField.FieldInfo fieldInfo = currentFormField.getFieldInfo();
+                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.HIDDEN && fieldInfo.getFieldType() != ModelFormField.FieldInfo.IGNORED
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.SUBMIT && fieldInfo.getFieldType() != ModelFormField.FieldInfo.RESET
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.MODAL_PAGE && fieldInfo.getFieldType() != ModelFormField.FieldInfo.CONFIRM_MODAL) {
+                            currentFieldGroup.renderStartString(writer, context, formStringRenderer);
+                        }
+                    }
+                    lastFieldGroup = currentFieldGroup;
                 }
             }
 
@@ -999,30 +1101,32 @@ public class ModelForm extends ModelWidget {
                 continue;
             }
             //Debug.logInfo("In single form evaluating use-when for field " + currentFormField.getName() + ": " + currentFormField.getUseWhen(), module);
+            //下面处理逻辑是： 如： isCreate -> add submitbutton（新增）-> submitbutton（修改）但运行到add submit时因为当前from 是upate操作，则currentFormField跳到isCreate，这时候           
+            //while(currentFormField) fieldIter.hasNext() 就到了submitbutton 修改了
             if (!currentFormField.shouldUse(context)) {
+                if (UtilValidate.isNotEmpty(lastFormField)) {
+                    currentFormField = lastFormField;
+                }
                 continue;
             }
             alreadyRendered.add(currentFormField.getName());
 
             boolean stayingOnRow = false;
             if (lastFormField != null) {
-                if (lastFormField.getPosition() >= currentFormField.getPosition()) {
-                    // moving to next row
-                    stayingOnRow = false;
-                } else {
-                    // staying on same row
-                    stayingOnRow = true;
-                }
+                stayingOnRow = lastFormField.getPosition() < currentFormField.getPosition();
             }
-
+            //支持2个field
+            int cmaxPosition = 1;
             int positionSpan = 1;
             Integer nextPositionInRow = null;
             if (nextFormField != null) {
                 if (nextFormField.getPosition() > currentFormField.getPosition()) {
                     positionSpan = nextFormField.getPosition() - currentFormField.getPosition() - 1;
                     nextPositionInRow = Integer.valueOf(nextFormField.getPosition());
+                    cmaxPosition = nextFormField.getPosition();
                 } else {
                     positionSpan = positions - currentFormField.getPosition();
+                    cmaxPosition = currentFormField.getPosition();
                     if (!stayingOnRow && nextFormField.getPosition() > 1) {
                         // TODO: here is a weird case where it is setup such
                         //that the first position(s) in the row are skipped
@@ -1053,13 +1157,17 @@ public class ModelForm extends ModelWidget {
                 formStringRenderer.renderFormatFieldRowOpen(writer, context, this);
                 haveRenderedOpenFieldRow = true;
             }
+            //增加currentFileGroup 的max position
 
+            if (currentFieldGroup != null && (!currentFieldGroup.equals(defaultFieldGroup))) {
+                cmaxPosition = currentFieldGroup.maxPosition == 0 ? 1 : currentFieldGroup.maxPosition;
+            }
             // render title formatting open
             formStringRenderer.renderFormatFieldRowTitleCellOpen(writer, context, currentFormField);
 
             // render title (unless this is a submit or a reset field)
             if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.SUBMIT && fieldInfo.getFieldType() != ModelFormField.FieldInfo.RESET) {
-                formStringRenderer.renderFieldTitle(writer, context, currentFormField);
+                formStringRenderer.renderFieldTitle(writer, context, currentFormField, cmaxPosition);
             } else {
                 formStringRenderer.renderFormatEmptySpace(writer, context, this);
             }
@@ -1084,7 +1192,8 @@ public class ModelForm extends ModelWidget {
         if (haveRenderedOpenFieldRow) {
             formStringRenderer.renderFormatFieldRowClose(writer, context, this);
         }
-
+        /////////////////update by changsy drop isTabCss limit 2015.09.25
+//        if(!isTabCss) {//if is tab css then submit or set btn is out of tab
         if (lastFieldGroup != null) {
             lastFieldGroup.renderEndString(writer, context, formStringRenderer);
         }
@@ -1094,6 +1203,109 @@ public class ModelForm extends ModelWidget {
 
         // render form close
         if (!skipEnd) formStringRenderer.renderFormClose(writer, context, this);
+
+    }
+
+    public void renderInputGroupFormString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer, int positions) throws IOException {
+        List<ModelFormField> tempFieldList = FastList.newInstance();
+        tempFieldList.addAll(this.fieldList);
+
+        // Check to see if there is a field, same name and same use-when (could come from extended form)
+        for (int j = 0; j < tempFieldList.size(); j++) {
+            ModelFormField modelFormField = tempFieldList.get(j);
+            if (this.useWhenFields.contains(modelFormField.getName())) {
+                boolean shouldUse1 = modelFormField.shouldUse(context);
+                for (int i = j + 1; i < tempFieldList.size(); i++) {
+                    ModelFormField curField = tempFieldList.get(i);
+                    if (curField.getName() != null && curField.getName().equals(modelFormField.getName())) {
+                        boolean shouldUse2 = curField.shouldUse(context);
+                        if (shouldUse1 == shouldUse2) {
+                            tempFieldList.remove(i--);
+                        }
+                    } else {
+                        continue;
+                    }
+                }
+            }
+        }
+        Set<String> alreadyRendered = new TreeSet<String>();
+        FieldGroup lastFieldGroup = null;
+        // render form open
+        if (!skipStart) formStringRenderer.renderInputGroupFormOpen(writer, context, this);
+
+        // render all hidden & ignored fields
+        List<ModelFormField> hiddenIgnoredFieldList = this.getHiddenIgnoredFields(context, alreadyRendered, tempFieldList, -1);
+        this.renderHiddenIgnoredFields(writer, context, formStringRenderer, hiddenIgnoredFieldList);
+
+        // render formatting wrapper open
+        // This should be covered by fieldGroup.renderStartString
+        //formStringRenderer.renderFormatSingleWrapperOpen(writer, context, this);
+
+        // render each field row, except hidden & ignored rows
+
+        Iterator<ModelFormField> fieldIter = tempFieldList.iterator();
+
+        ModelFormField currentFormField = null;
+        ModelFormField nextFormField = null;
+        if (fieldIter.hasNext()) {
+            currentFormField = fieldIter.next();
+        }
+        if (fieldIter.hasNext()) {
+            nextFormField = fieldIter.next();
+        }
+
+        //获取
+        boolean isFirstPass = true;
+        boolean haveRenderedOpenFieldRow = false;
+        formStringRenderer.renderInputGroupWrapperOpen(writer, context, this);
+        while (currentFormField != null) {
+            // do the check/get next stuff at the beginning so we can still use the continue stuff easily
+            // don't do it on the first pass though...
+            if (isFirstPass) {
+                isFirstPass = false;
+
+            } else {
+                if (fieldIter.hasNext()) {
+                    // at least two loops left
+                    currentFormField = nextFormField;
+                    nextFormField = fieldIter.next();
+                } else if (nextFormField != null) {
+                    // okay, just one loop left
+                    currentFormField = nextFormField;
+                    nextFormField = null;
+                } else {
+                    break;
+                }
+
+            }
+
+            ModelFormField.FieldInfo fieldInfo = currentFormField.getFieldInfo();
+            if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.HIDDEN || fieldInfo.getFieldType() == ModelFormField.FieldInfo.IGNORED) {
+                continue;
+            }
+            if (alreadyRendered.contains(currentFormField.getName())) {
+                continue;
+            }
+            // render row formatting open
+
+                // render title (unless this is a submit or a reset field)
+            if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.SUBMIT && fieldInfo.getFieldType() != ModelFormField.FieldInfo.RESET) {
+                formStringRenderer.renderInputGroupFieldRowOpen(writer, context, this);
+                formStringRenderer.renderInputGroupFieldRowTitleCellOpen(writer, context, currentFormField);
+                formStringRenderer.renderFieldTitle(writer, context, currentFormField);
+                //formStringRenderer.renderInputGroupFieldRowTitleCellClose(writer, context, currentFormField);
+            } else {
+                formStringRenderer.renderInputGroupBtnRowOpen(writer, context, this);
+                formStringRenderer.renderInputGroupBtnRowTitleCellOpen(writer,context,currentFormField);
+                formStringRenderer.renderFormatEmptySpace(writer, context, this);
+                //formStringRenderer.renderInputGroupBtnRowTitleCellClose(writer, context, currentFormField);
+            }
+
+            currentFormField.renderFieldString(writer, context, formStringRenderer);
+            formStringRenderer.renderInputGroupFieldRowClose(writer, context, this);
+        }
+        formStringRenderer.rendeInputGroupWrapperEnd(writer, context, this);
+        if (!skipEnd) formStringRenderer.renderInputGroupFormClose(writer, context, this);
 
     }
 
@@ -1209,8 +1421,9 @@ public class ModelForm extends ModelWidget {
                 if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.HIDDEN || fieldInfo.getFieldType() == ModelFormField.FieldInfo.IGNORED) {
                     continue;
                 }
-
-                if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK) {
+                if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY
+                        && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK && fieldInfo.getFieldType() != ModelFormField.FieldInfo.CONFIRM_MODAL
+                        && fieldInfo.getFieldType() != ModelFormField.FieldInfo.MODAL_PAGE) {
                     inputFieldFound = true;
                     continue;
                 }
@@ -1234,7 +1447,9 @@ public class ModelForm extends ModelWidget {
                 }
 
                 // skip all of the display/hyperlink fields
-                if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY_ENTITY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.HYPERLINK) {
+                if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY_ENTITY
+                        || fieldInfo.getFieldType() == ModelFormField.FieldInfo.HYPERLINK || fieldInfo.getFieldType() == ModelFormField.FieldInfo.CONFIRM_MODAL
+                        || fieldInfo.getFieldType() == ModelFormField.FieldInfo.MODAL_PAGE) {
                     continue;
                 }
 
@@ -1289,7 +1504,10 @@ public class ModelForm extends ModelWidget {
                     }
                     if (innerFormFields.size() > 0) {
                         // TODO: manage colspan
-                        formStringRenderer.renderFormatHeaderRowFormCellOpen(writer, context, this);
+                        if(!separateColumns) {
+                            // 增加如果是sparateColums 不需要header
+                            formStringRenderer.renderFormatHeaderRowFormCellOpen(writer, context, this);
+                        }
                         Iterator<ModelFormField> innerFormFieldsIt = innerFormFields.iterator();
                         while (innerFormFieldsIt.hasNext()) {
                             ModelFormField modelFormField = innerFormFieldsIt.next();
@@ -1479,12 +1697,22 @@ public class ModelForm extends ModelWidget {
                     continue;
                 }
 
+                // reset/remove the BshInterpreter now as well as later because chances are there is an interpreter at this level of the stack too
+                this.resetBshInterpreter(context);
+
                 Map<String, Object> itemMap = UtilGenerics.checkMap(item);
                 MapStack<String> localContext = MapStack.create(context);
                 if (UtilValidate.isNotEmpty(this.getListEntryName())) {
                     localContext.put(this.getListEntryName(), item);
                 } else {
-                    localContext.push(itemMap);
+                    if (itemMap instanceof GenericEntity) {
+                        // Rendering code might try to modify the GenericEntity instance,
+                        // so we make a copy of it.
+                        Map<String, Object> genericEntityClone = UtilGenerics.cast(((GenericEntity) itemMap).clone());
+                        localContext.push(genericEntityClone);
+                    } else {
+                        localContext.push(itemMap);
+                    }
                 }
 
                 // reset/remove the BshInterpreter now as well as later because chances are there is an interpreter at this level of the stack too
@@ -1564,7 +1792,8 @@ public class ModelForm extends ModelWidget {
                             continue;
                         }
 
-                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK) {
+                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.CONFIRM_MODAL&& fieldInfo.getFieldType() != ModelFormField.FieldInfo.MODAL_PAGE) {
                             // okay, now do the form cell
                             break;
                         }
@@ -1588,7 +1817,8 @@ public class ModelForm extends ModelWidget {
                         }
 
                         // skip all of the display/hyperlink fields
-                        if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY_ENTITY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.HYPERLINK) {
+                        if (fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.DISPLAY_ENTITY || fieldInfo.getFieldType() == ModelFormField.FieldInfo.HYPERLINK
+                                || fieldInfo.getFieldType() == ModelFormField.FieldInfo.CONFIRM_MODAL|| fieldInfo.getFieldType() == ModelFormField.FieldInfo.MODAL_PAGE) {
                             continue;
                         }
 
@@ -1610,7 +1840,8 @@ public class ModelForm extends ModelWidget {
                         }
 
                         // skip all non-display and non-hyperlink fields
-                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK) {
+                        if (fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.DISPLAY_ENTITY && fieldInfo.getFieldType() != ModelFormField.FieldInfo.HYPERLINK
+                                && fieldInfo.getFieldType() != ModelFormField.FieldInfo.MODAL_PAGE&& fieldInfo.getFieldType() != ModelFormField.FieldInfo.CONFIRM_MODAL) {
                             continue;
                         }
 
@@ -1720,26 +1951,33 @@ public class ModelForm extends ModelWidget {
                 formStringRenderer.renderFormatItemRowFormCellOpen(writer, localContext, this); // TODO: colspan
 
                 if (formPerItem) {
-                    formStringRenderer.renderFormOpen(writer, localContext, this);
+                    formStringRenderer.renderListFormOpen(writer, localContext, this);
                 }
 
                 // do all of the hidden fields...
                 this.renderHiddenIgnoredFields(writer, localContext, formStringRenderer, hiddenIgnoredFieldList);
 
                 Iterator<ModelFormField> innerFormFieldIter = innerFormFields.iterator();
+                int i = 0;
                 while (innerFormFieldIter.hasNext()) {
                     ModelFormField modelFormField = innerFormFieldIter.next();
-                    if (separateColumns || modelFormField.getSeparateColumn()) {
-                        formStringRenderer.renderFormatItemRowCellOpen(writer, localContext, this, modelFormField, 1);
+                    if(i>0) {
+                        //第一次进入不需要rowCellOpen
+                        if (separateColumns || modelFormField.getSeparateColumn()) {
+                            formStringRenderer.renderFormatItemRowCellOpen(writer, localContext, this, modelFormField, 1);
+                        }
                     }
                     // render field widget
                     if ((!"list".equals(this.getType()) && !"multi".equals(this.getType())) || modelFormField.shouldUse(localContext)) {
                         modelFormField.renderFieldString(writer, localContext, formStringRenderer);
                     }
-
-                    if (separateColumns || modelFormField.getSeparateColumn()) {
-                        formStringRenderer.renderFormatItemRowCellClose(writer, localContext, this, modelFormField);
+                    if(i>0) {
+                        //第一次进入不需要rowCellClose
+                        if (separateColumns || modelFormField.getSeparateColumn()) {
+                            formStringRenderer.renderFormatItemRowCellClose(writer, localContext, this, modelFormField);
+                        }
                     }
+                    i++;
                 }
 
                 if (formPerItem) {
@@ -1895,6 +2133,10 @@ public class ModelForm extends ModelWidget {
         return this.parentFormLocation;
     }
 
+    public ModelForm getParentModelForm() {
+        return parentModelForm;
+    }
+
     public String getDefaultEntityName() {
         return this.defaultEntityName;
     }
@@ -2024,8 +2266,9 @@ public class ModelForm extends ModelWidget {
         try {
             // use the same Interpreter (ie with the same context setup) for all evals
             Interpreter bsh = this.getBshInterpreter(context);
-            for (AltTarget altTarget: this.altTargets) {
-                Object retVal = bsh.eval(StringUtil.convertOperatorSubstitutions(altTarget.useWhen));
+            for (AltTarget altTarget : this.altTargets) {
+                    String useWhen = FlexibleStringExpander.expandString(altTarget.useWhen, context);
+                Object retVal = bsh.eval(StringUtil.convertOperatorSubstitutions(useWhen));
                 boolean condTrue = false;
                 // retVal should be a Boolean, if not something weird is up...
                 if (retVal instanceof Boolean) {
@@ -2292,6 +2535,10 @@ public class ModelForm extends ModelWidget {
         return this.onPaginateUpdateAreas;
     }
 
+    public List<UpdateArea> getOnAjaxUpdateAreas() {
+        return this.onAjaxUpdateAreas;
+    }
+
     public String getPaginateTarget(Map<String, Object> context) {
         String targ = this.paginateTarget.expandString(context);
         if (UtilValidate.isEmpty(targ)) {
@@ -2495,7 +2742,7 @@ public class ModelForm extends ModelWidget {
     }
 
     public boolean getPaginate(Map<String, Object> context) {
-        if (this.paginate != null && !this.paginate.isEmpty() && UtilValidate.isNotEmpty(this.paginate.expandString(context))) {
+        if (UtilValidate.isNotEmpty(this.paginate) && UtilValidate.isNotEmpty(this.paginate.expandString(context))) {
             return Boolean.valueOf(this.paginate.expandString(context)).booleanValue();
         } else {
             return true;
@@ -2612,6 +2859,7 @@ public class ModelForm extends ModelWidget {
         String size = this.overrideListSize.expandString(context);
         if (UtilValidate.isNotEmpty(size)) {
             try {
+                size = size.replaceAll("[^0-9.]", "");
                 listSize = Integer.parseInt(size);
             } catch (NumberFormatException e) {
                 Debug.logError(e, "Error getting override list size from value " + size, module);
@@ -2807,7 +3055,9 @@ public class ModelForm extends ModelWidget {
         protected String eventType;
         protected String areaId;
         protected String areaTarget;
-        List<WidgetWorker.Parameter> parameterList =FastList.newInstance();
+        protected String targetType;
+        List<WidgetWorker.Parameter> parameterList = FastList.newInstance();
+
         /** XML constructor.
          * @param updateAreaElement The <code>&lt;on-xxx-update-area&gt;</code>
          * XML element.
@@ -2816,6 +3066,7 @@ public class ModelForm extends ModelWidget {
             this.eventType = updateAreaElement.getAttribute("event-type");
             this.areaId = updateAreaElement.getAttribute("area-id");
             this.areaTarget = updateAreaElement.getAttribute("area-target");
+            this.targetType = updateAreaElement.getAttribute("target-type");
             List<? extends Element> parameterElementList = UtilXml.childElementList(updateAreaElement, "parameter");
             for (Element parameterElement: parameterElementList) {
                 this.parameterList.add(new WidgetWorker.Parameter(parameterElement));
@@ -2829,7 +3080,19 @@ public class ModelForm extends ModelWidget {
             this.eventType = eventType;
             this.areaId = areaId;
             this.areaTarget = areaTarget;
+            this.targetType = areaTarget;
         }
+        /** String constructor.
+         * @param areaId The id of the widget element to be updated
+         * @param areaTarget The target URL called to update the area
+         */
+        public UpdateArea(String eventType, String areaId, String areaTarget,String targetType) {
+            this.eventType = eventType;
+            this.areaId = areaId;
+            this.areaTarget = areaTarget;
+            this.targetType = areaTarget;
+        }
+
         @Override
         public int hashCode() {
             return areaId.hashCode();
@@ -2847,6 +3110,15 @@ public class ModelForm extends ModelWidget {
         public String getAreaTarget(Map<String, ? extends Object> context) {
             return FlexibleStringExpander.expandString(areaTarget, context);
         }
+
+        public String getTargetType() {
+            return targetType;
+        }
+
+        public void setTargetType(String targetType) {
+            this.targetType = targetType;
+        }
+
         public Map<String, String> getParameterMap(Map<String, Object> context) {
             Map<String, String> fullParameterMap = FastMap.newInstance();
             for (WidgetWorker.Parameter parameter: this.parameterList) {
@@ -2905,7 +3177,36 @@ public class ModelForm extends ModelWidget {
         }
     }
 
-    public static interface FieldGroupBase {}
+    public static class SortField {
+        protected String fieldName;
+        protected Integer position = null;
+
+        public SortField(String name, String position) {
+            this.fieldName = name;
+            if (UtilValidate.isNotEmpty(position)) {
+                Integer posParam = null;
+                try {
+                    posParam = Integer.valueOf(position);
+                } catch (Exception e) {/* just ignore the exception*/}
+                this.position = posParam;
+            }
+        }
+
+        public SortField(String name) {
+            this(name, null);
+        }
+
+        public String getFieldName() {
+            return this.fieldName;
+        }
+
+        public Integer getPosition() {
+            return this.position;
+        }
+    }
+
+    public interface FieldGroupBase {
+    }
 
     public static class FieldGroup implements FieldGroupBase {
         public String id;
@@ -2916,6 +3217,8 @@ public class ModelForm extends ModelWidget {
         protected ModelForm modelForm;
         protected static int baseSeqNo = 0;
         protected static String baseId = "_G";
+        public int maxPosition;
+
         public FieldGroup(Element sortOrderElement, ModelForm modelForm) {
 
             this.modelForm = modelForm;
@@ -2932,11 +3235,25 @@ public class ModelForm extends ModelWidget {
                 if (this.initiallyCollapsed) {
                     this.collapsible = true;
                 }
-
-                for (Element sortFieldElement: UtilXml.childElementList(sortOrderElement, "sort-field")) {
-                    modelForm.sortOrderFields.add(sortFieldElement.getAttribute("name"));
+                int position = 0;
+                for (Element sortFieldElement : UtilXml.childElementList(sortOrderElement, "sort-field")) {
+                    modelForm.sortOrderFields.add(new SortField(sortFieldElement.getAttribute("name"), sortFieldElement.getAttribute("position")));
                     modelForm.fieldGroupMap.put(sortFieldElement.getAttribute("name"), this);
+                    List<ModelFormField> formFields = modelForm.getFieldList();
+                    if (formFields != null) {
+                        for (int i = 0; i < formFields.size(); i++) {
+                            ModelFormField modelFormField = formFields.get(i);
+                            if (modelFormField.getName().equals(sortFieldElement.getAttribute("name"))) {
+                                if (modelFormField.getPosition() > position) {
+                                    position = modelFormField.getPosition();
+                                }
+
+                            }
+                        }
+                    }
+
                 }
+                this.maxPosition = position;
             } else {
                 String lastGroupId = baseId + baseSeqNo++ + "_";
                 this.setId(lastGroupId);
@@ -2980,6 +3297,18 @@ public class ModelForm extends ModelWidget {
                 formStringRenderer.renderFieldGroupClose(writer, context, this);
             }
         }
+
+        public void renderTabStartString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderFileldGroupTabStart(writer, context, modelForm.fieldGroupList); // add amaze tab data
+            if (modelForm.fieldGroupList.size() > 0) {
+                formStringRenderer.renderFieldGroupOpen(writer, context, this);
+            }
+            formStringRenderer.renderFormatSingleWrapperOpen(writer, context, modelForm);
+        }
+
+        public void renderTabEndString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
+            formStringRenderer.renderFileldGroupTabEnd(writer, context, modelForm.fieldGroupList);
+        }
     }
 
     public static class Banner implements FieldGroupBase {
@@ -3003,13 +3332,33 @@ public class ModelForm extends ModelWidget {
             this.rightTextStyle = FlexibleStringExpander.getInstance(sortOrderElement.getAttribute("right-text-style"));
         }
 
-        public String getStyle(Map<String, Object> context) { return this.style.expandString(context); }
-        public String getText(Map<String, Object> context) { return this.text.expandString(context); }
-        public String getTextStyle(Map<String, Object> context) { return this.textStyle.expandString(context); }
-        public String getLeftText(Map<String, Object> context) { return this.leftText.expandString(context); }
-        public String getLeftTextStyle(Map<String, Object> context) { return this.leftTextStyle.expandString(context); }
-        public String getRightText(Map<String, Object> context) { return this.rightText.expandString(context); }
-        public String getRightTextStyle(Map<String, Object> context) { return this.rightTextStyle.expandString(context); }
+        public String getStyle(Map<String, Object> context) {
+            return this.style.expandString(context);
+        }
+
+        public String getText(Map<String, Object> context) {
+            return this.text.expandString(context);
+        }
+
+        public String getTextStyle(Map<String, Object> context) {
+            return this.textStyle.expandString(context);
+        }
+
+        public String getLeftText(Map<String, Object> context) {
+            return this.leftText.expandString(context);
+        }
+
+        public String getLeftTextStyle(Map<String, Object> context) {
+            return this.leftTextStyle.expandString(context);
+        }
+
+        public String getRightText(Map<String, Object> context) {
+            return this.rightText.expandString(context);
+        }
+
+        public String getRightTextStyle(Map<String, Object> context) {
+            return this.rightTextStyle.expandString(context);
+        }
 
         public void renderString(Appendable writer, Map<String, Object> context, FormStringRenderer formStringRenderer) throws IOException {
             formStringRenderer.renderBanner(writer, context, this);
