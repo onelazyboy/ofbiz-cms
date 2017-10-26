@@ -209,7 +209,7 @@
     </#if>
      -->
         <#if menuString?has_content>
-            <div class="box-body">${menuString}</div>
+            <div class="box-body x1">${menuString}</div>
         </#if>
     </#if>
 <div class="box-body"

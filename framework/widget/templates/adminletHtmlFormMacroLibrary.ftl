@@ -13,7 +13,8 @@
         </#if>
 
         <#if description?has_content>
-        ${description?replace("\n", "<br />")}<#t/>
+        ${description?replace("\n", "<br />")}
+		<#t/>
         <#else>
             &nbsp;<#t/>
         </#if>
@@ -334,7 +335,7 @@
         </#if>
     </#list>
     </select>
-</div>
+
 
     <#if otherFieldName?has_content>
     <noscript><input type='text' name='${otherFieldName}' class="form-control input-sm"/></noscript>
@@ -356,7 +357,7 @@
         });
     </script>
     </#if>
-
+</div>
 </#macro>
 
 
@@ -518,7 +519,7 @@
 
 <#macro renderFormatListWrapperOpen formName style columnStyles>
 <div class="table-responsive">
-<table id="data-table" class="table table-striped table-bordered"><#lt/>
+<table id="data-table" class="table table-bordered table-striped"><#lt/>
 </#macro>
 
 <#macro renderFormatListWrapperClose formName>
@@ -527,11 +528,11 @@
 </#macro>
 
 <#macro renderFormatHeaderRowOpen style>
-<thead>
-<tr>
+<tbody>
+<tr class="header-row">
 </#macro>
 <#macro renderFormatHeaderRowClose>
-</tr></thead>
+</tr></tbody>
 </#macro>
 <#macro renderFormatHeaderRowCellOpen style positionSpan>
 <th>
@@ -652,7 +653,7 @@
             <input type="checkbox" class="checkbox-inline" name="${name}_ic" value="Y" <#if ignCase> checked="checked"</#if> /> ${ignoreCase}<#rt/>
         </#if><#if titleStyle?has_content></span></#if>
     </div>-->
-    </div>
+    <!-- </div> -->
 </#macro>
 <#macro renderEndDateFindField className alert name localizedInputTitle value size maxlength dateType formName defaultDateTimeString imgSrc localizedIconTitle titleStyle defaultOptionFrom defaultOptionThru opEquals opSameDay opGreaterThanFromDayStart opGreaterThan opGreaterThan opLessThan opUpToDay opUpThruDay opIsEmpty>
     <div class="row">
@@ -1390,6 +1391,7 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
 
 <#--增加inputgroupform-->
 <#macro renderInputGroupFormOpen linkUrl formType targetWindow containerId containerStyle autocomplete name viewIndexField viewSizeField viewIndex viewSize useRowSubmit>
+<div>
 <form method="post" class="form-inline" action="${linkUrl}"<#if formType=="upload"> enctype="multipart/form-data"</#if>
     <#if targetWindow?has_content> target="${targetWindow}"</#if><#if containerId?has_content>
       id="${containerId}"</#if> onsubmit=" submitFormDisableSubmits(this)"<#if autocomplete?has_content> autocomplete="${autocomplete}"</#if> name="${name}"><#lt/>
@@ -1403,14 +1405,13 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
         </#if>
     </#if>
 </#macro>
-<#macro renderInputGroupFieldTitleCellOpen  title>
-<span class="input-group-addon">${title}</span>
-</#macro>
 <#macro renderInputGroupFieldRowTitleCellOpen  style>
 <!-- <div class="input-group-addon"> -->
+<span class="input-group-addon">
 </#macro>
 <#macro renderInputGroupFieldRowTitleCellClose>
-</div>
+<!-- </div> -->
+</span>
 </#macro>
 
 <#macro renderInputGroupWrapperOpen formName style>

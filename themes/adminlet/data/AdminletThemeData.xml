@@ -6,7 +6,7 @@
   <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/css/font-awesome/css/font-awesome.min.css"
                        sequenceId="02"/>
   <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/css/ionicons/css/ionicons.min.css" sequenceId="03"/>
-  <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/dist/css/AdminLTE.min.css" sequenceId="04"/>
+  <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/dist/css/AdminLTE.css" sequenceId="04"/>
   <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/dist/css/skins/_all-skins.min.css" sequenceId="05"/>
   <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/css/main.css" sequenceId="06"/>
   <VisualThemeResource visualThemeId="ADMINLET" resourceTypeEnumId="VT_STYLESHEET" resourceValue="/images/themes/adminlet/css/app.css" sequenceId="07"/>

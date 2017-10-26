@@ -1622,7 +1622,7 @@ public class MacroFormRenderer implements FormStringRenderer {
 
         renderBeginningBoundaryComment(writer, "Form Widget", modelForm);
 
-        if (this.renderPagination) {
+        if (this.renderPagination&&false) {
             this.renderNextPrev(writer, context, modelForm);
         }
         List<ModelFormField> childFieldList = modelForm.getFieldList();

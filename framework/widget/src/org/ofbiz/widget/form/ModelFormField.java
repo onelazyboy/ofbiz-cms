@@ -2303,7 +2303,8 @@ public class ModelFormField {
             }
             if (UtilValidate.isNotEmpty(this.description) && retVal != null && this.getModelFormField().getEncodeOutput()) {
                 StringUtil.SimpleEncoder simpleEncoder = (StringUtil.SimpleEncoder) context.get("simpleEncoder");
-                if (simpleEncoder != null) {
+                //&& !retVal.contains("&#")  PYJ ++
+                if (simpleEncoder != null && !retVal.contains("&#")) { 
                     retVal = simpleEncoder.encode(retVal);
                 }
             }

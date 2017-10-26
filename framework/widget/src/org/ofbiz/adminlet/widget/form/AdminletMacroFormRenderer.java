@@ -81,13 +81,13 @@ public class AdminletMacroFormRenderer extends MacroFormRenderer {
                     executeMacro(writer, sr.toString());
                 } else {
                     //<label for="doc-ipt-3" class="am-u-sm-2 am-form-label">电子邮件</label>
-                    //sb.append(titleText);
-                	StringWriter sr = new StringWriter();
-                    sr.append("<@renderInputGroupFieldTitleCellOpen ");
-                    sr.append(" title=\"");
-                    sr.append(titleText);
-                    sr.append("\"/>");
-                    executeMacro(writer, sr.toString());
+                    sb.append(titleText);
+//                	StringWriter sr = new StringWriter();
+//                    sr.append("<@renderInputGroupFieldTitleCellOpen ");
+//                    sr.append(" title=\"");
+//                    sr.append(titleText);
+//                    sr.append("\"/>");
+//                    executeMacro(writer, sr.toString());
                 }
             }
         }

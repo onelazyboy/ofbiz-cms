@@ -22,6 +22,19 @@
         </section>
     </screen>
 
+	<screen name="breadcrumbs">
+        <section>
+            <actions>
+                <script location="component://cmsbackend/webapp/cmsbackend/WEB-INF/actions/groovyScripts/CatalogWorker.groovy"/>
+            </actions>
+            <widgets>
+                <platform-specific><html><html-template location="component://cmsbackend/webapp/cmsbackend/article/breadcrumbs.ftl"/></html></platform-specific>
+            </widgets>
+        </section>
+    </screen>
+
+
+
     <screen name="CmsBackendCommonDecorator">
         <section>
             <actions>
@@ -34,7 +47,10 @@
                                 <if-has-permission permission="CMSBACKEND" action="_VIEW"/>
                             </condition>
                             <widgets>
-                                <decorator-section-include name="body"/>
+								<container style="content-header">
+									<include-screen name="breadcrumbs"/>
+									<decorator-section-include name="body"/>
+								</container>
                             </widgets>
                             <fail-widgets>
                                 <label style="h3">${uiLabelMap.CmsBackendViewPermissionError}</label>

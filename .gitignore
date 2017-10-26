@@ -88,3 +88,5 @@ debian/orig-work
 *.jar
 *.bak
 *.classpath
+
+*.log

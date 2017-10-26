@@ -1293,7 +1293,7 @@ public class ModelForm extends ModelWidget {
                 formStringRenderer.renderInputGroupFieldRowOpen(writer, context, this);
                 formStringRenderer.renderInputGroupFieldRowTitleCellOpen(writer, context, currentFormField);
                 formStringRenderer.renderFieldTitle(writer, context, currentFormField);
-                //formStringRenderer.renderInputGroupFieldRowTitleCellClose(writer, context, currentFormField);
+                formStringRenderer.renderInputGroupFieldRowTitleCellClose(writer, context, currentFormField);
             } else {
                 formStringRenderer.renderInputGroupBtnRowOpen(writer, context, this);
                 formStringRenderer.renderInputGroupBtnRowTitleCellOpen(writer,context,currentFormField);

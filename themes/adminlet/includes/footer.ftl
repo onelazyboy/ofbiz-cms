@@ -7,7 +7,7 @@
     <div class="pull-right hidden-xs">
         <b>Version</b> Beta0.1
     </div>
-    <strong>Copyright &copy; 2015-2016 <a href="http://www.inspirets.com">YA</a>.</strong> All rights
+    <strong>Copyright &copy; 2015-2016 <a href="http://www.inspirets.com">PYJ</a>.</strong> All rights
     reserved.
 </footer>
 

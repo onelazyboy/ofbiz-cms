@@ -105,7 +105,7 @@
             <submit button-type="button" />
         </field>
     </form>
-    <form name="FindCmsArticleType" type="single" target="FindCmsArticleType" default-entity-name="CmsArticleType">
+    <form name="FindCmsArticleType" type="inputgroup" target="FindCmsArticleType" default-entity-name="CmsArticleType">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
@@ -164,14 +164,14 @@
             <submit button-type="button" />
         </field>
     </form>
-    <form name="FindCmsArticle" type="single" target="FindCmsArticle" default-entity-name="CmsArticle">
+    <form name="FindCmsArticle" type="inputgroup" target="FindCmsArticle" default-entity-name="CmsArticle">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
         <field name="title" title="${uiLabelMap.title}">
             <text-find hide-options="true" />
         </field>
-        <field name="articleTypeId" title="${uiLabelMap.articleType}" position="2">
+       <field name="articleTypeId" title="${uiLabelMap.articleType}" position="2">
             <drop-down allow-empty="true">
                 <entity-options description="${displayName}" entity-name="CmsArticleType"></entity-options>
             </drop-down>
@@ -199,15 +199,15 @@
         <field name="origin" title="${uiLabelMap.origin}" position="2">
             <text-find hide-options="true" />
         </field>
-        <field name="visitTotal" title="${uiLabelMap.visitTotal}">
+        <!-- <field name="visitTotal" title="${uiLabelMap.visitTotal}">
             <range-find />
-        </field>
-        <field name="releaseDate" title="${uiLabelMap.releaseDate}">
+        </field> -->
+        <!-- <field name="releaseDate" title="${uiLabelMap.releaseDate}">
             <date-find type="date" />
         </field>
         <field name="checkTime" title="${uiLabelMap.checkTime}" position="2">
             <date-find type="timestamp" />
-        </field>
+        </field> -->
         <field name="searchButton" title="${uiLabelMap.CommonFind}" widget-style="smallSubmit">
             <submit button-type="button" image-location="/images/icons/magnifier.png" />
         </field>
@@ -231,21 +231,21 @@
         <field name="statusId" title="${uiLabelMap.statusId}">
             <display-entity entity-name="CmsArticleStatusItem" />
         </field>
-        <field name="catalogId" title="${uiLabelMap.catalogId}">
+        <!-- <field name="catalogId" title="${uiLabelMap.catalogId}">
             <display />
-        </field>
+        </field> -->
         <field name="author" title="${uiLabelMap.author}">
             <display />
         </field>
-        <field name="visitTotal" title="${uiLabelMap.visitTotal}">
+        <!-- <field name="visitTotal" title="${uiLabelMap.visitTotal}">
             <display />
-        </field>
-        <field name="shortTitle" title="${uiLabelMap.shortTitle}">
+        </field> -->
+        <!-- <field name="shortTitle" title="${uiLabelMap.shortTitle}">
             <display />
-        </field>
-        <field name="titleColor" title="${uiLabelMap.titleColor}">
+        </field> -->
+        <!-- <field name="titleColor" title="${uiLabelMap.titleColor}">
             <display />
-        </field>
+        </field> -->
         <field name="tags" title="${uiLabelMap.tags}">
             <display />
         </field>
@@ -255,15 +255,15 @@
         <field name="releaseDate" title="${uiLabelMap.releaseDate}">
             <display type="date" />
         </field>
-        <field name="releaseSysDate" title="${uiLabelMap.releaseSysDate}">
+        <!-- <field name="releaseSysDate" title="${uiLabelMap.releaseSysDate}">
             <display type="date" />
-        </field>
-        <field name="checkTime" title="${uiLabelMap.checkTime}">
+        </field> -->
+        <!-- <field name="checkTime" title="${uiLabelMap.checkTime}">
             <display type="date-time" />
-        </field>
-        <field name="disableTime" title="${uiLabelMap.disableTime}">
+        </field> -->
+        <!-- <field name="disableTime" title="${uiLabelMap.disableTime}">
             <display type="date-time" />
-        </field>
+        </field> -->
         <field name="edit" title="${uiLabelMap.CommonEdit}">
             <hyperlink also-hidden="false" description="${uiLabelMap.CommonEdit}" target="EditCmsArticle">
                 <parameter param-name="articleId" />
@@ -363,7 +363,7 @@
         </field>
     </form>
     <!-- 链接管理 b 开始-->
-    <form name="FindCmsFellowshipLinkType" type="single" target="FindCmsFellowshipLinkType" default-entity-name="CmsFellowshipLinkType">
+    <form name="FindCmsFellowshipLinkType" type="inputgroup" target="FindCmsFellowshipLinkType" default-entity-name="CmsFellowshipLinkType">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
@@ -422,7 +422,7 @@
             <submit button-type="button" />
         </field>
     </form>
-    <form name="FindCmsFellowshipLink" type="single" target="FindCmsFellowshipLink" default-entity-name="CmsFellowshipLink">
+    <form name="FindCmsFellowshipLink" type="inputgroup" target="FindCmsFellowshipLink" default-entity-name="CmsFellowshipLink">
         <field name="noConditionFind">
             <hidden value="Y" />
             <!-- if this isn't there then with all fields empty no query will be done -->
@@ -534,7 +534,7 @@
         </field>
     </form>
     <!-- 栏目管理 -->
-    <form name="FindCmsCatalog" type="single" target="FindCmsCatalog" default-entity-name="CmsCatalog">
+    <form name="FindCmsCatalog" type="inputgroup" target="FindCmsCatalog" default-entity-name="CmsCatalog">
         <!-- <auto-fields-entity entity-name="CmsCatalog" /> -->
         <field name="noConditionFind">
             <hidden value="Y" />
@@ -670,7 +670,7 @@
             <submit button-type="button" />
         </field>
     </form>
-    <form name="FindCmsArticleProduct" type="single" target="FindCmsArticleProduct" default-entity-name="CmsArticleProduct">
+    <form name="FindCmsArticleProduct" type="inputgroup" target="FindCmsArticleProduct" default-entity-name="CmsArticleProduct">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
@@ -744,7 +744,7 @@
             <submit button-type="button" />
         </field>
     </form>
-    <form name="FindCmsUserDetail" type="single" target="FindCmsUserDetail" default-entity-name="CmsUserDetail">
+    <form name="FindCmsUserDetail" type="inputgroup" target="FindCmsUserDetail" default-entity-name="CmsUserDetail">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
@@ -807,7 +807,7 @@
         </field>
     </form>
     <!-- 留言管理 by Surpass Li 2011-09-15 开始-->
-    <form name="FindCmsLeaveword" type="single" target="FindCmsLeaveword" default-entity-name="CmsLeaveword">
+    <form name="FindCmsLeaveword" type="inputgroup" target="FindCmsLeaveword" default-entity-name="CmsLeaveword">
         <field name="noConditionFind">
             <hidden value="Y" />
         </field>
