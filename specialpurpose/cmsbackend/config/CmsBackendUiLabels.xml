@@ -8,6 +8,10 @@
 		<value xml:lang="en">CmsBackend Application</value>
 		<value xml:lang="zh_CN">内容控制台</value>
 	</property>
+	<property key="cmsbackend">
+		<value xml:lang="en">CmsBackend Application</value>
+		<value xml:lang="zh_CN">内容控制台</value>
+	</property>
 	<property key="CmsBackendApplication">
 		<value xml:lang="en">CmsBackend Application</value>
 		<value xml:lang="zh_CN">CmsBackend应用程序</value>

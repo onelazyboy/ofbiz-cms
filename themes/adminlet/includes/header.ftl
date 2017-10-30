@@ -12,17 +12,17 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-    <meta name="description" content="裕奥软件是一个企业级电商ERP,电商o2o解决方案,电商产品。">
-    <meta name="keywords" content="裕奥软件 电商平台">
-    <meta name="keywords" content="裕奥软件 企业ERP, O2O">
-    <meta name="keywords" content="裕奥软件 供应链, 内容管理">
-    <meta name="keywords" content="裕奥软件 , PORTAL, CRM, 客户管理, 仓储管理, 生产计划, 财务, 可扩展组件">
+    <meta name="description" content="际帆软件是一个企业级电商ERP,电商o2o解决方案,电商产品。">
+    <meta name="keywords" content="际帆软件 电商平台">
+    <meta name="keywords" content="际帆软件 企业ERP, O2O">
+    <meta name="keywords" content="际帆软件 供应链, 内容管理">
+    <meta name="keywords" content="际帆软件 , PORTAL, CRM, 客户管理, 仓储管理, 生产计划, 财务, 可扩展组件">
     <meta name="description" content="Ofbiz开发,Ofbiz培训,Ofbiz技术">
     <meta name="keywords" content="Ofbiz开发,Ofbiz培训,Ofbiz技术">
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
     <META HTTP-EQUIV="Cache-Control" CONTENT="no-cache">
     <META HTTP-EQUIV="Expires" CONTENT="0">
-    <title>电商定制开发 - 电商中台 - 裕奥软件 -
+    <title>电商定制开发 - 际帆软件 -
         ofbiz定制开发${layoutSettings.companyName}: <#if (page.titleProperty)?has_content>${uiLabelMap[page.titleProperty]}<#else>${(page.title)?if_exists}</#if></title>
 <#if layoutSettings.shortcutIcon?has_content>
   <#assign shortcutIcon = layoutSettings.shortcutIcon/>

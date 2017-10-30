@@ -38,6 +38,7 @@
     <screen name="CmsBackendCommonDecorator">
         <section>
             <actions>
+				<set field="pageTitleProperty" value="${title}" default-value="${uiLabelMap[titleProperty]}"/>
             </actions>
             <widgets>
                 <decorator-screen name="main-decorator" location="${parameters.mainDecoratorLocation}">

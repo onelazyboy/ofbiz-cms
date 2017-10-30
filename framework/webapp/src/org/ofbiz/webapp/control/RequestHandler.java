@@ -848,13 +848,13 @@ public class RequestHandler {
             if (Debug.verboseOn()) Debug.logVerbose("Rendering view [" + nextPage + "] of type [" + viewMap.type + "]", module);
             ViewHandler vh = viewFactory.getViewHandler(viewMap.type);
 
-            //增加amaze等extend 获取用户的themeId
+          //澧炲姞amaze绛塭xtend 鑾峰彇鐢ㄦ埛鐨則hemeId
             LocalDispatcher dispatchContext = (LocalDispatcher) req.getAttribute("dispatcher");
             Map<String, Object> result = dispatchContext.runSync("getUserPreferenceGroup", UtilMisc.toMap("userLogin", userLogin, "userPrefGroupTypeId", "GLOBAL_PREFERENCES"));
             Map userPreMap = (Map) result.get("userPrefMap");
             String themeId = (String) userPreMap.get("VISUAL_THEME");
             req.setAttribute("VISUAL_THEME",themeId);
-//            此处设置extend为空
+//            姝ゅ璁剧疆extend涓虹┖
             vh.setExtend(null);
             String url = "./framework/widget/config/widget.properties";
             String[] themeIds =  UtilProperties.getPropertyValues("widget.properties", "widget.themeId.extends");
