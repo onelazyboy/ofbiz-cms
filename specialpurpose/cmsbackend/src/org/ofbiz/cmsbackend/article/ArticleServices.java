@@ -1,6 +1,10 @@
 package org.ofbiz.cmsbackend.article;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
@@ -30,8 +34,21 @@ public class ArticleServices {
         GenericValue gv = delegator.makeValue("CmsArticle", UtilMisc.toMap("articleId", articleId));
         gv.setNonPKFields(context);
         gv.create();
-        //result.put("articleId", articleId);
+        result.put("articleId", articleId);
         return result;
+
+    }
+    
+    public static String createCmsArticle(HttpServletRequest request,HttpServletResponse response) throws GenericEntityException {
+    	Delegator delegator = (Delegator)request.getAttribute("delegator");
+        String articleId = delegator.getNextSeqId("CmsArticle");
+        GenericValue gv = delegator.makeValue("CmsArticle", UtilMisc.toMap("articleId", articleId));
+//        gv.setNonPKFields(context);
+//        gv.create();
+//        result.put("articleId", articleId);
+        HashMap<String, Object> c = (HashMap<String, Object>) request.getSession().getAttribute("_CAPTCHA_CODE_");
+        request.setAttribute("captchaCode", (String)c.get("captchaImage"));
+        return "success";
 
     }
 

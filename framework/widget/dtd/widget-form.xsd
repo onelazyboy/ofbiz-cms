@@ -52,6 +52,9 @@ under the License.
                     <xs:enumeration value="single">
                         <xs:annotation><xs:documentation>a single form is a simple single form with values from a single set of values</xs:documentation></xs:annotation>
                     </xs:enumeration>
+                    <xs:enumeration value="inputgroup">
+                        <xs:annotation><xs:documentation>a inputgroup form is a simple bootstrap input group  form with values from a single set of values</xs:documentation></xs:annotation>
+                    </xs:enumeration>
                     <xs:enumeration value="list">
                         <xs:annotation><xs:documentation>a list form is a list of individual forms in a table (could be called a tabular form), it has a list of sets of values and creates one form for each list element</xs:documentation></xs:annotation>
                     </xs:enumeration>
@@ -220,6 +223,15 @@ under the License.
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="validate" default="false">
+            <xs:annotation><xs:documentation>Validate form. Default to false.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
         <!-- not sure this is such a good idea
         <xs:attribute type="xs:string" name="hidden-values-map-name">
             <xs:annotation>
@@ -299,6 +311,7 @@ under the License.
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="sort-field"/>
+                <xs:element ref="last-field"/>
                 <xs:element ref="field-group"/>
                 <xs:element ref="banner"/>
             </xs:choice>
@@ -356,11 +369,20 @@ under the License.
     <xs:element name="sort-field">
         <xs:complexType>
             <xs:attributeGroup ref="attlist.sort-field"/>
+            <xs:attribute name="position" type="xs:positiveInteger"/>
         </xs:complexType>
     </xs:element>
     <xs:attributeGroup name="attlist.sort-field">
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:attributeGroup>
+    <xs:element name="last-field">
+        <xs:annotation>
+            <xs:documentation>last-field reorder the given field at the end form. This element is propagated to the inherited form</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attributeGroup ref="attlist.sort-field"/>
+        </xs:complexType>
+    </xs:element>
     <!-- ================== Form Events ==================== -->
     <xs:attributeGroup name="attlist.on-form-event-update-area">
         <xs:attribute name="event-type" use="required">
@@ -373,6 +395,15 @@ under the License.
         </xs:attribute>
         <xs:attribute name="area-id" type="xs:string" use="required"/>
         <xs:attribute name="area-target" type="xs:string" use="required"/>
+        <xs:attribute name="target-type" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="url"/>
+                    <xs:enumeration value="submit"/>
+                    <xs:enumeration value="ajax"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:element name="on-event-update-area">
         <xs:annotation>
@@ -543,6 +574,41 @@ under the License.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="field-validate-type">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="email"/>
+                    <xs:enumeration value="number"/>
+                    <xs:enumeration value="integer"/>
+                    <xs:enumeration value="digits"/>
+                    <xs:enumeration value="alphanum"/>
+                    <xs:enumeration value="url"/>
+                    <xs:enumeration value="minlength"/>
+                    <xs:enumeration value="maxlength"/>
+                    <xs:enumeration value="length"/>
+                    <xs:enumeration value="min"/>
+                    <xs:enumeration value="max"/>
+                    <xs:enumeration value="range"/>
+                    <xs:enumeration value="pattern"/>
+                    <xs:enumeration value="mincheck"/>
+                    <xs:enumeration value="maxcheck"/>
+                    <xs:enumeration value="check"/>
+                    <xs:enumeration value="equalto"/>
+                    <xs:enumeration value="gt"/>
+                    <xs:enumeration value="gte"/>
+                    <xs:enumeration value="lt"/>
+                    <xs:enumeration value="lte"/>
+                    <!--<xs:enumeration value="minwords"/>
+                    <xs:enumeration value="maxwords"/>
+                    <xs:enumeration value="words"/>-->
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="field-validate-remote"/>
+        <xs:attribute type="xs:string" name="field-validate-remote-validator"/>
+        <xs:attribute type="xs:string" name="field-validate-remote-options"/>
+        <xs:attribute type="xs:string" name="field-validate-value"/>
+
     </xs:attributeGroup>
 
   <!-- ================== FIELD TYPES ==================== -->
@@ -597,6 +663,81 @@ under the License.
             </xs:simpleType>
         </xs:attribute>
         <xs:attribute name="default-option-thru" default="lessThan">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="lessThan"/>
+                    <xs:enumeration value="upToDay"/>
+                    <xs:enumeration value="upThruDay"/>
+                    <xs:enumeration value="empty"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="startDate-find" substitutionGroup="AllFields">
+        <xs:complexType>
+            <xs:attributeGroup ref="attlist.startDate-find"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.startDate-find">
+        <xs:attribute name="type" default="timestamp">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="timestamp"/>
+                    <xs:enumeration value="date"/>
+                    <xs:enumeration value="time"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="default-value"/>
+        <xs:attribute name="default-option-from" default="greaterThanFromDayStart">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="equals"/>
+                    <xs:enumeration value="sameDay"/>
+                    <xs:enumeration value="greaterThanFromDayStart"/>
+                    <xs:enumeration value="greaterThan"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="default-option-thru" default="lessThan">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="lessThan"/>
+                    <xs:enumeration value="upToDay"/>
+                    <xs:enumeration value="upThruDay"/>
+                    <xs:enumeration value="empty"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="endDate-find" substitutionGroup="AllFields">
+        <xs:complexType>
+            <xs:attributeGroup ref="attlist.endDate-find"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.endDate-find">
+        <xs:attribute name="type" default="timestamp">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="timestamp"/>
+                    <xs:enumeration value="date"/>
+                    <xs:enumeration value="time"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="default-value"/>
+        <xs:attribute name="default-option-from" default="lessThanEqualTo">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="equals"/>
+                    <xs:enumeration value="sameDay"/>
+                    <xs:enumeration value="greaterThanFromDayStart"/>
+                    <xs:enumeration value="greaterThan"/>
+                    <xs:enumeration value="lessThanEqualTo"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="default-option-thru" default="upThruDay">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="lessThan"/>
@@ -909,6 +1050,8 @@ under the License.
         <xs:attribute type="xs:integer" name="size">
             <xs:annotation><xs:documentation>Specifies the size of the field (as a number of characters), when the text to display exceed the given size it is truncated and add the complete text as a hint</xs:documentation></xs:annotation>
         </xs:attribute>
+        <xs:attribute type="xs:string" name="img-style">
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:element name="parameter">
         <xs:complexType>
@@ -932,9 +1075,7 @@ under the License.
         </xs:complexType>
     </xs:element>
     <xs:attributeGroup name="attlist.image">
-        <xs:attribute type="xs:nonNegativeInteger" name="border" default="0"/>
-        <xs:attribute type="xs:positiveInteger" name="width"/>
-        <xs:attribute type="xs:positiveInteger" name="height"/>
+        <xs:attribute type="xs:string" name="style"/>
         <xs:attribute type="xs:string" name="value"/>
         <xs:attribute type="xs:string" name="default-value"/>
         <xs:attribute type="xs:string" name="description"/>
@@ -991,7 +1132,7 @@ under the License.
         <xs:attribute type="xs:string" name="width">
             <xs:annotation><xs:documentation>Only layer width. I.e. 250px, 12%</xs:documentation></xs:annotation>
         </xs:attribute>
-        <xs:attribute name="position" default="topleft">
+        <xs:attribute name="position" default="topcenter">
             <xs:annotation><xs:documentation>Only for layer positionining. Default to topleft corner.</xs:documentation></xs:annotation>
             <xs:simpleType>
                 <xs:restriction base="xs:string">
@@ -1019,6 +1160,196 @@ under the License.
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="true"/>
                     <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="confirm-modal" substitutionGroup="AllFields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.confirm-modal"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.confirm-modal">
+        <xs:attribute type="xs:string" name="confirm-url" use="required"/>
+        <xs:attribute name="presentation" default="layer">
+            <xs:annotation><xs:documentation>Shows the lookup as moveable and resizable layer or popup window. Default to layer.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="layer"/>
+                    <xs:enumeration value="window"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="height">
+            <xs:annotation><xs:documentation>Only layer height. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="width">
+            <xs:annotation><xs:documentation>Only layer width. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="position" default="topcenter">
+            <xs:annotation><xs:documentation>Only for layer positionining. Default to topleft corner.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="center"/>
+                    <xs:enumeration value="left"/>
+                    <xs:enumeration value="right"/>
+                    <xs:enumeration value="topleft"/>
+                    <xs:enumeration value="topright"/>
+                    <xs:enumeration value="topcenter"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="fade-background" default="true">
+            <xs:annotation><xs:documentation>If true the window background will be faded, default to true.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="confirm-message" type="xs:string"><xs:annotation><xs:documentation>The message displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="confirm-title" type="xs:string"><xs:annotation><xs:documentation>The title displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="request-confirmation" default="false">
+            <xs:annotation><xs:documentation>If true then the user is presented with a dialog box, if confirmation-message is empty, use default</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="required">
+            <xs:annotation><xs:documentation>Will be presented to the user with field values substituted using the ${} syntax.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="ajaxEnabled" default="true"/>
+        <xs:attribute type="xs:string" name="button-style"/>
+        <xs:attribute type="xs:string" name="button-span-style"/>
+        <xs:attribute type="xs:string" name="return-url"/>
+        <xs:attribute name="return-parameters-map" type="xs:string">
+            <xs:annotation><xs:documentation>A Map in the context that will be used as additional name/value pairs.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="target-type" default="intra-app">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="intra-app"/>
+                    <xs:enumeration value="inter-app"/>
+                    <xs:enumeration value="content"/>
+                    <xs:enumeration value="plain"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="button-type" default="button">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="button"/>
+                    <xs:enumeration value="text-link"/>
+                    <xs:enumeration value="image"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:element name="modal-page" substitutionGroup="AllFields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+                </xs:sequence>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.modal-page"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.modal-page">
+        <xs:attribute type="xs:string" name="modal-url" use="required"/>
+        <xs:attribute type="xs:string" name="return-url"/>
+        <xs:attribute name="return-parameters-map" type="xs:string">
+            <xs:annotation><xs:documentation>A Map in the context that will be used as additional name/value pairs.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="presentation" default="layer">
+            <xs:annotation><xs:documentation>Shows the lookup as moveable and resizable layer or popup window. Default to layer.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="layer"/>
+                    <xs:enumeration value="window"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="height">
+            <xs:annotation><xs:documentation>Only layer height. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="width">
+            <xs:annotation><xs:documentation>Only layer width. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="position" default="topcenter">
+            <xs:annotation><xs:documentation>Only for layer positionining. Default to topleft corner.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="center"/>
+                    <xs:enumeration value="left"/>
+                    <xs:enumeration value="right"/>
+                    <xs:enumeration value="topleft"/>
+                    <xs:enumeration value="topright"/>
+                    <xs:enumeration value="topcenter"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="fade-background" default="true">
+            <xs:annotation><xs:documentation>If true the window background will be faded, default to true.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="confirm-message" type="xs:string"><xs:annotation><xs:documentation>The message displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="confirm-title" type="xs:string"><xs:annotation><xs:documentation>The title displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="request-confirmation" default="false">
+            <xs:annotation><xs:documentation>If true then the user is presented with a dialog box, if confirmation-message is empty, use default</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="required">
+            <xs:annotation><xs:documentation>Will be presented to the user with field values substituted using the ${} syntax.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="ajaxEnabled" default="true"/>
+        <xs:attribute name="target-type" default="intra-app">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="intra-app"/>
+                    <xs:enumeration value="inter-app"/>
+                    <xs:enumeration value="content"/>
+                    <xs:enumeration value="plain"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="button-type" default="button">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="button"/>
+                    <xs:enumeration value="text-link"/>
+                    <xs:enumeration value="image"/>
+                    <xs:enumeration value="custom"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="button-style"/>
+        <xs:attribute type="xs:string" name="button-span-style"/>
+        <xs:attribute type="xs:string" name="modal-style"/>
+        <xs:attribute type="xs:string" name="id"/>
+        <xs:attribute type="xs:string" name="name"/>
+        <xs:attribute  name="modal-type" default="form-submit">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="view"/>
+                    <xs:enumeration value="form-submit"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
@@ -1992,4 +2323,8 @@ under the License.
     <xs:attributeGroup name="attlist.select-field">
         <xs:attribute type="xs:string" name="field-name" use="required"/>
     </xs:attributeGroup>
+
+    <xs:element name="call-parent-actions" substitutionGroup="AllActions">
+        <xs:complexType/>
+    </xs:element>
 </xs:schema>

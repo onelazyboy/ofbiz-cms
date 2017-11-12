@@ -29,7 +29,9 @@ import javolution.util.FastMap;
 
 import org.ofbiz.base.util.Assert;
 import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.ObjectType;
 import org.ofbiz.base.util.UtilGenerics;
+import org.ofbiz.base.util.UtilStrings;
 import org.ofbiz.widget.screen.IterateSectionWidget;
 import org.ofbiz.widget.screen.ModelScreen;
 import org.ofbiz.widget.screen.ModelScreenWidget;
@@ -84,7 +86,7 @@ public class WidgetFactory {
     }
     
     /**
-     * 增加amaze.menu方式
+     * 澧炲姞amaze.menu鏂瑰紡
      * @param modelScreen
      * @param element
      * @param extend
@@ -118,6 +120,7 @@ public class WidgetFactory {
                         Object fieldObject = field.get(null);
                         if (fieldObject != null) {
                             Class<? extends ModelScreenWidget> widgetClass = UtilGenerics.cast(clz);
+                            widgetClass.getName();
                             registerScreenWidget(fieldObject.toString(), widgetClass);
                         }
                     } catch (Exception e) {}
@@ -144,9 +147,19 @@ public class WidgetFactory {
      * @throws SecurityException
      * @throws NoSuchMethodException
      */
-    public static void registerScreenWidget(String tagName, Class<? extends ModelScreenWidget> widgetClass) throws SecurityException, NoSuchMethodException {
+    public static void registerScreenWidget(String tagName, Class<? extends ModelScreenWidget> widgetClass) throws SecurityException, NoSuchMethodException, ClassNotFoundException {
         Assert.notNull("tagName", tagName, "widgetClass", widgetClass);
-        screenWidgets.put(tagName, widgetClass.getConstructor(ModelScreen.class, Element.class));
+//        screenWidgets.put(tagName, widgetClass.getConstructor(ModelScreen.class, Element.class));
+        System.out.println("##############"+tagName);
+        ////淇敼鏋勯�犳柟娉曟敮鎸佷笉鍚岀被鍨嬬殑ModelScreen
+        if(tagName.indexOf(".")!=-1){
+            String perfix = tagName.substring(0,tagName.indexOf("."));
+            String modelScreenName = UtilStrings.firstUpperCase(perfix)+"ModelScreen";
+            String fullClassName = "org.ofbiz."+perfix+".widget.screen."+modelScreenName;
+            screenWidgets.put(tagName, widgetClass.getConstructor(ObjectType.loadClass(fullClassName), Element.class));
+        }else {
+            screenWidgets.put(tagName, widgetClass.getConstructor(ModelScreen.class, Element.class));
+        }
         if (Debug.verboseOn()) {
             Debug.logVerbose("Registered " + widgetClass.getName() + " with tag name " + tagName, module);
         }

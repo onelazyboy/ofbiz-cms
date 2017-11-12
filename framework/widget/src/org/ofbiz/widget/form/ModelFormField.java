@@ -3659,7 +3659,9 @@ public class ModelFormField {
 
         public HiddenField(Element element, ModelFormField modelFormField) {
             super(element, modelFormField);
-            this.setValue(element.getAttribute("value"));
+            if(UtilValidate.isNotEmpty(element.getAttribute("value"))){
+            	this.setValue(element.getAttribute("value"));
+            }
         }
 
         @Override

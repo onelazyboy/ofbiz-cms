@@ -8,6 +8,7 @@ import org.ofbiz.entity.GenericValue;
 import org.ofbiz.widget.WidgetWorker;
 import org.ofbiz.widget.screen.MacroScreenRenderer;
 import org.ofbiz.widget.screen.ModelScreenWidget;
+import org.ofbiz.widget.screen.ModelScreenWidget.ModalPage;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -133,6 +134,105 @@ public class AdminletMacroScreenRenderer extends MacroScreenRenderer {
             sr.append("false");
         }
         sr.append(" />");
+        executeMacro(writer, sr.toString());
+    }
+    
+    public void renderModalPage(Appendable writer, Map<String, Object> context,ModalPage modalPage) throws IOException {
+    	Boolean ajaxEnabled = modalPage.isAjaxEnabled();
+        HttpServletResponse response = (HttpServletResponse) context.get("response");
+        HttpServletRequest request = (HttpServletRequest) context.get("request");
+        String modalUrl = modalPage.getModalUrl(context);
+        String returnUrl = modalPage.getReturnUrl(context);
+        String confirmationMessage=modalPage.getConfirmationMsg(context);
+        String confirmationTitle = modalPage.getConfirmTitle(context);
+        // add lookup pop-up button
+        String description = modalPage.getDescription(context);
+        String targetType = modalPage.getTargetType();
+        modalUrl = WidgetWorker.buildHyperlinkUrl(modalUrl,targetType,null, null, false, false, true, request, response, context);
+
+        String confirmationPresentation = modalPage.getConfirmPresentation();
+        if(UtilValidate.isEmpty(confirmationPresentation)){
+            confirmationPresentation = "";
+        }
+
+        String confirmationHeight = modalPage.getHeight();
+        if(UtilValidate.isEmpty(confirmationHeight)){
+            confirmationHeight = "";
+        }
+
+        String width = modalPage.getWidth();
+        if(UtilValidate.isEmpty(width)){
+            width = "";
+        }
+
+        String position = modalPage.getPosition();
+        if(UtilValidate.isEmpty(position)){
+            position = "";
+        }
+
+        String fadeBackground = modalPage.getFadeBackground();
+        if (UtilValidate.isEmpty(fadeBackground)){
+            fadeBackground = "false";
+        }
+
+        String clearText = "";
+        Map<String, Object> uiLabelMap = UtilGenerics.checkMap(context.get("uiLabelMap"));
+        if (uiLabelMap != null) {
+            clearText = (String) uiLabelMap.get("CommonClear");
+        } else {
+            Debug.logWarning("Could not find uiLabelMap in context", module);
+        }
+        String name = modalPage.getName(context);
+        String id = modalPage.getId(context);
+        String parameterMapString = modalPage.getParameterMapString(context);
+        String returnParameterMapString = modalPage.getReturnParameters(context);
+        String buttonType =modalPage.getButtonType();
+        String modalType = modalPage.getModalType();
+        StringWriter sr = new StringWriter();
+        sr.append("<@renderModalPage ");
+        sr.append("id=\"");
+        sr.append(id);
+        sr.append("\" name=\"");
+        sr.append(name);
+        sr.append("\" buttonType=\"");
+        sr.append(buttonType);
+        sr.append("\" buttonStyle=\"");
+        sr.append(modalPage.getButtonStyle());
+        sr.append("\" modalStyle=\"");
+        sr.append(modalPage.getModalStyle());
+        sr.append("\" buttonSpanStyle=\"");
+        sr.append(modalPage.getButtonSpanStyle());
+        sr.append("\" modalUrl=\"");
+        sr.append(modalUrl);
+        sr.append("\" returnUrl=\"");
+        sr.append(returnUrl);
+        sr.append("\" returnParameters=\"");
+        sr.append(returnParameterMapString);
+        sr.append("\" description=\"");
+        sr.append(description);
+        sr.append("\" ajaxEnabled=");
+        sr.append(Boolean.toString(ajaxEnabled));
+        sr.append(" presentation=\"");
+        sr.append(confirmationPresentation);
+        sr.append("\" height=\"");
+        sr.append(confirmationHeight);
+        sr.append("\" width=\"");
+        sr.append(width);
+        sr.append("\" position=\"");
+        sr.append(position);
+        sr.append("\" fadeBackground=\"");
+        sr.append(fadeBackground);
+        sr.append("\" clearText=\"");
+        sr.append(clearText);
+        sr.append("\" modalMsg=\"");
+        sr.append(confirmationMessage);
+        sr.append("\" modalTitle=\"");
+        sr.append(confirmationTitle);
+        sr.append("\" targetParameterIter=\"");
+        sr.append(parameterMapString);
+        sr.append("\" modalType=\"");
+        sr.append(modalType);
+        sr.append("\" />");
         executeMacro(writer, sr.toString());
     }
 

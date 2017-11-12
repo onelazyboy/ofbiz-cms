@@ -904,6 +904,106 @@ under the License.
             </xs:simpleType>
         </xs:attribute>
     </xs:attributeGroup>
+    <xs:element name="modal-page" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.modal-page"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.modal-page">
+        <xs:attribute type="xs:string" name="modal-url" use="required"/>
+        <xs:attribute type="xs:string" name="return-url"/>
+        <xs:attribute name="return-parameters-map" type="xs:string">
+            <xs:annotation><xs:documentation>A Map in the context that will be used as additional name/value pairs.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="presentation" default="layer">
+            <xs:annotation><xs:documentation>Shows the lookup as moveable and resizable layer or popup window. Default to layer.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="layer"/>
+                    <xs:enumeration value="window"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="height">
+            <xs:annotation><xs:documentation>Only layer height. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="width">
+            <xs:annotation><xs:documentation>Only layer width. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="position" default="topcenter">
+            <xs:annotation><xs:documentation>Only for layer positionining. Default to topleft corner.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="center"/>
+                    <xs:enumeration value="left"/>
+                    <xs:enumeration value="right"/>
+                    <xs:enumeration value="topleft"/>
+                    <xs:enumeration value="topright"/>
+                    <xs:enumeration value="topcenter"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="fade-background" default="true">
+            <xs:annotation><xs:documentation>If true the window background will be faded, default to true.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="confirm-message" type="xs:string"><xs:annotation><xs:documentation>The message displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="confirm-title" type="xs:string"><xs:annotation><xs:documentation>The title displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="request-confirmation" default="false">
+            <xs:annotation><xs:documentation>If true then the user is presented with a dialog box, if confirmation-message is empty, use default</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="required">
+            <xs:annotation><xs:documentation>Will be presented to the user with field values substituted using the ${} syntax.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="ajaxEnabled" default="true"/>
+        <xs:attribute name="target-type" default="intra-app">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="intra-app"/>
+                    <xs:enumeration value="inter-app"/>
+                    <xs:enumeration value="content"/>
+                    <xs:enumeration value="plain"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="button-type" default="button">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="button"/>
+                    <xs:enumeration value="text-link"/>
+                    <xs:enumeration value="image"/>
+                    <xs:enumeration value="custom"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="id"/>
+        <xs:attribute type="xs:string" name="button-style"/>
+        <xs:attribute type="xs:string" name="button-span-style"/>
+        <xs:attribute type="xs:string" name="modal-style"/>
+        <xs:attribute type="xs:string" name="name"/>
+        <xs:attribute name="modal-type" default="form-submit">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="view"/>
+                    <xs:enumeration value="form-submit"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
     <xs:element name="parameter">
         <xs:complexType>
             <xs:attributeGroup ref="attlist.parameter"/>
@@ -913,6 +1013,97 @@ under the License.
         <xs:attribute type="xs:string" name="param-name" use="required"/>
         <xs:attribute type="xs:string" name="from-field"/>
         <xs:attribute type="xs:string" name="value"/>
+    </xs:attributeGroup>
+
+
+    <xs:element name="confirm-modal" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.confirm-modal"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.confirm-modal">
+        <xs:attribute type="xs:string" name="confirm-url" use="required"/>
+        <xs:attribute name="presentation" default="layer">
+            <xs:annotation><xs:documentation>Shows the lookup as moveable and resizable layer or popup window. Default to layer.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="layer"/>
+                    <xs:enumeration value="window"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+
+        <xs:attribute type="xs:string" name="button-style"/>
+        <xs:attribute type="xs:string" name="button-span-style"/>
+        <xs:attribute type="xs:string" name="height">
+            <xs:annotation><xs:documentation>Only layer height. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="width">
+            <xs:annotation><xs:documentation>Only layer width. I.e. 250px, 12%</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="position" default="topcenter">
+            <xs:annotation><xs:documentation>Only for layer positionining. Default to topleft corner.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="center"/>
+                    <xs:enumeration value="left"/>
+                    <xs:enumeration value="right"/>
+                    <xs:enumeration value="topleft"/>
+                    <xs:enumeration value="topright"/>
+                    <xs:enumeration value="topcenter"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="fade-background" default="true">
+            <xs:annotation><xs:documentation>If true the window background will be faded, default to true.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="confirm-message" type="xs:string"><xs:annotation><xs:documentation>The message displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="confirm-title" type="xs:string"><xs:annotation><xs:documentation>The title displayed in confirmation box</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="request-confirmation" default="false">
+            <xs:annotation><xs:documentation>If true then the user is presented with a dialog box, if confirmation-message is empty, use default</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="required">
+            <xs:annotation><xs:documentation>Will be presented to the user with field values substituted using the ${} syntax.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="ajaxEnabled" default="true"/>
+        <xs:attribute type="xs:string" name="return-url"/>
+        <xs:attribute name="return-parameters-map" type="xs:string">
+            <xs:annotation><xs:documentation>A Map in the context that will be used as additional name/value pairs.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="target-type" default="intra-app">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="intra-app"/>
+                    <xs:enumeration value="inter-app"/>
+                    <xs:enumeration value="content"/>
+                    <xs:enumeration value="plain"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="button-type" default="button">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="button"/>
+                    <xs:enumeration value="text-link"/>
+                    <xs:enumeration value="image"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:attributeGroup>
 
     <xs:element name="screenlet" substitutionGroup="AllWidgets">
@@ -1242,4 +1433,29 @@ under the License.
     <xs:element name="swing">
         <xs:complexType/>
     </xs:element>
+    <xs:element name="column-container" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.column-container"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.column-container">
+        <xs:attribute type="xs:string" name="id"/>
+        <xs:attribute type="xs:string" name="style"/>
+    </xs:attributeGroup>
+    <xs:element name="column" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="AllWidgets"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.column"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.column">
+        <xs:attribute type="xs:string" name="id"/>
+        <xs:attribute type="xs:string" name="style"/>
+    </xs:attributeGroup>
+
 </xs:schema>

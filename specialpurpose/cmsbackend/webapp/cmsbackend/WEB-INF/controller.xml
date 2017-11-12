@@ -63,16 +63,19 @@
     <request-map uri="FindCmsArticle"><security https="true" auth="true"/><response name="success" type="view" value="FindCmsArticle"/></request-map>
     <request-map uri="EditCmsArticle"><security https="true" auth="true"/><response name="success" type="view" value="EditCmsArticle"/></request-map>
     <request-map uri="createCmsArticle">
+		<security https="true" auth="true"/>
         <event type="java" path="org.ofbiz.cmsbackend.article.ArticleEvents" invoke="createCmsArticle"/>
-        <response name="success" type="request-redirect-noparam" value="FindCmsArticle"></response>
+        <response name="success" type="none"/>
     </request-map>
     <request-map uri="updateCmsArticle">
-       <event type="java" path="org.ofbiz.cmsbackend.article.ArticleEvents" invoke="updateCmsArticle"/>
-       <response name="success" type="request-redirect-noparam" value="FindCmsArticle"></response>
+	   <security https="true" auth="true"/>
+       <event  type="java" path="org.ofbiz.cmsbackend.article.ArticleEvents" invoke="updateCmsArticle"/>
+       <response name="success" type="none"/>
     </request-map>
     <request-map uri="deleteCmsArticle">
-        <event type="service" invoke="deleteCmsArticle"/>
-        <response name="success" type="request-redirect-noparam" value="FindCmsArticle"></response>
+		<security https="true" auth="true"/>
+		<event  type="java" path="org.ofbiz.cmsbackend.article.ArticleEvents" invoke="deleteCmsArticle"/>
+        <response name="success" type="none"/>
     </request-map>
     
     <!-- 链接管理 Request Mappings by Surpass Li 开始-->

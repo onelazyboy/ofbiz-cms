@@ -7,7 +7,7 @@
 
 
 
-    <!-- <service name="createCmsArticle" default-entity-name="CmsArticle" engine="java" location="org.ofbiz.cmsbackend.article.ArticleServices" invoke="createCmsArticle" auth="true">
+    <service name="createCmsArticle" default-entity-name="CmsArticle" engine="java" location="org.ofbiz.cmsbackend.article.ArticleServices" invoke="createCmsArticle" auth="true">
         <description>Create a CmsArticle</description>
         <auto-attributes include="pk" mode="OUT" optional="false"/>
         <auto-attributes include="nonpk" mode="IN" optional="true"/>
@@ -23,8 +23,8 @@
     <service name="deleteCmsArticle" default-entity-name="CmsArticle" engine="java" location="org.ofbiz.cmsbackend.article.ArticleServices" invoke="deleteCmsArticle" auth="true">
         <description>Delete a CmsArticle</description>
         <auto-attributes include="pk" mode="IN" optional="false"/>
-    </service> -->
-   <service name="createCmsArticle" default-entity-name="CmsArticle" engine="simple" location="component://cmsbackend/script/org/ofbiz/cmsbackend/CmsBackendServices.xml" invoke="createCmsArticle" auth="true">
+    </service>
+   <!-- <service name="createCmsArticle" default-entity-name="CmsArticle" engine="simple" location="component://cmsbackend/script/org/ofbiz/cmsbackend/CmsBackendServices.xml" invoke="createCmsArticle" auth="true">
         <description>Create a CmsArticle</description>
         <auto-attributes include="pk" mode="IN" optional="false"/>
         <auto-attributes include="nonpk" mode="IN" optional="true"/>
@@ -40,7 +40,7 @@
     <service name="deleteCmsArticle" default-entity-name="CmsArticle" engine="simple" location="component://cmsbackend/script/org/ofbiz/cmsbackend/CmsBackendServices.xml" invoke="deleteCmsArticle" auth="true">
         <description>Delete a CmsArticle</description>
         <auto-attributes include="pk" mode="IN" optional="false"/>
-    </service>
+    </service> -->
 
     <service name="createCmsArticleType" default-entity-name="CmsArticleType" engine="entity-auto" invoke="create" auth="true">
         <description>Create a CmsArticleType</description>

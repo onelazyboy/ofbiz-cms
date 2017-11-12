@@ -1,7 +1,5 @@
 import javolution.util.FastMap
 import org.ofbiz.base.util.UtilGenerics
-import org.ofbiz.cmsbackend.category.CategoryWorker
-import org.ofbiz.cmsbackend.category.CatalogWorker
 import org.ofbiz.base.util.UtilHttp
 
 
@@ -21,8 +19,8 @@ String funNameDesc = uiLabelMap.get(funNamne);
 request.setAttribute("header", webappDesc);
 request.setAttribute("pageHeader", funNameDesc);
 
-  def funCatalog = [];
-	funCatalog[0] = ["name": "首页", "active":"0","url":""];
-    funCatalog[1] = ["name": webappDesc, "active":"0","url":webappUrl];
-    funCatalog[2] = ["name": funNameDesc, "active":"1","url": funNameUrl];
-    request.setAttribute("funCatalog", funCatalog);
+def funCatalog = [];
+funCatalog[0] = ["name": "首页", "active":"0","url":""];
+funCatalog[1] = ["name": webappDesc, "active":"0","url":webappUrl];
+funCatalog[2] = ["name": funNameDesc, "active":"1","url": funNameUrl];
+request.setAttribute("funCatalog", funCatalog);

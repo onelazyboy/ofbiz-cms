@@ -264,18 +264,30 @@
         <!-- <field name="disableTime" title="${uiLabelMap.disableTime}">
             <display type="date-time" />
         </field> -->
-        <field name="edit" title="${uiLabelMap.CommonEdit}">
+        <!-- <field name="edit" title="${uiLabelMap.CommonEdit}">
             <hyperlink also-hidden="false" description="${uiLabelMap.CommonEdit}" target="EditCmsArticle">
                 <parameter param-name="articleId" />
             </hyperlink>
-        </field>
-        <field name="delete" title="${uiLabelMap.CommonDelete}">
+        </field> -->
+		<!-- <field name="delete" title="${uiLabelMap.CommonDelete}">
             <hyperlink also-hidden="false" description="${uiLabelMap.CommonDelete}" target="deleteCmsArticle">
                 <parameter param-name="articleId" />
             </hyperlink>
+        </field> -->
+
+		<field name="edit"  title="${uiLabelMap.CommonEdit}">
+            <modal-page modal-url="EditCmsArticle" description="${uiLabelMap.CommonEdit}" confirm-title="${uiLabelMap.CommonEdit}" confirm-message="${uiLabelMap.CommonEdit}" modal-style="modal-lg">
+                <parameter param-name="articleId"/>
+            </modal-page>
         </field>
+		 <field name="delete" title="${uiLabelMap.CommonDelete}">
+            <confirm-modal confirm-url="deleteCmsArticle" description="${uiLabelMap.CommonDelete}" confirm-title="品牌删除" confirm-message="你确定删除该品牌吗?">
+                <parameter param-name="articleId"/>
+            </confirm-modal>
+        </field>
+        
     </form>
-    <form name="EditCmsArticle" type="upload" target="updateCmsArticle" title="" default-map-name="entity" default-entity-name="CmsArticle">
+    <form name="EditCmsArticle" type="upload" target="updateCmsArticle" title="" default-map-name="entity" default-entity-name="CmsArticle" header-row-style="header-row" default-table-style="basic-table">
         <alt-target use-when="entity==null" target="createCmsArticle" />
         <field name="articleId">
             <hidden />

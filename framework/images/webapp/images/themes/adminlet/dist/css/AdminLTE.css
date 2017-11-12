@@ -1141,7 +1141,7 @@ a:focus {
   }
 }
 .navbar-nav > .user-menu .user-image {
-  float: left;
+  /*float: left; PYJ ++ */
   width: 25px;
   height: 25px;
   border-radius: 50%;

@@ -17,6 +17,12 @@
  * under the License.
  */
 
+//Define global variable to store last auto-completer request object (jqXHR).
+var LAST_AUTOCOMP_REF = null;
+
+//default ajax request timeout in milliseconds
+var AJAX_REQUEST_TIMEOUT = 5000;
+
 // Check Box Select/Toggle Functions for Select/Toggle All
 
 function toggle(e) {
@@ -82,10 +88,10 @@ function removeSelected(formName) {
 
 // highlight the selected row(s)
 
-function highlightRow(e,rowId){
+function highlightRow(e, rowId) {
     var currentClassName = document.getElementById(rowId).className;
     if (e.checked) {
-        if (currentClassName == '' ) {
+        if (currentClassName == '') {
             document.getElementById(rowId).className = 'selected';
         } else if (currentClassName == 'alternate-row') {
             document.getElementById(rowId).className = 'alternate-rowSelected';
@@ -99,13 +105,13 @@ function highlightRow(e,rowId){
     }
 }
 
-function highlightAllRows(e, halfRowId, formName){
+function highlightAllRows(e, halfRowId, formName) {
     var cform = document[formName];
     var len = cform.elements.length;
     for (var i = 0; i < len; i++) {
         var element = cform.elements[i];
         if (element.name.substring(0, 10) == "_rowSubmit") {
-            highlightRow(e, halfRowId+element.name.substring(13));
+            highlightRow(e, halfRowId + element.name.substring(13));
         }
     }
 }
@@ -125,7 +131,7 @@ function popUpPrint(printserver, screen1, screen2) {
     popUpPrint(printserver, screen1, screen2, null);
 }
 function popUpPrint(printserver, screen1, screen2, screen3) {
-    if  (printserver == null) {
+    if (printserver == null) {
         printserver = "http://localhost:10080/"; // default print server port
     }
 
@@ -227,92 +233,131 @@ function confirmActionFormLink(msg, formName) {
 
 // ===== Ajax Functions - based on jQuery.js ===== //
 
+
 /** Update an area (HTML container element).
-  * @param areaId The id of the HTML container to update
-  * @param target The URL to call to update the HTML container
-  * @param targetParams The URL parameters
-*/
+ * @param areaId The id of the HTML container to update
+ * @param target The URL to call to update the HTML container
+ * @param targetParams The URL parameters
+ */
 
 function ajaxUpdateArea(areaId, target, targetParams) {
     waitSpinnerShow();
     jQuery.ajax({
         url: target,
         type: "POST",
+        async:true,
         data: targetParams,
-        success: function(data) {
+        success: function (data) {
             jQuery("#" + areaId).html(data);
             waitSpinnerHide();
         },
-        error: function(data) {waitSpinnerHide()}
+        error: function (data) {
+            waitSpinnerHide()
+        }
     });
 }
 
 /** Update multiple areas (HTML container elements).
-  * @param areaCsvString The area CSV string. The CSV string is a flat array in the
-  * form of: areaId, target, target parameters [, areaId, target, target parameters...].
-*/
-function ajaxUpdateAreas(areaCsvString) {
+ * @param areaCsvString The area CSV string. The CSV string is a flat array in the
+ * form of: areaId, target, target parameters [, areaId, target, target parameters...].
+ */
+function ajaxUpdateAreas(areaCsvString, data) {
     waitSpinnerShow();
     var areaArray = areaCsvString.split(",");
-    var numAreas = parseInt(areaArray.length / 3);
-    for (var i = 0; i < numAreas * 3; i = i + 3) {
-        var areaId = areaArray[i];
-        var target = areaArray[i + 1];
-        var targetParams = areaArray[i + 2];
+    var numAreas = parseInt(areaArray.length / 4);
+    for (var i = 0; i < numAreas * 4; i = i + 4) {
+        var targetType = areaArray[i];
+        var areaId = areaArray[i + 1];
+        var target = areaArray[i + 2];
+        var targetParams = areaArray[i + 3];
         // that was done by the prototype updater internally, remove the ? and the anchor flag from the parameters
         // not nice but works
-        targetParams = targetParams.replace('#','');
-        targetParams = targetParams.replace('?','');
-        jQuery.ajax({
-            url: target,
-            async: false,
-            type: "POST",
-            data: targetParams,
-            success: function(data) {
-                jQuery("#" + areaId).html(data);
-                waitSpinnerHide();
-            },
-            error: function(data) {waitSpinnerHide()}
-        });
+        if (targetType == '' || targetType == 'submit') {
+            targetParams = targetParams.replace('#', '');
+            targetParams = targetParams.replace('?', '');
+            jQuery.ajax({
+                url: target,
+                async: true,
+                type: "POST",
+                data: targetParams,
+                success: function (data1) {
+                    if (data1.indexOf("<div id=\"" + areaId) != -1) {
+                        var area = jQuery("#" + areaId);
+                        $(area).parent().append(data1);
+                        $(area).remove();
+                    } else {
+                        jQuery("#" + areaId).html(data1)
+                    }
+                    waitSpinnerHide();
+                },
+                error: function (data) {
+                    waitSpinnerHide()
+                }
+            });
+        } else if (targetType == 'ajax') {
+            if (data.indexOf("<div id=\"" + areaId) != -1) {
+                var area = jQuery("#" + areaId);
+                $(area).parent().append(data);
+                $(area).remove();
+            } else {
+                jQuery("#" + areaId).html(data)
+            }
+            waitSpinnerHide();
+
+        } else if (targetType == 'url') {
+            if (target == '' && targetParams == '') {
+                window.location.reload(true);
+            } else {
+                window.location.href = target + "?" + targetParams;
+            }
+            return;
+            waitSpinnerHide();
+        }
+        else {
+            tipLayer({msg: "操作成功！"});
+            waitSpinnerHide();
+        }
     }
 }
 
 /** Update an area (HTML container element) periodically.
-  * @param areaId The id of the HTML container to update
-  * @param target The URL to call to update the HTML container
-  * @param targetParams The URL parameters
-  * @param interval The update interval, in seconds.
-*/
+ * @param areaId The id of the HTML container to update
+ * @param target The URL to call to update the HTML container
+ * @param targetParams The URL parameters
+ * @param interval The update interval, in seconds.
+ */
 function ajaxUpdateAreaPeriodic(areaId, target, targetParams, interval) {
     jQuery.fjTimer({
         interval: interval,
         repeat: true,
-        tick: function(container, timerId){
+        tick: function (container, timerId) {
             jQuery.ajax({
                 url: target,
                 type: "POST",
                 data: targetParams,
-                success: function(data) {
+                success: function (data) {
                     jQuery("#" + areaId).html(data);
                     waitSpinnerHide();
                 },
-                error: function(data) {waitSpinnerHide()}
+                error: function (data) {
+                    waitSpinnerHide()
+                }
             });
-            
+
         }
     });
 }
 
 /** Submit request, update multiple areas (HTML container elements).
-  * @param target The URL to call to update the HTML container
-  * @param targetParams The URL parameters
-  * @param areaCsvString The area CSV string. The CSV string is a flat array in the
-  * form of: areaId, target, target parameters [, areaId, target, target parameters...].
-*/
+ * @param target The URL to call to update the HTML container
+ * @param targetParams The URL parameters
+ * @param areaCsvString The area CSV string. The CSV string is a flat array in the
+ * form of: areaId, target, target parameters [, areaId, target, target parameters...].
+ */
 function ajaxSubmitRequestUpdateAreas(target, targetParams, areaCsvString) {
-    updateFunction = function(transport) {
+    updateFunction = function (transport) {
         ajaxUpdateAreas(areaCsvString);
-    }
+    };
     jQuery.ajax({
         url: target,
         type: "POST",
@@ -322,15 +367,15 @@ function ajaxSubmitRequestUpdateAreas(target, targetParams, areaCsvString) {
 }
 
 /** Submit form, update an area (HTML container element).
-  * @param form The form element
-  * @param areaId The id of the HTML container to update
-  * @param submitUrl The URL to call to update the HTML container
-*/
+ * @param form The form element
+ * @param areaId The id of the HTML container to update
+ * @param submitUrl The URL to call to update the HTML container
+ */
 function submitFormInBackground(form, areaId, submitUrl) {
     submitFormDisableSubmits(form);
-    updateFunction = function() {
+    updateFunction = function () {
         jQuery("#" + areaId).load(submitUrl);
-    }
+    };
     jQuery.ajax({
         url: jQuery(form).attr("action"),
         data: jQuery(form).serialize(),
@@ -342,121 +387,138 @@ function submitFormInBackground(form, areaId, submitUrl) {
  * @param form The form element
  * @param areaCsvString The area CSV string. The CSV string is a flat array in the
  * form of: areaId, target, target parameters [, areaId, target, target parameters...].
-*/
+ */
 function ajaxSubmitFormUpdateAreas(form, areaCsvString) {
-   waitSpinnerShow();
-   hideErrorContainer = function() {
-       jQuery('#content-messages').removeClass('errorMessage').fadeIn('fast');
-   }
-   updateFunction = function(data) {
-       if (data._ERROR_MESSAGE_LIST_ != undefined || data._ERROR_MESSAGE_ != undefined) {
-           if(!jQuery('#content-messages')) {
-              //add this div just after app-navigation
-              if(jQuery('#content-main-section')){
-                  jQuery('#content-main-section' ).before('<div id="content-messages" onclick="hideErrorContainer()"></div>');
-              }
-           }
-           jQuery('#content-messages').addClass('errorMessage');
-          if (data._ERROR_MESSAGE_LIST_ != undefined && data._ERROR_MESSAGE_ != undefined) {
-              jQuery('#content-messages' ).html(data._ERROR_MESSAGE_LIST_ + " " + data._ERROR_MESSAGE_);
-          } else if (data._ERROR_MESSAGE_LIST_ != undefined) {
-              jQuery('#content-messages' ).html(data._ERROR_MESSAGE_LIST_);
-          } else {
-              jQuery('#content-messages' ).html(data._ERROR_MESSAGE_);
-          }
-          jQuery('#content-messages').fadeIn('fast');
-       }else {
-           if(jQuery('#content-messages')) {
-               jQuery('#content-messages').removeClass('errorMessage').fadeIn("fast");
-           }
-           ajaxUpdateAreas(areaCsvString);
-       }
-       waitSpinnerHide();
-   }
+    waitSpinnerShow();
+    hideErrorContainer = function () {
+        jQuery('#content-messages').html('');
+        jQuery('#content-messages').removeClass('errorMessage').fadeIn('fast');
+    };
+    updateFunction = function (data) {
+        if (data._ERROR_MESSAGE_LIST_ != undefined || data._ERROR_MESSAGE_ != undefined) {
+            if (!jQuery('#content-messages').length) {
+                //add this div just after app-navigation
+                if (jQuery('#content-main-section')) {
+                    jQuery('#content-main-section').before('<div id="content-messages" onclick="hideErrorContainer()"></div>');
+                }
+            }
+            jQuery('#content-messages').addClass('errorMessage');
+            if (data._ERROR_MESSAGE_LIST_ != undefined && data._ERROR_MESSAGE_ != undefined) {
+                jQuery('#content-messages').html(data._ERROR_MESSAGE_LIST_ + " " + data._ERROR_MESSAGE_);
+            } else if (data._ERROR_MESSAGE_LIST_ != undefined) {
+                jQuery('#content-messages').html(data._ERROR_MESSAGE_LIST_);
+            } else {
+                jQuery('#content-messages').html(data._ERROR_MESSAGE_);
+            }
+            jQuery('#content-messages').fadeIn('fast');
+        } else {
+            if (jQuery('#content-messages').length) {
+                jQuery('#content-messages').html('');
+                jQuery('#content-messages').removeClass('errorMessage').fadeIn("fast");
+            }
+            ajaxUpdateAreas(areaCsvString, data);
+        }
+        waitSpinnerHide();
+    };
 
-   jQuery.ajax({
-       type: "POST",
-       url: jQuery("#" + form).attr("action"),
-       data: jQuery("#" + form).serialize(),
-       success: function(data) {
-               updateFunction(data);
-       }
-   });
+    jQuery.ajax({
+        type: "POST",
+        url: jQuery("#" + form).attr("action"),
+        data: jQuery("#" + form).serialize(),
+        success: function (data) {
+            updateFunction(data);
+        }
+    });
 }
 
 /** Enable auto-completion for text elements.
  * @param areaCsvString The area CSV string. The CSV string is a flat array in the
  * form of: areaId, target, target parameters [, areaId, target, target parameters...].
-*/
+ */
 
-function ajaxAutoCompleter(areaCsvString, showDescription, defaultMinLength, formName){
+function ajaxAutoCompleter(areaCsvString, showDescription, defaultMinLength, defaultDelay, formName) {
+    //console.log(areaCsvString);
     var areaArray = areaCsvString.replace(/&amp;/g, '&').split(",");
     var numAreas = parseInt(areaArray.length / 3);
-    
-    if (typeof(showDescription) == "string") {
-      showDescription = showDescription == "false" ? false : true;
-    }            
-    
     for (var i = 0; i < numAreas * 3; i = i + 3) {
-        var url = areaArray[i + 1] + "?" + areaArray[i + 2];
+        var initUrl = areaArray[i + 1];
+        if (initUrl.indexOf("?") > -1)
+            var url = initUrl + "&" + areaArray[i + 2];
+        else
+            var url = initUrl + "?" + areaArray[i + 2];
         var div = areaArray[i];
         // create a separated div where the result JSON Opbject will be placed
         if ((jQuery("#" + div + "_auto")).length < 1) {
             jQuery("<div id='" + div + "_auto'></div>").insertBefore("#" + areaArray[i]);
         }
-        
+
         jQuery("#" + div).autocomplete({
             minLength: defaultMinLength,
-            source: function(request, response){
+            delay: defaultDelay,
+            source: function (request, response) {
                 jQuery.ajax({
                     url: url,
-                    async: false,
-                    data: {term : request.term},
-                    success: function(data) {
-                    	// reset the autocomp field
-                    	autocomp = undefined;
-                    	
-                        //update the result div
+                    type: "post",
+                    data: {term: request.term},
+                    beforeSend: function (jqXHR, settings) {
+                        //If LAST_AUTOCOMP_REF is not null means an existing ajax auto-completer request is in progress, so need to abort them to prevent inconsistent behavior of autocompleter
+                        if (LAST_AUTOCOMP_REF != null && LAST_AUTOCOMP_REF.readyState != 4) {
+                            var oldRef = LAST_AUTOCOMP_REF;
+                            oldRef.abort();
+                            //Here we are aborting the LAST_AUTOCOMP_REF so need to call the response method so that auto-completer pending request count handle in proper way
+                            response([]);
+                        }
+                        LAST_AUTOCOMP_REF = jqXHR;
+                    },
+                    success: function (data) {
+                        // reset the autocomp field
+                        autocomp = undefined;
+
                         jQuery("#" + div + "_auto").html(data);
+
                         if (typeof autocomp != 'undefined') {
-                            jQuery.each(autocomp, function(index, item){
+                            jQuery.each(autocomp, function (index, item) {
                                 item.label = jQuery("<div>").html(item.label).text();
-                            })
+                            });
                             // autocomp is the JSON Object which will be used for the autocomplete box
                             response(autocomp);
                         }
-                    }
-                })
+                    },
+                    error: function (xhr, reason, exception) {
+                        if (exception != 'abort') {
+                            alert("An error occurred while communicating with the server:\n\n\nreason=" + reason + "\n\nexception=" + exception);
+                        }
+                    },
+                });
             },
-            select: function(event, ui){
+            select: function (event, ui) {
                 //jQuery("#" + areaArray[0]).html(ui.item);
-                jQuery("#" + areaArray[0]).val(ui.item.value); // setting a text field   
-                jQuery("#" + areaArray[0]).trigger("lookup:changed"); // notify the field has changed
-                if (showDescription) {
-                    setLookDescription(areaArray[0], ui.item.label, areaArray[2], formName)
+                jQuery("#" + areaArray[0]).val(ui.item.value); // setting a text field
+                if (showDescription && (ui.item.value != undefined && ui.item.value != '')) {
+                    setLookDescription(areaArray[0], ui.item.label, areaArray[2], formName, showDescription)
                 }
             }
         });
         if (showDescription) {
             var lookupDescriptionLoader = new lookupDescriptionLoaded(areaArray[i], areaArray[i + 1], areaArray[i + 2], formName);
             lookupDescriptionLoader.update();
-            jQuery("#" + areaArray[i]).bind('change lookup:changed', function(){
+            jQuery("#" + areaArray[i]).bind('change lookup:changed', function () {
                 lookupDescriptionLoader.update();
             });
         }
     }
 }
 
-function setLookDescription(textFieldId, description, params, formName){
+function setLookDescription(textFieldId, description, params, formName, showDescription) {
     if (description) {
         var start = description.lastIndexOf(' [');
         if (start != -1) {
             description = description.substring(0, start);
-            
+
             // This sets a (possibly hidden) dependent field if a description-field-name is provided  
             var dependentField = params.substring(params.indexOf("searchValueFieldName"));
             dependentField = jQuery("#" + formName + "_" + dependentField.substring(dependentField.indexOf("=") + 1));
-            var dependentFieldValue = description.substring(0, description.lastIndexOf(' '))
+            var dependentFieldValue = description.substring(0, description.lastIndexOf(' '));
             if (dependentField.length) {
                 dependentField.val(dependentFieldValue);
                 dependentField.trigger("change"); // let the 'hidden' field know its been changed
@@ -464,13 +526,13 @@ function setLookDescription(textFieldId, description, params, formName){
         }
         var lookupWrapperEl = jQuery("#" + textFieldId).closest('.field-lookup');
         if (lookupWrapperEl.length) {
-            if (start == -1) {
+            if (start == -1 && showDescription) {
                 var start = description.indexOf(' ');
                 if (start != -1 && description.indexOf('<script type="text/javascript">') == -1) {
                     description = description.substring(start);
                 }
             }
-            tooltipElement = jQuery("#" + textFieldId + '_lookupDescription')
+            tooltipElement = jQuery("#" + textFieldId + '_lookupDescription');
             if (!tooltipElement.length) {
                 tooltipElement = jQuery("<span id='" + textFieldId + "_lookupDescription' class='tooltip'></span>");
             }
@@ -483,91 +545,91 @@ function setLookDescription(textFieldId, description, params, formName){
 /** Enable auto-completion for drop-down elements.*/
 
 function ajaxAutoCompleteDropDown() {
-    jQuery.widget( "ui.combobox", {
-        _create: function() {
+    jQuery.widget("ui.combobox", {
+        _create: function () {
             var self = this;
             var select = this.element.hide(),
-                selected = select.children( ":selected" ),
+                selected = select.children(":selected"),
                 value = selected.val() ? selected.text() : "";
-            var input = jQuery( "<input>" )
-                .insertAfter( select )
-                .val( value )
+            var input = jQuery("<input>")
+                .insertAfter(select)
+                .val(value)
                 .autocomplete({
                     delay: 0,
                     minLength: 0,
-                    source: function( request, response ) {
-                        var matcher = new RegExp( jQuery.ui.autocomplete.escapeRegex(request.term), "i" );
-                        response( select.children( "option" ).map(function() {
-                            var text = jQuery( this ).text();
-                            if ( this.value && ( !request.term || matcher.test(text) ) )
+                    source: function (request, response) {
+                        var matcher = new RegExp(jQuery.ui.autocomplete.escapeRegex(request.term), "i");
+                        response(select.children("option").map(function () {
+                            var text = jQuery(this).text();
+                            if (this.value && ( !request.term || matcher.test(text) ))
                                 return {
                                     label: text.replace(
                                         new RegExp(
                                             "(?![^&;]+;)(?!<[^<>]*)(" +
                                             jQuery.ui.autocomplete.escapeRegex(request.term) +
                                             ")(?![^<>]*>)(?![^&;]+;)", "gi"
-                                        ), "<strong>$1</strong>" ),
+                                        ), "<strong>$1</strong>"),
                                     value: text,
                                     option: this
                                 };
-                        }) );
+                        }));
                     },
-                    select: function( event, ui ) {
-                        ui.item.option.selected = true;                        
+                    select: function (event, ui) {
+                        ui.item.option.selected = true;
                         //select.val( ui.item.option.value );
-                        self._trigger( "selected", event, {
+                        self._trigger("selected", event, {
                             item: ui.item.option
                         });
                     },
-                    change: function( event, ui ) {
-                        if ( !ui.item ) {
-                            var matcher = new RegExp( "^" + jQuery.ui.autocomplete.escapeRegex( jQuery(this).val() ) + "$", "i" ),
+                    change: function (event, ui) {
+                        if (!ui.item) {
+                            var matcher = new RegExp("^" + jQuery.ui.autocomplete.escapeRegex(jQuery(this).val()) + "$", "i"),
                                 valid = false;
-                            select.children( "option" ).each(function() {
-                                if ( this.value.match( matcher ) ) {
+                            select.children("option").each(function () {
+                                if (this.value.match(matcher)) {
                                     this.selected = valid = true;
                                     return false;
                                 }
                             });
-                            if ( !valid ) {
+                            if (!valid) {
                                 // remove invalid value, as it didn't match anything
-                                jQuery( this ).val( "" );
-                                select.val( "" );
+                                jQuery(this).val("");
+                                select.val("");
                                 return false;
                             }
                         }
                     }
-                })
-                //.addClass( "ui-widget ui-widget-content ui-corner-left" );
+                });
+            //.addClass( "ui-widget ui-widget-content ui-corner-left" );
 
-            input.data( "autocomplete" )._renderItem = function( ul, item ) {
-                return jQuery( "<li></li>" )
-                    .data( "item.autocomplete", item )
-                    .append( "<a>" + item.label + "</a>" )
-                    .appendTo( ul );
+            input.data("autocomplete")._renderItem = function (ul, item) {
+                return jQuery("<li></li>")
+                    .data("item.autocomplete", item)
+                    .append("<a>" + item.label + "</a>")
+                    .appendTo(ul);
             };
 
-            jQuery( "<a>&nbsp;</a>" )
-                .attr( "tabIndex", -1 )
-                .attr( "title", "Show All Items" )
-                .insertAfter( input )
+            jQuery("<a>&nbsp;</a>")
+                .attr("tabIndex", -1)
+                .attr("title", "Show All Items")
+                .insertAfter(input)
                 .button({
                     icons: {
                         primary: "ui-icon-triangle-1-s"
                     },
                     text: false
                 })
-                .removeClass( "ui-corner-all" )
-                .addClass( "ui-corner-right ui-button-icon" )
-                .click(function() {
+                .removeClass("ui-corner-all")
+                .addClass("ui-corner-right ui-button-icon")
+                .click(function () {
                     // close if already visible
-                    if ( input.autocomplete( "widget" ).is( ":visible" ) ) {
-                        input.autocomplete( "close" );
+                    if (input.autocomplete("widget").is(":visible")) {
+                        input.autocomplete("close");
                         return;
                     }
 
                     // pass empty string as value to search for, displaying all results
-                    input.autocomplete( "search", "" );
+                    input.autocomplete("search", "");
                     input.focus();
                 });
         }
@@ -581,22 +643,22 @@ function ajaxAutoCompleteDropDown() {
  * @param areaId The id of the HTML container to toggle
  * @param expandTxt Localized 'Expand' text
  * @param collapseTxt Localized 'Collapse' text
-*/
-function toggleCollapsiblePanel(link, areaId, expandTxt, collapseTxt){
-   var container = jQuery("#" + areaId);
-   var liElement = jQuery(link).parents('li:first');
+ */
+function toggleCollapsiblePanel(link, areaId, expandTxt, collapseTxt) {
+    var container = jQuery("#" + areaId);
+    var liElement = jQuery(link).parents('li:first');
     if (liElement) {
-      if (container.is(':visible')) {
-        liElement.removeClass('expanded');
-        liElement.addClass('collapsed');
-        link.title = expandTxt;
-      } else {
-        liElement.removeClass('collapsed');
-        liElement.addClass('expanded');
-        link.title = collapseTxt;
-      }
+        if (container.is(':visible')) {
+            liElement.removeClass('expanded');
+            liElement.addClass('collapsed');
+            link.title = expandTxt;
+        } else {
+            liElement.removeClass('collapsed');
+            liElement.addClass('expanded');
+            link.title = collapseTxt;
+        }
     }
-   container.animate({opacity: 'toggle', height: 'toggle'}, "slow");
+    container.animate({opacity: 'toggle', height: 'toggle'}, "slow");
 }
 
 /** Toggle screenlet visibility on/off.
@@ -604,72 +666,73 @@ function toggleCollapsiblePanel(link, areaId, expandTxt, collapseTxt){
  * @param areaId The id of the HTML container to toggle
  * @param expandTxt Localized 'Expand' text
  * @param collapseTxt Localized 'Collapse' text
-*/
-function toggleScreenlet(link, areaId, saveCollapsed, expandTxt, collapseTxt){
-   toggleCollapsiblePanel(link, areaId, expandTxt, collapseTxt);
-   var container = jQuery("#" + areaId);
-   var screenlet = jQuery(link).parents('div:first');;
-   if(container.is(':visible')){
-       var currentParam = screenlet.id + "_collapsed=false";
-       var newParam = screenlet.id + "_collapsed=true";
-       if(saveCollapsed=='true'){
-           setUserLayoutPreferences('GLOBAL_PREFERENCES',screenlet.id+"_collapsed",'true');
-       }
-   } else {
-       var currentParam = screenlet.id + "_collapsed=true";
-       var newParam = screenlet.id + "_collapsed=false";
-       if(saveCollapsed=='true'){
-           setUserLayoutPreferences('GLOBAL_PREFERENCES',screenlet.id+"_collapsed",'false');
-       }
-   }
-   var paginationMenus = jQuery('div.nav-pager');
-   jQuery.each(paginationMenus, function(menu) {
-       if (menu) {
-           var childElements = menu.getElementsByTagName('a');
-           for (var i = 0; i < childElements.length; i++) {
-               if (childElements[i].href.indexOf("http") == 0) {
-                   childElements[i].href = replaceQueryParam(childElements[i].href, currentParam, newParam);
-               }
-           }
-           childElements = menu.getElementsByTagName('select');
-           for (i = 0; i < childElements.length; i++) {
-               if (childElements[i].href.indexOf("location.href") >= 0) {
-                   Element.extend(childElements[i]);
-                   childElements[i].writeAttribute("onchange", replaceQueryParam(childElements[i].readAttribute("onchange"), currentParam, newParam));
-               }
-           }
-       }
-   });
+ */
+function toggleScreenlet(link, areaId, saveCollapsed, expandTxt, collapseTxt) {
+    toggleCollapsiblePanel(link, areaId, expandTxt, collapseTxt);
+    var screenlet = jQuery(link).parents('div:eq(1)').attr('id');
+    var title = jQuery(link).attr('title');
+    if (title == expandTxt) {
+        var currentParam = screenlet + "_collapsed=false";
+        var newParam = screenlet + "_collapsed=true";
+        if (saveCollapsed == 'true') {
+            setUserLayoutPreferences('GLOBAL_PREFERENCES', screenlet + "_collapsed", 'true');
+        }
+    } else {
+        var currentParam = screenlet + "_collapsed=true";
+        var newParam = screenlet + "_collapsed=false";
+        if (saveCollapsed == 'true') {
+            setUserLayoutPreferences('GLOBAL_PREFERENCES', screenlet + "_collapsed", 'false');
+        }
+    }
+    var paginationMenus = jQuery('div.nav-pager');
+    jQuery.each(paginationMenus, function (menu) {
+        if (menu) {
+            var childElements = menu.getElementsByTagName('a');
+            for (var i = 0; i < childElements.length; i++) {
+                if (childElements[i].href.indexOf("http") == 0) {
+                    childElements[i].href = replaceQueryParam(childElements[i].href, currentParam, newParam);
+                }
+            }
+            childElements = menu.getElementsByTagName('select');
+            for (i = 0; i < childElements.length; i++) {
+                if (childElements[i].href.indexOf("location.href") >= 0) {
+                    Element.extend(childElements[i]);
+                    childElements[i].writeAttribute("onchange", replaceQueryParam(childElements[i].readAttribute("onchange"), currentParam, newParam));
+                }
+            }
+        }
+    });
 }
 
 /** In Place Editor for display elements
-  * @param element The id of the display field
-  * @param url The request to be called to update the display field
-  * @param options Options to be passed to Ajax.InPlaceEditor
-*/
+ * @param element The id of the display field
+ * @param url The request to be called to update the display field
+ * @param options Options to be passed to Ajax.InPlaceEditor
+ */
 
 function ajaxInPlaceEditDisplayField(element, url, options) {
     var jElement = jQuery("#" + element);
-    jElement.mouseover(function() {
+    jElement.mouseover(function () {
         jQuery(this).css('background-color', 'rgb(255, 255, 153)');
     });
 
-    jElement.mouseout(function() {
+    jElement.mouseout(function () {
         jQuery(this).css('background-color', 'transparent');
     });
 
-    jElement.editable(function(value, settings){
+    jElement.editable(function (value, settings) {
         // removes all line breaks from the value param, because the parseJSON Function can't work with line breaks
-    	value = value.replace(/\n/g, " ");
+        value = value.replace(/\n/g, " ");
+        value = value.replace(/\"/g, "&quot;");
 
         var resultField = jQuery.parseJSON('{"' + settings.name + '":"' + value + '"}');
         // merge both parameter objects together
         jQuery.extend(settings.submitdata, resultField);
         jQuery.ajax({
-            type : settings.method,
-            url : url,
-            data : settings.submitdata,
-            success : function(data) {
+            type: settings.method,
+            url: url,
+            data: settings.submitdata,
+            success: function (data) {
                 // adding the new value to the field and make the modified field 'blink' a little bit to show the user that somethink have changed
                 jElement.html(value).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).css('background-color', 'transparent');
             }
@@ -696,18 +759,54 @@ function replaceQueryParam(queryString, currentParam, newParam) {
 }
 
 function submitFormDisableSubmits(form) {
-    for (var i=0;i<form.length;i++) {
+    for (var i = 0; i < form.length; i++) {
         var formel = form.elements[i];
         if (formel.type == "submit") {
+            //console.log("formel="+$(formel).html());
             submitFormDisableButton(formel);
             var formName = form.name;
             var formelName = formel.name;
+            //console.log("formelName="+formelName)
             var timeoutString = "submitFormEnableButtonByName('" + formName + "', '" + formelName + "')";
             var t = setTimeout(timeoutString, 1500);
         }
     }
 }
+function modalDisableAllButton(d) {
+    $(d).find("button").each(function () {
+            modalDisableButton(this);
+        }
+    );
+}
+function modalEnableAllButton(d) {
+    $(d).find("button").each(function () {
+        modalEnableButton(this);
+    });
 
+}
+
+function modalDisableButton(button) {
+    if (!button.disabled) {
+
+        button.disabled = true;
+    }
+    button.className = button.className + " disabled";
+    button.value = button.value + "*";
+}
+
+
+function modalEnableButton(button) {
+    button.disabled = false;
+    button.className = button.className.substring(0, button.className.length - " disabled".length);
+    button.value = button.value.substring(0, button.value.length - 1);
+}
+
+
+function modalRemoveSubmit(form) {
+    $(form).find('.form-group').last().find(':submit').each(function () {
+        $(this).remove()
+    })
+}
 // prevents doubleposts for <submit> inputs of type "button" or "image"
 function submitFormDisableButton(button) {
     if (button.form.action != null && button.form.action.length) {
@@ -718,9 +817,21 @@ function submitFormDisableButton(button) {
 }
 
 function submitFormEnableButtonByName(formName, buttonName) {
+
     var form = document[formName];
     var button = form.elements[buttonName];
     submitFormEnableButton(button);
+}
+
+function submitEnableButtonByNameOrId(formName, buttonName, buttonId) {
+    var form = document[formName];
+    var button = form.elements[buttonName];
+    if (!button) {
+        button = document.getElementById(buttonId)
+    }
+    if (button) {
+        submitFormEnableButton(button);
+    }
 }
 function submitFormEnableButton(button) {
     button.disabled = false;
@@ -728,41 +839,71 @@ function submitFormEnableButton(button) {
     button.value = button.value.substring(0, button.value.length - 1);
 }
 
-function expandAll(expanded) {
-  var divs,divs1,i,j,links,groupbody;
+/**
+ * Expands or collapses all groups of one portlet
+ *
+ * @param bool <code>true</code> to expand, <code>false</code> otherwise
+ * @param portalPortletId The id of the portlet
+ */
+function expandAllP(bool, portalPortletId) {
+    jQuery('#scrlt_' + portalPortletId + ' .fieldgroup').each(function () {
+        var titleBar = $(this).children('.fieldgroup-title-bar'), body = $(this).children('.fieldgroup-body');
+        if (titleBar.children().length > 0 && body.is(':visible') != bool) {
+            toggleCollapsiblePanel(titleBar.find('a'), body.attr('id'), 'expand', 'collapse');
+        }
+    });
+}
 
-  divs=document.getElementsByTagName('div');
-  for(i=0;i<divs.length;i++) {
-    if(/fieldgroup$/.test(divs[i].className)) {
-      links=divs[i].getElementsByTagName('a');
-      if(links.length>0) {
-        divs1=divs[i].getElementsByTagName('div');
-        for(j=0;j<divs1.length;j++){
-          if(/fieldgroup-body/.test(divs1[j].className)) {
-            groupbody=divs1[j];
-          }
-        }
-        if(jQuery(groupbody).is(':visible') != expanded) {
-          toggleCollapsiblePanel(links[0], groupbody.id, 'expand', 'collapse');
-        }
-      }
-    }
-  }
+/**
+ * Expands or collapses all groups of the page
+ *
+ * @param bool <code>true</code> to expand, <code>false</code> otherwise
+ */
+function expandAll(bool) {
+    jQuery('.fieldgroup-body').each(function () {
+        /*  var titleBar = $(this).children('.fieldgroup-title-bar'), body = $(this).children('.fieldgroup-body');
+         if (titleBar.children().length > 0 && body.is(':visible') != bool) {
+         toggleCollapsiblePanel(titleBar.find('a'), body.attr('id'), 'expand', 'collapse');
+         }*/
+        if (bool)
+            $(this).collapse('open');
+        else
+            $(this).collapse('close');
+    });
+}
+
+/**
+ * Expands or collapses all groups of the page
+ *
+ * @param bool <code>true</code> to expand, <code>false</code> otherwise
+ */
+function expandAllAmaze(bool) {
+    jQuery('.fieldgroup-body').each(function () {
+        /*  var titleBar = $(this).children('.fieldgroup-title-bar'), body = $(this).children('.fieldgroup-body');
+         if (titleBar.children().length > 0 && body.is(':visible') != bool) {
+         toggleCollapsiblePanel(titleBar.find('a'), body.attr('id'), 'expand', 'collapse');
+         }*/
+        if (bool)
+            $(this).collapse('open');
+        else
+            $(this).collapse('close');
+    });
 }
 
 //calls ajax request for storing user layout preferences
-function setUserLayoutPreferences(userPrefGroupTypeId, userPrefTypeId, userPrefValue){
+function setUserLayoutPreferences(userPrefGroupTypeId, userPrefTypeId, userPrefValue) {
     jQuery.ajax({
-        url:'ajaxSetUserPreference',
+        url: 'ajaxSetUserPreference',
         type: "POST",
         data: ({userPrefGroupTypeId: userPrefGroupTypeId, userPrefTypeId: userPrefTypeId, userPrefValue: userPrefValue}),
-        success: function(data) {}
+        success: function (data) {
+        }
     });
 }
 
 function waitSpinnerShow() {
     jSpinner = jQuery("#wait-spinner");
-    if (!jSpinner.length) return
+    if (!jSpinner.length) return;
 
     bdy = document.body;
     lookupLeft = (bdy.offsetWidth / 2) - (jSpinner.width() / 2);
@@ -771,7 +912,7 @@ function waitSpinnerShow() {
     lookupTop = (scrollOffY + winHeight / 2) - (jSpinner.height() / 2);
 
     jSpinner.css("display", "block");
-    jSpinner.css("left", lookupLeft + "px"); 
+    jSpinner.css("left", lookupLeft + "px");
     jSpinner.css("top", lookupTop + "px");
     jSpinner.show();
 }
@@ -787,15 +928,15 @@ function waitSpinnerHide() {
  */
 function getJSONuiLabels(requiredLabels) {
     var returnVal = {};
-    var requiredLabelsStr = JSON.stringify(requiredLabels)
+    var requiredLabelsStr = JSON.stringify(requiredLabels);
 
     if (requiredLabels != null && requiredLabels != "") {
         jQuery.ajax({
             url: "getJSONuiLabelArray",
             type: "POST",
-            data: {"requiredLabels" : requiredLabelsStr},
-            async: false,
-            success: function(data) {
+            data: {"requiredLabels": requiredLabelsStr},
+            async: true,
+            success: function (data) {
                 returnVal = data;
             }
         });
@@ -815,15 +956,15 @@ function getJSONuiLabel(uiResource, errUiLabel) {
     requiredLabel[uiResource] = errUiLabel;
 
     var returnVal = "";
-    var requiredLabelStr = JSON.stringify(requiredLabel)
+    var requiredLabelStr = JSON.stringify(requiredLabel);
 
     if (requiredLabel != null && requiredLabel != "") {
         jQuery.ajax({
             url: "getJSONuiLabel",
             type: "POST",
-            data: {"requiredLabel" : requiredLabelStr},
-            async: false,
-            success: function(data) {
+            data: {"requiredLabel": requiredLabelStr},
+            async: true,
+            success: function (data) {
                 returnVal = data[0];
             }
         });
@@ -867,14 +1008,14 @@ function showErrorAlertLoadUiLabel(errBoxTitleResource, errBoxTitleLabel, uiReso
     if (errMsgBox.length) {
         errMsgBox.dialog({
             modal: true,
-            title: function() {
+            title: function () {
                 if (useTitle) {
                     return labels[errBoxTitleResource][0]
                 } else {
                     return ""
                 }
             },
-            open : function() {
+            open: function () {
                 var positionInArray = 0;
                 if (errBoxTitleResource == uiResource) {
                     positionInArray = 1;
@@ -882,9 +1023,9 @@ function showErrorAlertLoadUiLabel(errBoxTitleResource, errBoxTitleLabel, uiReso
                 errMsgBox.html(labels[uiResource][positionInArray]);
             },
             buttons: {
-                Ok: function() {
+                Ok: function () {
                     errMsgBox.remove();
-                    jQuery( this ).dialog( "close" );
+                    jQuery(this).dialog("close");
                 }
             }
         });
@@ -897,7 +1038,7 @@ function showErrorAlertLoadUiLabel(errBoxTitleResource, errBoxTitleLabel, uiReso
  * @param errMessage String - Required - i18n Error Message
  */
 function showErrorAlert(errBoxTitle, errMessage) {
-    if (errMessage == null || errMessage == "" || errMessage == undefined ) {
+    if (errMessage == null || errMessage == "" || errMessage == undefined) {
         // No Error Message Information is set, Error Msg Box can't be created
         return;
     }
@@ -909,11 +1050,33 @@ function showErrorAlert(errBoxTitle, errMessage) {
             modal: true,
             title: errBoxTitle,
             buttons: {
-                Ok: function() {
+                Ok: function () {
                     errMsgBox.remove();
-                    jQuery( this ).dialog( "close" );
+                    jQuery(this).dialog("close");
                 }
             }
         });
     }
 }
+function showErrorAlert(errBoxTitle, errMessage, targetId) {
+  if (errMessage == null || errMessage == "" || errMessage == undefined) {
+    // No Error Message Information is set, Error Msg Box can't be created
+    return;
+  }
+
+  var errMsgBox = jQuery(targetId).after(jQuery("<div id='errorAlertBox'>" + errMessage + "</div>"));
+
+  if (errMsgBox.length) {
+    errMsgBox.dialog({
+      modal: true,
+      title: errBoxTitle,
+      buttons: {
+        Ok: function () {
+          errMsgBox.remove();
+          jQuery(this).dialog("close");
+        }
+      }
+    });
+  }
+}
+

@@ -595,7 +595,7 @@
 <#macro renderFormatFieldRowSpacerCell></#macro>
 <#macro renderFormatFieldRowWidgetCellOpen positionSpan style avg isEnd>
     <#if avg=='0'>
-    <div class="col-md-9 col-lg-8">
+    <div class="col-md-7 col-lg-7">
     <#else>
     <div class="col-md-${avg} col-lg-${avg} <#if isEnd=='true'></#if>">
     </#if>

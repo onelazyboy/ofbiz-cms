@@ -110,12 +110,15 @@
             </widgets>
         </section>
     </screen>
+
+
    <screen name="FindCmsArticle">
         <section>
             <actions>
                 <set field="headerItem" value="CmsArticle"/>
                 <set field="titleProperty" value="CmsArticle"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
@@ -125,7 +128,8 @@
                                     <decorator-section name="menu-bar">
                                         <container style="button-bar">
                                             <link target="FindCmsArticleType" link-type="anchor" text="${uiLabelMap.CommonFind}${uiLabelMap.CmsArticleType}" style="buttontext search"/>
-                                            <link target="EditCmsArticle" link-type="anchor" text="${uiLabelMap.CommonNew}${uiLabelMap.CmsArticle}" style="buttontext create"/>
+                                            <!-- <link target="EditCmsArticle" link-type="anchor" text="${uiLabelMap.CommonNew}${uiLabelMap.CmsArticle}" style="buttontext create"/> -->
+											<modal-page modal-url="EditCmsArticle"  description="${uiLabelMap.CommonNew}${uiLabelMap.CmsArticle}1" id="EditCmsArticle" name="EditCmsArticle" confirm-title="${uiLabelMap.CommonNew}${uiLabelMap.CmsArticle}" modal-style="modal-lg"/>
                                         </container>
                                     </decorator-section>
 									 <decorator-section name="search-options"> 
@@ -144,7 +148,8 @@
     <screen name="EditCmsArticle">
         <section>
             <actions>
-                <set field="titleProperty" value="CmsArticle"/>
+                <set field="articleId" value="9530"/>
+				<set field="titleProperty" value="CmsArticle"/>
                 <set field="tabButtonItem" value="CmsArticle"/>
                 <set field="articleId" from-field="parameters.articleId"/>
                 <entity-one entity-name="CmsArticle" value-field="entity"/>
@@ -153,15 +158,16 @@
                 </entity-one>
             </actions>
             <widgets>
-                <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
+                <decorator-screen name="CmsBackendCommonDecoratorTwo" location="${parameters.mainDecoratorLocation}">
                     <decorator-section name="body">
                         <include-form name="EditCmsArticle" location="component://cmsbackend/widget/CmsBackendForms.xml"/>
-                        <platform-specific><html ><html-template location="component://cmsbackend/webapp/cmsbackend/article/edit.ftl"></html-template></html></platform-specific>
+                        <!-- <platform-specific><html ><html-template location="component://cmsbackend/webapp/cmsbackend/article/edit.ftl"></html-template></html></platform-specific> -->
                     </decorator-section>
                 </decorator-screen>
             </widgets>
         </section>
     </screen>
+
     <!-- 链接管理 by Surpass Li 开始 -->
     <screen name="FindCmsFellowshipLinkType">
         <section>
