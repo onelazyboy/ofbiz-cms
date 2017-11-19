@@ -22,7 +22,7 @@ under the License.
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/widget-form.xsd">
 
     <!-- Temporal Expression forms -->
-    <form name="FindTemporalExpression" target="findTemporalExpression" type="single">
+    <form name="FindTemporalExpression" target="findTemporalExpression" type="inputgroup">
         <actions>
             <set field="expressionTypeList" value="${bsh:org.ofbiz.service.calendar.ExpressionUiHelper.getExpressionTypeList(uiLabelMap);}" type="List"/>
         </actions>

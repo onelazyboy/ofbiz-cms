@@ -88,6 +88,26 @@
 		<value xml:lang="en">shortTitle</value>
 		<value xml:lang="zh_CN">短标题</value>
 	</property>
+	<property key="visitTotal">
+		<value xml:lang="en">visitTotal</value>
+		<value xml:lang="zh_CN">查看次数</value>
+	</property>
+	<property key="titleColor">
+		<value xml:lang="en">titleColor</value>
+		<value xml:lang="zh_CN">标题颜色</value>
+	</property>
+	<property key="releaseSysDate">
+		<value xml:lang="en">releaseSysDate</value>
+		<value xml:lang="zh_CN">发布日期</value>
+	</property>
+	<property key="checkTime">
+		<value xml:lang="en">checkTime</value>
+		<value xml:lang="zh_CN">终审通过时间</value>
+	</property>
+	<property key="disableTime">
+		<value xml:lang="en">disableTime</value>
+		<value xml:lang="zh_CN">禁用时间</value>
+	</property>
 	<!-- 文章管理 end -->
 	
 	<property key="FindCmsCalendarEvents">

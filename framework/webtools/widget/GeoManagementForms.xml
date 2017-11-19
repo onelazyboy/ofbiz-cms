@@ -39,7 +39,7 @@
         </field>
     </form>
     
-    <form name="EditGeo" type="single" target="updateGeo" title="" default-map-name="geo"
+    <form name="EditGeo" type="inputgroup" target="updateGeo" title="" default-map-name="geo"
         header-row-style="header-row" default-table-style="basic-table">
         <alt-target use-when="geo==null" target="createGeo"/>
         <field name="geoId" title="${uiLabelMap.CommonGeoId}"><lookup target-form-name="LookupGeo"/></field>
@@ -67,7 +67,7 @@
         <field name="deleteLink"><ignored/></field>        
     </form>
     
-    <form name="LinkGeos" type="single" target="linkGeos" title="" focus-field-name="geoId" 
+    <form name="LinkGeos" type="inputgroup" target="linkGeos" title="" focus-field-name="geoId" 
         header-row-style="header-row" default-table-style="basic-table">
         <field name="geoIds" title="${uiLabelMap.CommonGeos}">
             <drop-down allow-multiple="true">

@@ -744,6 +744,16 @@
 </#macro>
 <#macro renderDateFindField className alert name localizedInputTitle value size maxlength dateType formName defaultDateTimeString imgSrc localizedIconTitle titleStyle defaultOptionFrom defaultOptionThru opEquals opSameDay opGreaterThanFromDayStart opGreaterThan opGreaterThan opLessThan opUpToDay opUpThruDay opIsEmpty>
     <div class="row">
+		<div class="col-md-2 col-lg-2">
+            <select<#if name?has_content> name="${name}_fld0_op"</#if> class="form-control input-sm selectBox"><#rt/>
+                <option value="equals"<#if defaultOptionFrom=="equals"> selected="selected"</#if>>${opEquals}</option><#rt/>
+                <option value="sameDay"<#if defaultOptionFrom=="sameDay"> selected="selected"</#if>>${opSameDay}</option><#rt/>
+                <option value="greaterThanFromDayStart"<#if defaultOptionFrom=="greaterThanFromDayStart"> selected="selected"</#if>>${opGreaterThanFromDayStart}</option><#rt/>
+                <option value="greaterThan"<#if defaultOptionFrom=="greaterThan"> selected="selected"</#if>>${opGreaterThan}</option><#rt/>
+            </select><#rt/>
+        </div><#rt/>
+        <#rt/>
+
         <div class="col-md-4 col-lg-4">
             <div class="input-group">
                 <input id="${name?html}_fld0_value" type="text" class="form-control input-sm" <#if name?has_content> name="${name?html}_fld0_value"</#if><#if localizedInputTitle?has_content>
@@ -774,15 +784,14 @@
                 </#if>
             </div>
         </div>
-        <div class="col-md-2 col-lg-2">
-            <select<#if name?has_content> name="${name}_fld0_op"</#if> class="form-control input-sm selectBox"><#rt/>
-                <option value="equals"<#if defaultOptionFrom=="equals"> selected="selected"</#if>>${opEquals}</option><#rt/>
-                <option value="sameDay"<#if defaultOptionFrom=="sameDay"> selected="selected"</#if>>${opSameDay}</option><#rt/>
-                <option value="greaterThanFromDayStart"<#if defaultOptionFrom=="greaterThanFromDayStart"> selected="selected"</#if>>${opGreaterThanFromDayStart}</option><#rt/>
-                <option value="greaterThan"<#if defaultOptionFrom=="greaterThan"> selected="selected"</#if>>${opGreaterThan}</option><#rt/>
+        <div class="col-md-2 col-lg-2"><#rt/>
+            <select name=<#if name?has_content>"${name}_fld1_op"</#if> class="form-control input-sm selectBox"><#rt/>
+                <option value="opLessThan"<#if defaultOptionThru=="opLessThan"> selected="selected"</#if>>${opLessThan}</option><#rt/>
+                <option value="upToDay"<#if defaultOptionThru=="upToDay"> selected="selected"</#if>>${opUpToDay}</option><#rt/>
+                <option value="upThruDay"<#if defaultOptionThru=="upThruDay"> selected="selected"</#if>>${opUpThruDay}</option><#rt/>
+                <option value="empty"<#if defaultOptionFrom=="empty"> selected="selected"</#if>>${opIsEmpty}</option><#rt/>
             </select><#rt/>
-        </div><#rt/>
-        <#rt/>
+        </div>
         <div class="col-md-4 col-lg-4">
             <div class="input-group">
                 <input id="${name?html}_fld1_value" type="text" class="form-control input-sm" <#if name?has_content> name="${name}_fld1_value"</#if><#if localizedInputTitle?exists>
@@ -813,45 +822,48 @@
                 </#if>
             </div>
         </div>
-        <div class="col-md-2 col-lg-2"><#rt/>
-            <select name=<#if name?has_content>"${name}_fld1_op"</#if> class="form-control input-sm selectBox"><#rt/>
-                <option value="opLessThan"<#if defaultOptionThru=="opLessThan"> selected="selected"</#if>>${opLessThan}</option><#rt/>
-                <option value="upToDay"<#if defaultOptionThru=="upToDay"> selected="selected"</#if>>${opUpToDay}</option><#rt/>
-                <option value="upThruDay"<#if defaultOptionThru=="upThruDay"> selected="selected"</#if>>${opUpThruDay}</option><#rt/>
-                <option value="empty"<#if defaultOptionFrom=="empty"> selected="selected"</#if>>${opIsEmpty}</option><#rt/>
-            </select><#rt/>
-        </div>
+        
     </div>
 
 </#macro>
 
 <#macro renderRangeFindField className alert name value size maxlength autocomplete titleStyle defaultOptionFrom opEquals opGreaterThan opGreaterThanEquals opLessThan opLessThanEquals value2 defaultOptionThru>
-    <input type="text" class="form-control input-sm" <#if name?has_content>name="${name}_fld0_value"</#if><#if value?has_content> value="${value}"</#if><#if size?has_content>
-           size="${size}"</#if><#if maxlength?has_content> maxlength="${maxlength}"</#if><#if autocomplete?has_content> autocomplete="off"</#if>/><#rt/>
-    <#if titleStyle?has_content>
-    <span class="${titleStyle}"><#rt/>
-    </#if>
-    <select <#if name?has_content>name="${name}_fld0_op"</#if> class="form-control input-sm selectBox"><#rt/>
-        <option value="equals"<#if defaultOptionFrom=="equals"> selected="selected"</#if>>${opEquals}</option><#rt/>
-        <option value="greaterThan"<#if defaultOptionFrom=="greaterThan"> selected="selected"</#if>>${opGreaterThan}</option><#rt/>
-        <option value="greaterThanEqualTo"<#if defaultOptionFrom=="greaterThanEqualTo"> selected="selected"</#if>>${opGreaterThanEquals}</option><#rt/>
-    </select><#rt/>
-    <#if titleStyle?has_content>
-    </span><#rt/>
-    </#if>
-    <br/><#rt/>
-    <input type="text" class="form-control input-sm" <#if name?has_content> name="${name}_fld1_value"</#if><#if value2?has_content> value="${value2}"</#if><#if size?has_content>
-           size="${size}"</#if><#if maxlength?has_content> maxlength="${maxlength}"</#if><#if autocomplete?has_content> autocomplete="off"</#if>/><#rt/>
-    <#if titleStyle?has_content>
-    <span class="${titleStyle}"><#rt/>
-    </#if>
-    <select name=<#if name?has_content>"${name}_fld1_op"</#if> class="form-control input-sm selectBox"><#rt/>
-        <option value="lessThan"<#if defaultOptionThru=="lessThan"> selected="selected"</#if>>${opLessThan?html}</option><#rt/>
-        <option value="lessThanEqualTo"<#if defaultOptionThru=="lessThanEqualTo"> selected="selected"</#if>>${opLessThanEquals?html}</option><#rt/>
-    </select><#rt/>
-    <#if titleStyle?has_content>
-    </span>
-    </#if>
+    <div class="row">
+		<div class="col-md-2 col-lg-2">
+			<select <#if name?has_content>name="${name}_fld0_op"</#if> class="form-control input-sm selectBox"><#rt/>
+				<option value="equals"<#if defaultOptionFrom=="equals"> selected="selected"</#if>>${opEquals}</option><#rt/>
+				<option value="greaterThan"<#if defaultOptionFrom=="greaterThan"> selected="selected"</#if>>${opGreaterThan}</option><#rt/>
+				<option value="greaterThanEqualTo"<#if defaultOptionFrom=="greaterThanEqualTo"> selected="selected"</#if>>${opGreaterThanEquals}</option><#rt/>
+			</select><#rt/>
+			<#if titleStyle?has_content>
+			</span><#rt/>
+			</#if>
+		</div>
+			<div class="col-md-4 col-lg-4">
+			<input type="text" class="form-control input-sm" <#if name?has_content>name="${name}_fld0_value"</#if><#if value?has_content> value="${value}"</#if><#if size?has_content>
+				   size="${size}"</#if><#if maxlength?has_content> maxlength="${maxlength}"</#if><#if autocomplete?has_content> autocomplete="off"</#if>/><#rt/>
+			<#if titleStyle?has_content>
+			<span class="${titleStyle}"><#rt/>
+			</#if>
+		</div>
+		<div class="col-md-2 col-lg-2">
+			<select name=<#if name?has_content>"${name}_fld1_op"</#if> class="form-control input-sm selectBox"><#rt/>
+				<option value="lessThan"<#if defaultOptionThru=="lessThan"> selected="selected"</#if>>${opLessThan?html}</option><#rt/>
+				<option value="lessThanEqualTo"<#if defaultOptionThru=="lessThanEqualTo"> selected="selected"</#if>>${opLessThanEquals?html}</option><#rt/>
+			</select><#rt/>
+			<#if titleStyle?has_content>
+			</span>
+			</#if>
+		</div>
+		<div class="col-md-4 col-lg-4">
+			<input type="text" class="form-control input-sm" <#if name?has_content> name="${name}_fld1_value"</#if><#if value2?has_content> value="${value2}"</#if><#if size?has_content>
+				   size="${size}"</#if><#if maxlength?has_content> maxlength="${maxlength}"</#if><#if autocomplete?has_content> autocomplete="off"</#if>/><#rt/>
+			<#if titleStyle?has_content>
+			<span class="${titleStyle}"><#rt/>
+			</#if>
+		</div>
+		
+	</div>
 </#macro>
 
 <#--
@@ -1118,22 +1130,22 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
                         <#assign pages5 = -1>
                     <#-- 说明默认显示前5页， 如果页数大于5，则 取（总页码- 当前页码+5））/2 前后的两页-->
                         <#if (x>5)>
-                            <#assign  y =ceiling((x-(viewIndex+1))/2)>
+                            <#assign  y =((x-(viewIndex+1))/2)?ceiling>
                             <#if (y>0)>
                                 <#if ((viewIndex-1+y)<=x &&((viewIndex-1+y)>5)) >
-                                    <#assign pages1 = ceiling(viewIndex-1+y)>
+                                    <#assign pages1 = (viewIndex-1+y)?ceiling>
                                 </#if>
                                 <#if ((viewIndex+y)<=x&&((viewIndex-1+y)>5))>
-                                    <#assign pages2 = ceiling(viewIndex+y)>
+                                    <#assign pages2 = (viewIndex+y)?ceiling>
                                 </#if>
                                 <#if ((viewIndex+1+y)<=x&&((viewIndex-1+y)>5))>
-                                    <#assign pages3 = ceiling(viewIndex+1+y)>
+                                    <#assign pages3 = (viewIndex+1+y)?ceiling>
                                 </#if>
                                 <#if ((viewIndex+2+y)<=x&&((viewIndex-1+y)>5))>
-                                    <#assign pages4 = ceiling(viewIndex+2+y)>
+                                    <#assign pages4 = (viewIndex+2+y)?ceiling>
                                 </#if>
                                 <#if ((viewIndex+3+y)<=x&&((viewIndex-1+y)>5))>
-                                    <#assign pages5 = ceiling(viewIndex+3+y)>
+                                    <#assign pages5 = (viewIndex+3+y)?ceiling>
                                 </#if>
                             </#if>
                             <#if (y==0)>

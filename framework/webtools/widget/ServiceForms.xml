@@ -21,7 +21,7 @@ under the License.
 <forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/widget-form.xsd">
 
-    <form name="scheduleJob" type="single" target="setServiceParameters"
+    <form name="scheduleJob" type="inputgroup" target="setServiceParameters"
         header-row-style="header-row" default-table-style="basic-table">
         <field name="JOB_NAME" title="${uiLabelMap.WebtoolsJob}"><text/></field>
         <field name="SERVICE_NAME" title="${uiLabelMap.WebtoolsService}"><text/></field>
@@ -46,7 +46,7 @@ under the License.
         <field name="submitButton" title="${uiLabelMap.CommonSubmit}"><submit button-type="button"/></field>
     </form>
 
-    <form name="runService" type="single" target="setSyncServiceParameters"
+    <form name="runService" type="inputgroup" target="setSyncServiceParameters"
         header-row-style="header-row" default-table-style="basic-table">
         <field name="SERVICE_NAME" title="${uiLabelMap.WebtoolsService}"><text/></field>
         <field name="POOL_NAME" title="${uiLabelMap.WebtoolsPool}"><text/></field>
@@ -54,11 +54,11 @@ under the License.
         <field name="submitButton" title="${uiLabelMap.CommonSubmit}"><submit button-type="button"/></field>
     </form>
 
-    <form name="FindJobs" type="single" target="FindJob" default-entity-name="JobSandbox">
+    <form name="FindJobs" type="inputgroup" target="FindJob" default-entity-name="JobSandbox">
         <field name="noConditionFind"><hidden value="Y"/><!-- if this isn't there then with all fields empty no query will be done --></field>
-        <field name="jobName" title="${uiLabelMap.WebtoolsJob}"><text-find/></field>
-        <field name="jobId" title="${uiLabelMap.CommonId}"><text-find/></field>
-        <field name="serviceName" title="${uiLabelMap.WebtoolsServiceName}"><text-find/></field>
+        <field name="jobName" title="${uiLabelMap.WebtoolsJob}"><text-find hide-options="true"/></field>
+        <field name="jobId" title="${uiLabelMap.CommonId}"><text-find hide-options="true"/></field>
+        <field name="serviceName" title="${uiLabelMap.WebtoolsServiceName}"><text-find hide-options="true"/></field>
         <field name="statusId" title="${uiLabelMap.CommonStatus}">
             <drop-down allow-empty="true" current-description="">
                 <entity-options description="${description}" key-field-name="statusId" entity-name="StatusItem">

@@ -2094,10 +2094,10 @@ public class MacroFormRenderer implements FormStringRenderer {
 
         Locale locale = (Locale)context.get("locale");
         String opEquals = UtilProperties.getMessage("conditional", "equals", locale);
-        String opGreaterThan = UtilProperties.getMessage("conditional", "greater_than_time", locale);
+        String opGreaterThan = UtilProperties.getMessage("conditional", "greater_than", locale);
         String opSameDay = UtilProperties.getMessage("conditional", "same_day", locale);
         String opGreaterThanFromDayStart = UtilProperties.getMessage("conditional", "greater_than_from_day_start", locale);
-        String opLessThan = UtilProperties.getMessage("conditional", "less_than_time", locale);
+        String opLessThan = UtilProperties.getMessage("conditional", "less_than", locale);
         String opUpToDay = UtilProperties.getMessage("conditional", "up_to_day", locale);
         String opUpThruDay = UtilProperties.getMessage("conditional", "up_thru_day", locale);
         String opIsEmpty = UtilProperties.getMessage("conditional", "is_empty", locale);

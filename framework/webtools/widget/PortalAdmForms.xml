@@ -21,14 +21,14 @@ under the License.
 <forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
         xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/widget-form.xsd">
 
-    <form name="FindPortalPages" type="single" target="FindPortalPage" default-entity-name="PortalPage">
+    <form name="FindPortalPages" type="inputgroup" target="FindPortalPage" default-entity-name="PortalPage">
         <field name="noConditionFind"><hidden value="Y"/><!-- if this isn't there then with all fields empty no query will be done --></field>
-        <field name="portalPageId" position="1" title="${uiLabelMap.CommonId}"><text-find/></field>
-        <field name="originalPortalPageId" position="2"><text-find/></field>
-        <field name="portalPageName" title="${uiLabelMap.CommonName}"><text-find/></field>
-        <field name="parentPortalPageId" position="2"><text-find/></field>
-        <field name="description"><text-find/></field>
-        <field name="securityGroupId" position="2" title="${uiLabelMap.CommonSecurityGroupId}"><text-find/></field>
+        <field name="portalPageId" position="1" title="${uiLabelMap.CommonId}"><text-find hide-options="true"/></field>
+        <field name="originalPortalPageId" position="2"><text-find hide-options="true"/></field>
+        <field name="portalPageName" title="${uiLabelMap.CommonName}"><text-find hide-options="true"/></field>
+        <field name="parentPortalPageId" position="2"><text-find hide-options="true"/></field>
+        <field name="description"><text-find hide-options="true"/></field>
+        <field name="securityGroupId" position="2" title="${uiLabelMap.CommonSecurityGroupId}"><text-find hide-options="true"/></field>
         <field name="searchButton" title="${uiLabelMap.CommonFind}" widget-style="smallSubmit"><submit button-type="button"/></field>
     </form>
 

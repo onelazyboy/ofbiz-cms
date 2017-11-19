@@ -23,6 +23,7 @@
                 <set field="headerItem" value="CmsCalendarEvents"/>
                 <set field="titleProperty" value="CmsCalendarEvents"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
@@ -222,6 +223,7 @@
                 <set field="headerItem" value="CmsFellowshipLink"/>
                 <set field="titleProperty" value="CmsFellowshipLink"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
@@ -517,6 +519,7 @@
                 <set field="headerItem" value="CmsArticleProduct"/>
                 <set field="titleProperty" value="CmsArticleProduct"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
@@ -569,6 +572,7 @@
                 <set field="headerItem" value="CmsUserDetail"/>
                 <set field="titleProperty" value="CmsUserDetail"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">
@@ -618,6 +622,7 @@
                 <set field="headerItem" value="CmsLeaveword"/>
                 <set field="titleProperty" value="CmsLeaveword"/>
                 <set field="pCtx" from-field="parameters"/>
+				<set field="parameters.noConditionFind" value="Y"/>
             </actions>
             <widgets>
                 <decorator-screen name="CmsBackendCommonDecorator" location="${parameters.mainDecoratorLocation}">

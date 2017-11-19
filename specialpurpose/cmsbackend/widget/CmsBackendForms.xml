@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ofbiz.apache.org/dtds/widget-form.xsd">
-    <form name="FindCmsCalendarEvents" type="upload" target="FindCmsCalendarEvents" default-entity-name="CmsCalendarEvents">
+    <form name="FindCmsCalendarEvents" type="inputgroup" target="FindCmsCalendarEvents" default-entity-name="CmsCalendarEvents">
         <field name="noConditionFind">
             <hidden value="Y" />
             <!-- if this isn't there then with all fields empty no query will be done -->
         </field>
         <field name="title" title="${uiLabelMap.title}">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="address" title="${uiLabelMap.address}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="eventTypeId" title="${uiLabelMap.CommonType}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="shortTitle" title="${uiLabelMap.shortTitle}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="eventTime" title="${uiLabelMap.eventTime}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="startTime" title="${uiLabelMap.startTime}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="statusId" title="${uiLabelMap.statusId}" sort-field="true">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="searchButton" title="${uiLabelMap.CommonFind}" widget-style="smallSubmit">
             <submit button-type="button" image-location="/images/icons/magnifier.png" />
@@ -199,15 +199,15 @@
         <field name="origin" title="${uiLabelMap.origin}" position="2">
             <text-find hide-options="true" />
         </field>
-        <!-- <field name="visitTotal" title="${uiLabelMap.visitTotal}">
+        <field name="visitTotal" title="${uiLabelMap.visitTotal}">
             <range-find />
-        </field> -->
-        <!-- <field name="releaseDate" title="${uiLabelMap.releaseDate}">
+        </field>
+        <field name="releaseDate" title="${uiLabelMap.releaseDate}">
             <date-find type="date" />
         </field>
         <field name="checkTime" title="${uiLabelMap.checkTime}" position="2">
             <date-find type="timestamp" />
-        </field> -->
+        </field>
         <field name="searchButton" title="${uiLabelMap.CommonFind}" widget-style="smallSubmit">
             <submit button-type="button" image-location="/images/icons/magnifier.png" />
         </field>
@@ -231,21 +231,21 @@
         <field name="statusId" title="${uiLabelMap.statusId}">
             <display-entity entity-name="CmsArticleStatusItem" />
         </field>
-        <!-- <field name="catalogId" title="${uiLabelMap.catalogId}">
+        <field name="catalogId" title="${uiLabelMap.catalogId}">
             <display />
-        </field> -->
+        </field>
         <field name="author" title="${uiLabelMap.author}">
             <display />
         </field>
-        <!-- <field name="visitTotal" title="${uiLabelMap.visitTotal}">
+        <field name="visitTotal" title="${uiLabelMap.visitTotal}">
             <display />
-        </field> -->
-        <!-- <field name="shortTitle" title="${uiLabelMap.shortTitle}">
+        </field>
+        <field name="shortTitle" title="${uiLabelMap.shortTitle}">
             <display />
-        </field> -->
-        <!-- <field name="titleColor" title="${uiLabelMap.titleColor}">
+        </field>
+        <field name="titleColor" title="${uiLabelMap.titleColor}">
             <display />
-        </field> -->
+        </field>
         <field name="tags" title="${uiLabelMap.tags}">
             <display />
         </field>
@@ -255,20 +255,20 @@
         <field name="releaseDate" title="${uiLabelMap.releaseDate}">
             <display type="date" />
         </field>
-        <!-- <field name="releaseSysDate" title="${uiLabelMap.releaseSysDate}">
+        <field name="releaseSysDate" title="${uiLabelMap.releaseSysDate}">
             <display type="date" />
-        </field> -->
-        <!-- <field name="checkTime" title="${uiLabelMap.checkTime}">
+        </field>
+        <field name="checkTime" title="${uiLabelMap.checkTime}">
             <display type="date-time" />
-        </field> -->
-        <!-- <field name="disableTime" title="${uiLabelMap.disableTime}">
+        </field>
+        <field name="disableTime" title="${uiLabelMap.disableTime}">
             <display type="date-time" />
-        </field> -->
-        <!-- <field name="edit" title="${uiLabelMap.CommonEdit}">
+        </field>
+        <field name="edit" title="${uiLabelMap.CommonEdit}">
             <hyperlink also-hidden="false" description="${uiLabelMap.CommonEdit}" target="EditCmsArticle">
                 <parameter param-name="articleId" />
             </hyperlink>
-        </field> -->
+        </field>
 		<!-- <field name="delete" title="${uiLabelMap.CommonDelete}">
             <hyperlink also-hidden="false" description="${uiLabelMap.CommonDelete}" target="deleteCmsArticle">
                 <parameter param-name="articleId" />
@@ -440,7 +440,7 @@
             <!-- if this isn't there then with all fields empty no query will be done -->
         </field>
         <field name="linkName" title="${uiLabelMap.linkName}">
-            <text-find />
+            <text-find  hide-options="true"/>
         </field>
         <field name="linkTypeId" title="${uiLabelMap.CommonType}">
             <drop-down allow-empty="true" current-description="">
@@ -450,16 +450,16 @@
             </drop-down>
         </field>
         <field name="fileName" title="${uiLabelMap.fileName}">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="url" title="${uiLabelMap.url}">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="fromDate" title="${uiLabelMap.fromDate}">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="thruDate" title="${uiLabelMap.thruDate}">
-            <text-find />
+            <text-find hide-options="true"/>
         </field>
         <field name="statusId" title="${uiLabelMap.statusId}">
             <drop-down allow-empty="true">
