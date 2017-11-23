@@ -150,7 +150,6 @@ public class WidgetFactory {
     public static void registerScreenWidget(String tagName, Class<? extends ModelScreenWidget> widgetClass) throws SecurityException, NoSuchMethodException, ClassNotFoundException {
         Assert.notNull("tagName", tagName, "widgetClass", widgetClass);
 //        screenWidgets.put(tagName, widgetClass.getConstructor(ModelScreen.class, Element.class));
-        System.out.println("##############"+tagName);
         ////修改构造方法支持不同类型的ModelScreen
         if(tagName.indexOf(".")!=-1){
             String perfix = tagName.substring(0,tagName.indexOf("."));
