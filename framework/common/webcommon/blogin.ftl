@@ -4,7 +4,7 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YA | Login</title>
+    <title>JF | Login</title>
 
     <link href="/boots/css/bootstrap.min.css" rel="stylesheet"/>
     <link href="/images/font-awesome/css/font-awesome.css" rel="stylesheet"/>
@@ -29,7 +29,7 @@
     <div>
         <div>
 
-            <h1 class="logo-name">Y A</h1>
+            <h1 class="logo-name">J F</h1>
 
         </div>
         <h3>Welcome to ${uiLabelMap.CommonManagerSystem}</h3>
