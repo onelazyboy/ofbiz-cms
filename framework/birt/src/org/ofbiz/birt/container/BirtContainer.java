@@ -60,7 +60,7 @@ public class BirtContainer implements Container {
     private static Delegator delegator;
     private static LocalDispatcher dispatcher;
 
-    public void init(String[] args, String configFile)
+    public void init(String[] args,String name, String configFile)
             throws ContainerException {
         this.configFile = configFile;
     }

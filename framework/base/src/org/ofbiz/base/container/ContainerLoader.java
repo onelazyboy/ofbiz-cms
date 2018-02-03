@@ -178,13 +178,14 @@ public class ContainerLoader implements StartupLoader {
         }
 
         // initialize the container object
+       
         try {
-            containerObj.init(args, configFile);
-        } catch (ContainerException e) {
-            throw new StartupException("Cannot init() " + containerCfg.name, e);
-        } catch (java.lang.AbstractMethodError e) {
-            throw new StartupException("Cannot init() " + containerCfg.name, e);
-        }
+			containerObj.init(args, containerCfg.name,configFile);
+		} catch (ContainerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+       
 
         return containerObj;
     }

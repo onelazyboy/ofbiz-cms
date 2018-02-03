@@ -43,7 +43,7 @@ public class WebslingerContainer implements Container {
     private static LanguageManager languageManager;
     private static TemplateManager templateManager;
     
-    public void init(String[] args, String configFile) throws ContainerException {
+    public void init(String[] args, String name,String configFile) throws ContainerException {
     }
 
     @SuppressWarnings("unchecked")

@@ -558,6 +558,9 @@ public class ModelMenuItem {
     public Link getLink() {
        return this.link;
     }
+    public ModelMenu getSubMenu() {
+        return this.subMenu;
+     }
 
     public boolean isSelected(Map<String, Object> context) {
         return this.name.equals(modelMenu.getSelectedMenuItemContextFieldName(context));

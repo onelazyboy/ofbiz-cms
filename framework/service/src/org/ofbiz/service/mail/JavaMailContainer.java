@@ -76,7 +76,7 @@ public class JavaMailContainer implements Container {
      * @throws org.ofbiz.base.container.ContainerException
      *
      */
-    public void init(String[] args, String configFile) throws ContainerException {
+    public void init(String[] args, String name,String configFile) throws ContainerException {
         this.configFile = configFile;
         this.stores = new LinkedHashMap<Store, Session>();
         this.pollTimer = new Timer();

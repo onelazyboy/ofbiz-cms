@@ -34,7 +34,7 @@ import org.webslinger.commons.vfs.VFSUtil;
 public class CommonsVfsContainer implements Container {
     private static StandardFileSystemManager sfsm;
 
-    public void init(String[] args, String configFile) throws ContainerException {
+    public void init(String[] args, String name,String configFile) throws ContainerException {
     }
 
     public boolean start() throws ContainerException {

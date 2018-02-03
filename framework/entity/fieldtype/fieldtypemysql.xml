@@ -60,4 +60,12 @@ under the License.
     <field-type-def type="id-long-ne" sql-type="VARCHAR(60)" java-type="String"/>
     <field-type-def type="id-vlong-ne" sql-type="VARCHAR(250)" java-type="String"/>
     <field-type-def type="tel-number" sql-type="VARCHAR(60)" java-type="String"/>
+
+	<field-type-def type="int1" sql-type="INT UNSIGNED" java-type="int"/>
+	<field-type-def type="int11" sql-type="INT" java-type="int"/>
+	<field-type-def type="varchar60" sql-type="VARCHAR(60)" java-type="String"/>
+	<field-type-def type="varchar150" sql-type="VARCHAR(150)" java-type="String"/>
+	<field-type-def type="varchar300" sql-type="VARCHAR(300)" java-type="String"/>
+	<field-type-def type="varchar500" sql-type="VARCHAR(500)" java-type="String"/>
+	<field-type-def type="varchar2000" sql-type="VARCHAR(2000)" java-type="String"/>
 </fieldtypemodel>

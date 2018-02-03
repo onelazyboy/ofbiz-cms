@@ -142,6 +142,24 @@
         <uiLabel>CmsBackendUiLabels</uiLabel>
         <iconStyle>fa fa-area-chart</iconStyle>
     </app>
+	<app id="cmsBiz">
+        <location>hot-deploy/cmsBiz/widget/cmsBizMenus.xml</location>
+        <name>MainAppBar</name>
+        <uiLabel>cmsConsoleUiLabels</uiLabel>
+        <iconStyle>fa fa-area-chart</iconStyle>
+    </app>
+	<app id="cmsConsole">
+        <location>hot-deploy/cmsConsole/widget/cmsConsoleMenus.xml</location>
+        <name>CmsAppBar</name>
+        <uiLabel>cmsConsoleUiLabels</uiLabel>
+        <iconStyle>fa fa-area-chart</iconStyle>
+    </app>
+	<app id="jfc">
+        <location>hot-deploy/cmsConsole/widget/cmsConsoleSubMenus.xml</location>
+        <name>CmsAppBar</name>
+        <uiLabel>cmsConsoleUiLabels</uiLabel>
+        <iconStyle>fa fa-area-chart</iconStyle>
+    </app>
 	<app id="bi">
         <location>framework/bi/widget/BiMenus.xml</location>
         <name>BiAppBar</name>
