@@ -11,13 +11,13 @@
 </head>
 
 <body>
-<!--Ò³Í·Begin-->
+<!--é¡µå¤´Begin-->
 <@cms.Include name='head.html' solution='darkBlue'/> 
-<!--Ò³Í·End-->
-<!--ËÑË÷À¸Begin-->
+<!--é¡µå¤´End-->
+<!--æœç´¢æ Begin-->
 <@cms.Include name='search.html' solution='darkBlue'/>
-<!--ËÑË÷À¸End-->
-<!--Ö÷ÌåÏÂBegin-->
+<!--æœç´¢æ End-->
+<!--ä¸»ä½“ä¸‹Begin-->
 <div class="page_row">
 	<div class="page_main_msg left">		
 		<div class="left_row">
@@ -31,15 +31,16 @@
 				<span class="intr_front">${uiLabelMap.Intro}:</span>	<#if arti.description?length lte 150 >${arti.description}<#else>${arti.description[0..149]}..</#if>
 			</div>
 			<div class="pbox">
+				<img src="/cms/images/upload/article/${arti.contentImg}" title="contentImg" alt="contentImg">
 				${(StringUtil.wrapString(arti.content))!}
             </div>
 
-			<div class="arti_ref">${uiLabelMap.PreArticle}: [@cms.ArtiSide side='pre'/] &nbsp;&nbsp; ${uiLabelMap.NextArticle}: [@cms.ArtiSide side='next'/] </div>	
-			<!--ÎÄÕÂÆÀÂÛBegin-->
+			<!-- <div class="arti_ref">${uiLabelMap.PreArticle}: [@cms.ArtiSide side='pre'/] &nbsp;&nbsp; ${uiLabelMap.NextArticle}: [@cms.ArtiSide side='next'/] </div>	 -->
+			<!--æ–‡ç« è¯„è®ºBegin-->
 			<div class="comment_list">	
 				<#include 'inc_comment_input.html'/>	
 			</div>
-			<!--ÎÄÕÂÆÀÂÛEnd-->
+			<!--æ–‡ç« è¯„è®ºEnd-->
 		  </div>
 		</div>	
 	</div>
@@ -49,15 +50,14 @@
 	</div>
 	<div style="clear:both;"></div>
 </div>
-<!--Ö÷ÌåÏÂEnd-->
+<!--ä¸»ä½“ä¸‹End-->
 
-
-<!--ÓÑÇéÁ´½ÓBegin-->
+<!--å‹æƒ…é“¾æŽ¥Begin-->
 <@cms.Include name='hotlink.html' solution='darkBlue'/> 
-<!--ÓÑÇéÁ´½ÓEnd-->
+<!--å‹æƒ…é“¾æŽ¥End-->
 
-<!--Ò³½ÅBegin-->
+<!--é¡µè„šBegin-->
 <@cms.Include name='foot.html' solution='darkBlue'/> 
-<!--Ò³½ÅEnd-->
+<!--é¡µè„šEnd-->
 </body>
 </html>

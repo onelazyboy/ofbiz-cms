@@ -219,5 +219,6 @@
 	<classpathentry kind="lib" path="framework/base/lib/j2eespecs/jsp-api-2.3.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/j2eespecs/servlet-api-3.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/xercesImpl-2.11.0.jar"/>
+	<classpathentry kind="lib" path="framework/base/lib/gson-2.8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

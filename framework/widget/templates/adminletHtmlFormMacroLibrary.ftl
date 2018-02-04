@@ -1277,7 +1277,7 @@ Parameter: lastViewName, String, optional - If the ajaxEnabled parameter is true
 
 
 <#macro renderImageField value description alternate style event action>
-        <img<#if value?has_content> src="${value}"</#if><#if description?has_content>
+        <img width="300px" <#if value?has_content> src="${value}"</#if><#if description?has_content>
                                     title="${description}"</#if> alt="<#if alternate?has_content>${alternate}"</#if><#if style?has_content>
                                     class="${style}"</#if><#if event?has_content> ${event?html}="${action}" </#if>/>
 </#macro>

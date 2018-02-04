@@ -28,10 +28,13 @@ import org.ofbiz.entity.serialize.SerializeException;
 import org.ofbiz.service.engine.SoapSerializer;
 import org.xml.sax.SAXException;
 
+import com.google.gson.Gson;
+
 public class AxisClient {	 
 
 	   
 	public static void main(String[] args) {
+		Gson json = new Gson();
 		Map<String, Object> results = null;
 		try {
 			ServiceClient client = new ServiceClient();
@@ -87,6 +90,9 @@ public class AxisClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println(results.toString());
+		String str = json.toJson(results);
+		System.out.println(str);
 
 	}
 		

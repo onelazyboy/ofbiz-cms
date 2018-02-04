@@ -44,6 +44,13 @@
         <response name="success" type="view" value="ping"/>
     </request-map>
 
+	<!-- 外部数据接口 -->
+	<request-map uri="findTest">
+        <event type="java" path="org.ofbiz.webServers.TestServer" invoke="testResponse"/>
+        <response name="success" type="view" value="none"/>
+        <response name="error" type="view" value="error"/>
+    </request-map>
+
     <request-map uri="main"><security https="true" auth="true"/><response name="success" type="view" value="main"/></request-map>
     <request-map uri="FindCmsCalendarEvents"><security https="true" auth="true"/><response name="success" type="view" value="FindCmsCalendarEvents"/></request-map>
     <request-map uri="ViewCmsCalendarEvents"><security https="true" auth="true"/><response name="success" type="view" value="ViewCmsCalendarEvents"/></request-map>

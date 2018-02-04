@@ -196,7 +196,7 @@
     </service>
     <!-- 留言管理服务 by Surpass Li 2011-09-15 结束-->
 
-	<!-- 外部接口 -->
+	<!-- 外部数据接口 -->
 	 <service name="findTestService"  engine="java" location="org.ofbiz.webServers.TestServer" invoke="testService"  export="true" validate="false" auth="false">
      <description>服务测试</description>
      <attribute name="userid" type="String" mode="INOUT" optional="true"/>
