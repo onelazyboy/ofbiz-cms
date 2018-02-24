@@ -7,6 +7,7 @@
 -->
     <include location="component://common/webcommon/WEB-INF/common-controller.xml"/>
 	<include location="component://common/webcommon/WEB-INF/security-controller.xml"/>
+	<include location="component://cmsbackend/webapp/cmsbackend/WEB-INF/outservices-controller.xml"/>
     <description>CmsBackend Component Site Configuration File</description>
 
     <!-- Events to run on every request before security (chains exempt) -->
@@ -42,13 +43,6 @@
         <event type="service" invoke="ping"/>
         <response name="error" type="view" value="ping"/>
         <response name="success" type="view" value="ping"/>
-    </request-map>
-
-	<!-- 外部数据接口 -->
-	<request-map uri="findTest">
-        <event type="java" path="org.ofbiz.webServers.TestServer" invoke="testResponse"/>
-        <response name="success" type="view" value="none"/>
-        <response name="error" type="view" value="error"/>
     </request-map>
 
     <request-map uri="main"><security https="true" auth="true"/><response name="success" type="view" value="main"/></request-map>

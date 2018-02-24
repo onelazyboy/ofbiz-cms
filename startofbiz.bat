@@ -52,7 +52,7 @@ rem "%JAVA_HOME%\bin\java" -Xms128M -Xmx512M -XX:MaxPermSize=512m -Xdebug -Xnoag
 rem ### Simple easy to read line
 echo on
 rem "%JAVA_HOME%\bin\java" -Xms128M -Xmx512M -XX:MaxPermSize=512m -jar ofbiz.jar
-%JAVA_HOME%\bin\java -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8091 -jar ofbiz.jar
+"%JAVA_HOME%\bin\java" -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8091 -jar ofbiz.jar
 echo off
 rem ### If you would prefer the console output to be logged rather than displayed switch out the above line for this one
 rem "%JAVA_HOME%\bin\java" -Xms128M -Xmx512M -XX:MaxPermSize=512m -jar ofbiz.jar > runtime\logs\console.log

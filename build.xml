@@ -204,6 +204,9 @@ under the License.
         <subant inheritall="false" failonerror="${specialpurpose.present}">
             <filelist dir="." files="specialpurpose/build.xml"/>
         </subant>
+		<subant inheritall="false" failonerror="${framework.present}">
+            <filelist dir="." files="framework/build.xml"/>
+        </subant>
         <subant inheritall="false">
             <fileset dir="${basedir}/hot-deploy" casesensitive="no">
                 <exclude name="disabled/**"/>

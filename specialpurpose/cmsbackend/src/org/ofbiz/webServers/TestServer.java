@@ -1,4 +1,5 @@
 package org.ofbiz.webServers;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +14,10 @@ import org.ofbiz.base.util.UtilHttp;
 import org.ofbiz.base.util.UtilMisc;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.GenericDelegator;
+import org.ofbiz.entity.GenericEntityException;
 import org.ofbiz.entity.GenericValue;
+import org.ofbiz.entity.condition.EntityExpr;
+import org.ofbiz.entity.condition.EntityJoinOperator;
 import org.ofbiz.service.DispatchContext;
 
 import com.google.gson.Gson;
@@ -36,35 +40,36 @@ public class TestServer {
 		Gson json = new Gson();
 		String str = json.toJson(result);
 		System.out.println(str);
-		
+
 		return result;
 	}
-	
+
 	public static void testResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		GenericDelegator delegator = (GenericDelegator) request.getAttribute("delegator");
-		Gson json = new Gson();
+
 		Map<String, String> parm = new HashMap<String, String>();
 		String tableName = request.getParameter("tb");
-		if(UtilValidate.isEmpty(tableName)) {
+		if (UtilValidate.isEmpty(tableName)) {
 			tableName = "";
 		}
-		//页码
+		// 页码
 		String pageNumber = request.getParameter("pn");
-		if(UtilValidate.isEmpty(pageNumber)) {
+		if (UtilValidate.isEmpty(pageNumber)) {
 			pageNumber = "1";
 		}
-		//条数
+		// 条数
 		String pageSize = request.getParameter("ps");
-		if(UtilValidate.isEmpty(pageSize)) {
+		if (UtilValidate.isEmpty(pageSize)) {
 			pageSize = "0";
 		}
-		//id
+		// id
 		String articleIdVal = request.getParameter("articleId");
-		if(UtilValidate.isNotEmpty(articleIdVal)) {
+		if (UtilValidate.isNotEmpty(articleIdVal)) {
 			parm.put("articleId", articleIdVal);
 		}
 		List<GenericValue> list = null;
-		String str = "";
+		List<Map> result = new ArrayList<Map>();
+		Map<String,Object> map = null;
 		if (UtilValidate.isNotEmpty(tableName)) {
 			list = delegator.findByAnd(tableName, parm);
 
@@ -82,18 +87,76 @@ public class TestServer {
 			if (endNumber > lsCount) {
 				endNumber = 0;
 			}
-			list = list.subList(startNumber, endNumber);
+			List<GenericValue> leaveword = null;
+			List<GenericValue> like = null;
+			List<GenericValue> collect = null;
+			List<GenericValue> share = null;
+			long likeCount = 0;
+			long shareCount = 0;
+			long collectCount = 0;
+			long leavewordCount = 0;
+			if (UtilValidate.isEmpty(articleIdVal)) {
+				list = list.subList(startNumber, endNumber);
+				for(GenericValue value : list) {
+					String articleId = value.getString("articleId");
+					
+					leaveword = delegator.findByAnd("CmsLeaveword", UtilMisc.toMap("articleId", articleId));
+					leavewordCount = delegator.findCountByCondition("CmsLeaveword", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
+					
+					like = delegator.findByAnd("CmsLike", UtilMisc.toMap("articleId", articleId));
+					likeCount = delegator.findCountByCondition("CmsLike", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
+					
+					share = delegator.findByAnd("CmsShare", UtilMisc.toMap("articleId", articleId));
+					shareCount = delegator.findCountByCondition("CmsCollect", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
 
-			str = json.toJson(list);
+					collect = delegator.findByAnd("CmsCollect", UtilMisc.toMap("articleId", articleId));
+					collectCount = delegator.findCountByCondition("CmsCollect", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
+
+					map = new HashMap<String,Object>();
+					map.put("article", value);
+					map.put("leaveword", leaveword);
+					map.put("leavewordCount", leavewordCount);
+					map.put("like", like);
+					map.put("likeCount", likeCount);
+					map.put("collect", collect);
+					map.put("collectCount", collectCount);
+					map.put("share", share);
+					map.put("shareCount", shareCount);
+					result.add(map);
+				}
+			}
 		}
 		// 输出到界面
-		PrintWriter out = response.getWriter();
-		response.setCharacterEncoding("utf-8");
-		response.setContentType("application/json; charset=utf-8");
-		out.println(str);
-		out.close();
-		//
-		System.out.println(str);
+		printWriterJsonInfo(response, result);
 	}
 
+	private static void printWriterJsonInfo(HttpServletResponse response, Object obj) throws IOException {
+		String str = "";
+		Gson json = new Gson();
+		if (UtilValidate.isNotEmpty(obj)) {
+			str = json.toJson(obj);
+		}
+		System.out.println("############"+str);
+		PrintWriter out = response.getWriter();
+		response.setCharacterEncoding("utf-8");
+		response.addHeader("Access-Control-Allow-Origin", "*");
+		out.println(str);
+		out.close();
+		response.getWriter().print(str);
+	}
+	
+	public static void getArticleInfo(HttpServletRequest request,HttpServletResponse response) throws Exception {
+		String articleId = request.getParameter("articleId");
+		if(UtilValidate.isNotEmpty(articleId)) {
+			articleId ="";
+		}
+		GenericDelegator delegator = (GenericDelegator) request.getAttribute("delegator");
+		if(UtilValidate.isNotEmpty(articleId)) {
+			GenericValue article = delegator.findByPrimaryKey("cmsArticle", UtilMisc.toMap("articleId", articleId));
+			List leaveword = delegator.findByAnd("cmsLeaveword", UtilMisc.toMap("articleId", articleId));
+		}
+		
+		
+		
+	}
 }

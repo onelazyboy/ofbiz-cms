@@ -464,7 +464,7 @@ public class WidgetWorker {
     }
     
     /**
-     * 获取target type 对应的url
+     * 鑾峰彇target type 瀵瑰簲鐨剈rl
      * @param target
      * @param targetType
      * @param parameterMap

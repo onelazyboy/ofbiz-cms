@@ -1080,7 +1080,7 @@ public class UtilMisc {
     }
 
     /**
-     * ȥ���һҳ
+     * 去最后一页
      * @param listSize
      * @param viewSize
      * @return

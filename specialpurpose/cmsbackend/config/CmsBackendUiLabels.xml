@@ -30,19 +30,28 @@
 		<value xml:lang="en">You are not allowed to view this page.</value>
 		<value xml:lang="zh_CN">不允许你浏览这个页面。</value>
 	</property>
-	<!-- 下载管理  -->
-	<property key="CmsAccessoryType">
-		<value xml:lang="en">Asscessory Type</value>
-		<value xml:lang="zh_CN">下载类型</value>
+	<!-- ########用户 ### -->	
+	<property key="userId">
+		<value xml:lang="en">userId</value>
+		<value xml:lang="zh_CN">用户id</value>
 	</property>
-	<property key="FindCmsAccessoryType">
-		<value xml:lang="en">Asscessory Type Manager</value>
-		<value xml:lang="zh_CN">下载类型管理</value>
+	<property key="name">
+		<value xml:lang="en">name</value>
+		<value xml:lang="zh_CN">姓名</value>
 	</property>
-	<property key="EditCmsAccessoryType">
-		<value xml:lang="en">Edit Asscessory Type</value>
-		<value xml:lang="zh_CN">编辑下载类型</value>
+	<property key="sex">
+		<value xml:lang="en">sex</value>
+		<value xml:lang="zh_CN">性别</value>
 	</property>
+	<property key="birthday">
+		<value xml:lang="en">birthday</value>
+		<value xml:lang="zh_CN">出生日期</value>
+	</property>
+	<property key="profile">
+		<value xml:lang="en">profile</value>
+		<value xml:lang="zh_CN">个人简介</value>
+	</property>
+
 	<!-- 文章管理  start -->
 	<property key="FindCmsArticle">
 		<value xml:lang="en">FindCmsArticle</value>
@@ -109,7 +118,74 @@
 		<value xml:lang="zh_CN">禁用时间</value>
 	</property>
 	<!-- 文章管理 end -->
+	<!-- ########留言管理 ### -->	
+	<property key="FindCmsLeaveword">
+		<value xml:lang="en">Leave Word</value>
+		<value xml:lang="zh_CN">留言管理</value>
+	</property>
+	<property key="leavewordId">
+		<value xml:lang="en">leavewordId</value>
+		<value xml:lang="zh_CN">留言id</value>
+	</property>
+	<property key="articleId">
+		<value xml:lang="en">articleId</value>
+		<value xml:lang="zh_CN">作品id</value>
+	</property>
+	<property key="content">
+		<value xml:lang="en">content</value>
+		<value xml:lang="zh_CN">内容</value>
+	</property>
+	<property key="createTime">
+		<value xml:lang="en">createTime</value>
+		<value xml:lang="zh_CN">操作时间</value>
+	</property>
+
+	<!-- ########收藏 ### -->	
+	<property key="collectId">
+		<value xml:lang="en">collectId</value>
+		<value xml:lang="zh_CN">收藏id</value>
+	</property>
+	<!-- ########收藏 ### -->	
+	<property key="shareId">
+		<value xml:lang="en">collectId</value>
+		<value xml:lang="zh_CN">收藏id</value>
+	</property>
+
+	<!-- ########分享 ### -->	
+	<property key="likeId">
+		<value xml:lang="en">collectId</value>
+		<value xml:lang="zh_CN">点赞ID</value>
+	</property>
+
+	<!-- ########问题 ### -->	
+	<property key="questionId">
+		<value xml:lang="en">questionId</value>
+		<value xml:lang="zh_CN">问题id</value>
+	</property>
+	<!-- ########回答 ### -->	
+	<property key="answerId">
+		<value xml:lang="en">answerId</value>
+		<value xml:lang="zh_CN">回答id</value>
+	</property>
+
 	
+
+	
+
+<!-- 下载管理  -->
+	<property key="CmsAccessoryType">
+		<value xml:lang="en">Asscessory Type</value>
+		<value xml:lang="zh_CN">下载类型</value>
+	</property>
+	<property key="FindCmsAccessoryType">
+		<value xml:lang="en">Asscessory Type Manager</value>
+		<value xml:lang="zh_CN">下载类型管理</value>
+	</property>
+	<property key="EditCmsAccessoryType">
+		<value xml:lang="en">Edit Asscessory Type</value>
+		<value xml:lang="zh_CN">编辑下载类型</value>
+	</property>
+
 	<property key="FindCmsCalendarEvents">
 		<value xml:lang="en">FindCmsCalendarEvents</value>
 		<value xml:lang="zh_CN">日程管理</value>
@@ -360,10 +436,7 @@
 		<value xml:lang="zh_CN">多选</value>
 	</property>
 
-	<property key="FindCmsLeaveword">
-		<value xml:lang="en">Leave Word</value>
-		<value xml:lang="zh_CN">留言管理</value>
-	</property>
+	
 
 	<property key="CmsArticleProduct">
 		<value xml:lang="en">CmsArticleProduct</value>

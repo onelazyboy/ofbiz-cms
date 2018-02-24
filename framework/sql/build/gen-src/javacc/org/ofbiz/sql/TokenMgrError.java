@@ -144,4 +144,4 @@ package org.ofbiz.sql;
     this(LexicalError(EOFSeen, lexState, errorLine, errorColumn, errorAfter, curChar), reason);
   }
 }
-/* JavaCC - OriginalChecksum=790f40aacf9a4334fa390049e1752c0e (do not edit this line) */
+/* JavaCC - OriginalChecksum=e52b9d1137b6626a31702e0848024582 (do not edit this line) */

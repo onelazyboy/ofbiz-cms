@@ -23,7 +23,7 @@ package org.ofbiz.webapp.view;
  */
 public abstract class AbstractViewHandler implements ViewHandler {
     protected String name = null;
-    protected String extend = null; //»ñÈ¡À©Õ¹µÄÀàĞÍ £¬Èç¹ûamaze£¬bootstrap
+    protected String extend = null; //è·å–æ‰©å±•çš„ç±»å‹ ï¼Œå¦‚æœamazeï¼Œbootstrap
 
     public String getName() {
         return name;

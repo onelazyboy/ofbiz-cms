@@ -154,7 +154,7 @@ public class ScreenFactory {
     }
     
     /**
-     * cache ±£´æµÄÊÇextend.resourceName
+     * cache ä¿å­˜çš„æ˜¯extend.resourceName
      * @param resourceName
      * @param extend
      * @return
@@ -196,7 +196,7 @@ public class ScreenFactory {
     }
     
     /**
-     * À©Õ¹amazeÇé¿ö£¬ĞèÒª¸ù¾İ
+     * æ‰©å±•amazeæƒ…å†µï¼Œéœ€è¦æ ¹æ®
      * @param screenFileDoc
      * @param sourceLocation
      * @return

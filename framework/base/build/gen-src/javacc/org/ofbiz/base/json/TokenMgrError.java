@@ -144,4 +144,4 @@ package org.ofbiz.base.json;
     this(LexicalError(EOFSeen, lexState, errorLine, errorColumn, errorAfter, curChar), reason);
   }
 }
-/* JavaCC - OriginalChecksum=b2155aa56f932eb2bd819d36e721d046 (do not edit this line) */
+/* JavaCC - OriginalChecksum=8a19d2faba5621d55818cd9670bb8073 (do not edit this line) */
