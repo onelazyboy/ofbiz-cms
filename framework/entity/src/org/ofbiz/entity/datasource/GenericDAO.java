@@ -19,10 +19,13 @@
 package org.ofbiz.entity.datasource;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +38,7 @@ import javolution.util.FastMap;
 import javolution.util.FastSet;
 
 import org.ofbiz.base.util.Debug;
+import org.ofbiz.base.util.ObjectType;
 import org.ofbiz.base.util.UtilValidate;
 import org.ofbiz.entity.Delegator;
 import org.ofbiz.entity.EntityLockedException;
@@ -55,6 +59,7 @@ import org.ofbiz.entity.jdbc.SQLProcessor;
 import org.ofbiz.entity.jdbc.SqlJdbcUtil;
 import org.ofbiz.entity.model.ModelEntity;
 import org.ofbiz.entity.model.ModelField;
+import org.ofbiz.entity.model.ModelFieldType;
 import org.ofbiz.entity.model.ModelFieldTypeReader;
 import org.ofbiz.entity.model.ModelKeyMap;
 import org.ofbiz.entity.model.ModelRelation;
@@ -1173,4 +1178,468 @@ public class GenericDAO {
         DatabaseUtil dbUtil = new DatabaseUtil(this.helperInfo);
         return dbUtil.induceModelFromDb(messages);
     }
+    
+	public List selectBySQL(String selectSQL) throws GenericEntityException {
+		SQLProcessor sqlP = new SQLProcessor(helperInfo);
+		List list = new ArrayList();// FastList.newInstance();
+		try {
+			ResultSet rs = sqlP.executeQuery(selectSQL);
+			ResultSetMetaData rsm = rs.getMetaData();
+			int iCol = rsm.getColumnCount();
+
+			while (rs.next()) {
+				Map row = new HashMap();
+				for (int i = 1; i <= iCol; i++) {
+					Object value = rs.getObject(i);
+					Object key = rsm.getColumnName(i);
+					if (key == null) {
+						key = "@@@" + i;
+					}
+					row.put(key, value);
+				}
+				list.add(row);
+			}
+		} catch (SQLException e) {
+			throw new GenericEntityException("sql: " + selectSQL, e);
+		} finally {
+			sqlP.close();
+		}
+		return list;
+	}
+    
+	public String selectByConditionGetSQL(ModelEntity modelEntity, EntityCondition whereEntityCondition, EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy,
+			EntityFindOptions findOptions) throws GenericEntityException {
+		if (modelEntity == null) {
+			return null;
+		}
+		// if no find options passed, use default
+		if (findOptions == null)
+			findOptions = new EntityFindOptions();
+		boolean verboseOn = Debug.verboseOn();
+		if (verboseOn) {
+			// put this inside an if statement so that we don't have to generate
+			// the string when not used...
+			Debug.logVerbose("Doing selectListIteratorByCondition with whereEntityCondition: " + whereEntityCondition, module);
+		}
+		// make two ArrayLists of fields, one for fields to select and the other
+		// for where clause fields (to find by)
+		List<ModelField> selectFields = FastList.newInstance();
+		if (UtilValidate.isNotEmpty(fieldsToSelect)) {
+			Set<String> tempKeys = FastSet.newInstance();
+			tempKeys.addAll(fieldsToSelect);
+			Iterator<ModelField> fieldIter = modelEntity.getFieldsIterator();
+			while (fieldIter.hasNext()) {
+				ModelField curField = fieldIter.next();
+				if (tempKeys.contains(curField.getName())) {
+					selectFields.add(curField);
+					tempKeys.remove(curField.getName());
+				}
+			}
+			if (tempKeys.size() > 0) {
+				throw new GenericModelException("In selectListIteratorByCondition invalid field names specified: " + tempKeys.toString());
+			}
+		} else {
+			selectFields = modelEntity.getFieldsUnmodifiable();
+		}
+
+		StringBuilder sqlBuffer = new StringBuilder("SELECT ");
+
+		if (findOptions.getDistinct()) {
+			sqlBuffer.append("DISTINCT ");
+		}
+		if (selectFields.size() > 0) {
+			sqlBuffer.append(modelEntity.colNameString(selectFields, ", ", "", datasourceInfo.aliasViews));
+		} else {
+			sqlBuffer.append("*");
+		}
+		// FROM clause and when necessary the JOIN or LEFT JOIN clause(s) as
+		// well
+		sqlBuffer.append(SqlJdbcUtil.makeFromClause(modelEntity, datasourceInfo));
+
+		// WHERE clause
+		StringBuilder whereString = new StringBuilder();
+		String entityCondWhereString = "";
+		List<EntityConditionParam> whereEntityConditionParams = FastList.newInstance();
+		if (whereEntityCondition != null) {
+			entityCondWhereString = whereEntityCondition.makeWhereString(modelEntity, whereEntityConditionParams, this.datasourceInfo);
+		}
+		for (EntityConditionParam w : whereEntityConditionParams) {
+			// ModelField mf = w.getModelField();
+			// if(mf.getType())
+			String f = w.toString();
+			entityCondWhereString = entityCondWhereString.replaceFirst("\\?", getValueSet(w.getModelField(), w.getFieldValue()));
+		}
+		String viewClause = SqlJdbcUtil.makeViewWhereClause(modelEntity, datasourceInfo.joinStyle);
+		if (viewClause.length() > 0) {
+			if (entityCondWhereString.length() > 0) {
+				whereString.append("(");
+				whereString.append(entityCondWhereString);
+				whereString.append(") AND ");
+			}
+
+			whereString.append(viewClause);
+		} else {
+			whereString.append(entityCondWhereString);
+		}
+		if (whereString.length() > 0) {
+			sqlBuffer.append(" WHERE ");
+			sqlBuffer.append(whereString.toString());
+		}
+		// GROUP BY clause for view-entity
+		if (modelEntity instanceof ModelViewEntity) {
+			ModelViewEntity modelViewEntity = (ModelViewEntity) modelEntity;
+			String groupByString = modelViewEntity.colNameString(modelViewEntity.getGroupBysCopy(selectFields), ", ", "", false);
+
+			if (UtilValidate.isNotEmpty(groupByString)) {
+				sqlBuffer.append(" GROUP BY ");
+				sqlBuffer.append(groupByString);
+			}
+		}
+		// HAVING clause
+		String entityCondHavingString = "";
+		List<EntityConditionParam> havingEntityConditionParams = FastList.newInstance();
+
+		if (havingEntityCondition != null) {
+			entityCondHavingString = havingEntityCondition.makeWhereString(modelEntity, havingEntityConditionParams, this.datasourceInfo);
+		}
+		if (entityCondHavingString.length() > 0) {
+			sqlBuffer.append(" HAVING ");
+			sqlBuffer.append(entityCondHavingString);
+		}
+		// ORDER BY clause
+		sqlBuffer.append(SqlJdbcUtil.makeOrderByClause(modelEntity, orderBy, datasourceInfo));
+		String sql = sqlBuffer.toString();
+		return sql;
+	}
+	
+	public String getValueSet(ModelField modelField, Object fieldValue) throws GenericEntityException {
+		ModelFieldType mft = modelFieldTypeReader.getModelFieldType(modelField.getName());
+
+		if (mft == null) {
+			throw new GenericModelException("GenericDAO.getValue: definition fieldType " + modelField.getType() + " not found, cannot setValue for field " + modelField.getName() + ".");
+		}
+
+		// if the value is the GenericEntity.NullField, treat as null
+		if (fieldValue == GenericEntity.NULL_FIELD) {
+			fieldValue = null;
+		}
+
+		String fieldType = mft.getJavaType();
+		if (fieldValue != null) {
+			if (!ObjectType.instanceOf(fieldValue, fieldType)) {
+				// this is only an info level message because under normal
+				// operation for most JDBC
+				// drivers this will be okay, but if not then the JDBC driver
+				// will throw an exception
+				// and when lower debug levels are on this should help give more
+				// info on what happened
+				String fieldClassName = fieldValue.getClass().getName();
+				if (fieldValue instanceof byte[]) {
+					fieldClassName = "byte[]";
+				}
+
+				if (Debug.verboseOn())
+					Debug.logVerbose("type of field " + modelField.getName() + " is " + fieldClassName + ", was expecting " + mft.getJavaType() + "; this may "
+							+ "indicate an error in the configuration or in the class, and may result " + "in an SQL-Java data conversion error. Will use the real field type: " + fieldClassName
+							+ ", not the definition.", module);
+				fieldType = fieldClassName;
+			}
+		}
+
+		try {
+			int typeValue = SqlJdbcUtil.getType(fieldType);
+
+			switch (typeValue) {
+			case 1:// varchar
+				return "'" + (String) fieldValue + "'";
+
+			case 2:// Timestamp
+				return "Timestamp '" + String.valueOf(fieldValue) + "'";
+
+			case 3:// Time
+				return "to_date('" + String.valueOf(fieldValue) + "','HH:mm:ss')";
+
+			case 4:
+				return "to_date('" + String.valueOf(fieldValue) + "','yyyy-MM-dd')";
+
+			case 5:// Integer
+				return String.valueOf(fieldValue);
+
+			case 6:// Long
+				return String.valueOf(fieldValue);
+
+			case 7:// Float
+				return String.valueOf(fieldValue);
+
+			case 8:// Double
+				return String.valueOf(fieldValue);
+
+			case 9:// BigDecimal
+				return String.valueOf(fieldValue);
+
+			case 10:// Boolean
+				return String.valueOf(fieldValue);
+
+			case 11:// tBinaryStream
+				return String.valueOf(fieldValue);
+
+			case 12:// Blob
+				return "''";
+
+			case 13:// Clob
+				return "''";
+
+			case 14:
+				return "to_date('" + (String) fieldValue + "','yyyy-MM-dd')";
+
+			case 15:// Collection
+				return "''";
+			}
+		} catch (GenericNotImplementedException e) {
+			throw new GenericNotImplementedException("Not Implemented Exception while setting value on field [" + modelField.getName() + "] " + e.toString(), e);
+		}
+		return "''";
+	}
+	
+	/**
+	 * @param modelEntity
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] insertBatch(ModelEntity modelEntity, List listFieldsMap)
+			throws GenericEntityException {
+
+		if (modelEntity == null) {
+			throw new GenericModelException(
+					"Could not find ModelEntity record for entityName: "
+							+ modelEntity.getEntityName());
+		}
+
+		SQLProcessor sqlP = new SQLProcessor(helperInfo);
+
+		try {
+			return insertBacthExcute(modelEntity, sqlP, listFieldsMap);
+		} catch (GenericEntityException e) {
+			sqlP.rollback();
+			throw new GenericEntityException(
+					"Exception while inserting the following entity: "
+							+ modelEntity.toString(), e);
+		} finally {
+			sqlP.close();
+		}
+	}
+
+	/**
+	 * @param entity
+	 * @param modelEntity
+	 * @param fieldsToSave
+	 * @param sqlP
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] insertBacthExcute(ModelEntity modelEntity, SQLProcessor sqlP, List listFieldsMap) throws GenericEntityException {
+
+		List fieldsToSave = modelEntity.getFieldsCopy();
+
+		String sql = "INSERT INTO " + modelEntity.getTableName(datasourceInfo) + " (" + modelEntity.colNameString(fieldsToSave) + ") VALUES (" + modelEntity.fieldsStringList(fieldsToSave, "?", ", ")
+				+ ")";
+
+		try {
+			sqlP.prepareStatement(sql);
+			Iterator iterator = listFieldsMap.iterator();
+			while (iterator.hasNext()) {
+				sqlP.setInd(1);
+				Map mapFieldsValue = (Map) iterator.next();
+				GenericEntity entity = GenericEntity.createGenericEntity(null,modelEntity, mapFieldsValue);
+
+				boolean stampTxIsField = modelEntity.isField(ModelEntity.STAMP_TX_FIELD);
+				boolean createStampTxIsField = modelEntity.isField(ModelEntity.CREATE_STAMP_TX_FIELD);
+				if ((stampTxIsField || createStampTxIsField) && !entity.getIsFromEntitySync()) {
+					Timestamp txStartStamp = TransactionUtil.getTransactionStartStamp();
+					if (stampTxIsField) {
+						entity.set(ModelEntity.STAMP_TX_FIELD, txStartStamp);
+						addFieldIfMissing(fieldsToSave, ModelEntity.STAMP_TX_FIELD, modelEntity);
+					}
+					if (createStampTxIsField) {
+						entity.set(ModelEntity.CREATE_STAMP_TX_FIELD, txStartStamp);
+						addFieldIfMissing(fieldsToSave, ModelEntity.CREATE_STAMP_TX_FIELD, modelEntity);
+					}
+				}
+
+				// if we have a STAMP_FIELD or CREATE_STAMP_FIELD then set it
+				// with NOW
+				boolean stampIsField = modelEntity.isField(ModelEntity.STAMP_FIELD);
+				boolean createStampIsField = modelEntity.isField(ModelEntity.CREATE_STAMP_FIELD);
+				if ((stampIsField || createStampIsField) && !entity.getIsFromEntitySync()) {
+					Timestamp startStamp = TransactionUtil.getTransactionUniqueNowStamp();
+					if (stampIsField) {
+						entity.set(ModelEntity.STAMP_FIELD, startStamp);
+						addFieldIfMissing(fieldsToSave, ModelEntity.STAMP_FIELD, modelEntity);
+					}
+					if (createStampIsField) {
+						entity.set(ModelEntity.CREATE_STAMP_FIELD, startStamp);
+						addFieldIfMissing(fieldsToSave, ModelEntity.CREATE_STAMP_FIELD, modelEntity);
+					}
+				}
+				SqlJdbcUtil.setValues(sqlP, fieldsToSave, entity, modelFieldTypeReader);
+				sqlP.addBatch();
+
+			}
+			int[] retVal = sqlP.excuteBatch();
+
+			// entity.synchronizedWithDatasource();
+			return retVal;
+		} catch (GenericEntityException e) {
+			throw new GenericEntityException("while inserting: ", e);
+		} finally {
+			sqlP.close();
+		}
+
+	}
+
+	/**
+	 * @param modelEntity
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] updateBatch(ModelEntity modelEntity, List listGenericValue) throws GenericEntityException {
+
+		if (modelEntity == null) {
+			throw new GenericModelException("Could not find ModelEntity record for entityName: " + modelEntity.getEntityName());
+		}
+
+		SQLProcessor sqlP = new SQLProcessor(helperInfo);
+
+		try {
+			return updateBacthExcute(modelEntity, sqlP, listGenericValue);
+		} catch (GenericEntityException e) {
+			sqlP.rollback();
+			throw new GenericEntityException("Exception while inserting the following entity: " + modelEntity.toString(), e);
+		} finally {
+			sqlP.close();
+		}
+	}
+
+	/**
+	 * @param modelEntity
+	 * @param sqlP
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] updateBacthExcute(ModelEntity modelEntity, SQLProcessor sqlP, List listGenericValue) throws GenericEntityException {
+
+		List fieldsToSave = modelEntity.getFieldsCopy();
+
+		GenericEntity entityFirst = (GenericValue) listGenericValue.get(0);
+
+		String sql = "UPDATE " + modelEntity.getTableName(datasourceInfo) + " SET " + modelEntity.colNameString(fieldsToSave, "=?, ", "=?", false) + " WHERE "
+				+ SqlJdbcUtil.makeWhereStringFromFields(modelEntity.getPksCopy(), entityFirst, "AND");
+		try {
+			sqlP.prepareStatement(sql);
+
+			Iterator iter = listGenericValue.iterator();
+			while (iter.hasNext()) {
+				sqlP.setInd(1);
+				GenericEntity entity = (GenericValue) iter.next();
+				if (modelEntity.lock()) {
+					GenericEntity entityCopy = GenericEntity.createGenericEntity(entity);
+
+					select(entityCopy, sqlP);
+					Object stampField = entity.get(ModelEntity.STAMP_FIELD);
+
+					if ((stampField != null) && (!stampField.equals(entityCopy.get(ModelEntity.STAMP_FIELD)))) {
+						String lockedTime = entityCopy.getTimestamp(ModelEntity.STAMP_FIELD).toString();
+
+						throw new EntityLockedException("You tried to update an old version of this data. Version locked: (" + lockedTime + ")");
+					}
+				}
+
+				if (modelEntity.isField(ModelEntity.STAMP_TX_FIELD) && !entity.getIsFromEntitySync()) {
+					entity.set(ModelEntity.STAMP_TX_FIELD, TransactionUtil.getTransactionStartStamp());
+					addFieldIfMissing(fieldsToSave, ModelEntity.STAMP_TX_FIELD, modelEntity);
+				}
+
+				if (modelEntity.isField(ModelEntity.STAMP_FIELD) && !entity.getIsFromEntitySync()) {
+					entity.set(ModelEntity.STAMP_FIELD, TransactionUtil.getTransactionUniqueNowStamp());
+					addFieldIfMissing(fieldsToSave, ModelEntity.STAMP_FIELD, modelEntity);
+				}
+
+				SqlJdbcUtil.setValues(sqlP, fieldsToSave, entity, modelFieldTypeReader);
+				SqlJdbcUtil.setPkValues(sqlP, modelEntity, entity, modelFieldTypeReader);
+				sqlP.addBatch();
+			}
+			int[] retVal = sqlP.excuteBatch();
+
+			// entity.synchronizedWithDatasource();
+			return retVal;
+
+		} catch (GenericEntityException e) {
+			throw new GenericEntityException("while inserting: ", e);
+		} finally {
+			sqlP.close();
+		}
+	}
+
+	public int[] executeBatch(ModelEntity modelEntity, Collection listSql) throws GenericEntityException {
+
+		if (modelEntity == null) {
+			throw new GenericModelException("Could not find ModelEntity record for entityName: " + modelEntity.getEntityName());
+		}
+
+		SQLProcessor sqlP = new SQLProcessor(helperInfo);
+
+		try {
+			return BacthExcute(modelEntity, sqlP, listSql);
+		} catch (GenericEntityException e) {
+			sqlP.rollback();
+			System.out.println(listSql);
+			throw new GenericEntityException("Exception while inserting the following entity: " + modelEntity.toString(), e);
+		} finally {
+			sqlP.close();
+		}
+	}
+
+	public int[] BacthExcute(ModelEntity modelEntity, SQLProcessor sqlP, Collection listSql) throws GenericEntityException {
+		String Sql = "";
+		try {
+			sqlP.Statement();
+			Iterator iterator = listSql.iterator();
+			while (iterator.hasNext()) {
+				Sql = (String) iterator.next();
+				if (Sql != null && !Sql.equals("")) {
+					sqlP.addStatementBatch(Sql.trim());
+				}
+			}
+			int[] retVal = sqlP.excuteStatementBatch();
+			// entity.synchronizedWithDatasource();
+			return retVal;
+		} catch (GenericEntityException e) {
+			throw new GenericEntityException("while inserting: >>" + Sql, e);
+		} finally {
+			sqlP.close();
+		}
+
+	}
+
+	public ResultSet ExcuteQuery(ModelEntity modelEntity, String Sql) throws GenericEntityException {
+		if (modelEntity == null) {
+			throw new GenericModelException("Could not find ModelEntity record for entityName: " + modelEntity.getEntityName());
+		}
+
+		SQLProcessor sqlP = new SQLProcessor(helperInfo);
+		try {
+			sqlP.prepareStatement(Sql);
+			return sqlP.executeQuery();
+		} catch (GenericEntityException e) {
+			throw new GenericEntityException("while inserting: ", e);
+		} finally {
+			sqlP.close();
+		}
+	}
+	
+	
 }

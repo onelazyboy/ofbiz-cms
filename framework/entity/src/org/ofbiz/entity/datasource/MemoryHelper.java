@@ -19,6 +19,7 @@
 
 package org.ofbiz.entity.datasource;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -434,4 +435,41 @@ public class MemoryHelper implements GenericHelper {
     public void checkDataSource(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) throws GenericEntityException {
         messages.add("checkDataSource not implemented for MemoryHelper");
     }
+
+	@Override
+	public List findBySQL(String selectSQL) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String findByConditionGetSQL(ModelEntity modelEntity, EntityCondition whereEntityCondition, EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy,
+			EntityFindOptions findOptions) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int[] createBatch(ModelEntity entity, List listFieldsMap) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int[] updateBatch(ModelEntity entity, List listGenericValue) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int[] executeBatch(ModelEntity entity, Collection listSql) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ResultSet executeQuery(ModelEntity entity, String Sql) throws GenericEntityException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

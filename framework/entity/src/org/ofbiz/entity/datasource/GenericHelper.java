@@ -20,6 +20,7 @@
 package org.ofbiz.entity.datasource;
 
 
+import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -124,4 +125,34 @@ public interface GenericHelper {
      *@param addMissing Flag indicating whether or not to add missing entities and fields on the server
      */
     public void checkDataSource(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) throws GenericEntityException;
+    /**
+     * 
+     * @param selectSQL
+     * @return
+     * @throws GenericEntityException
+     */
+    public List findBySQL(String selectSQL)throws GenericEntityException;
+    
+    public String findByConditionGetSQL(ModelEntity modelEntity, EntityCondition whereEntityCondition,
+            EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions)
+            throws GenericEntityException;
+    
+    /**
+     * 增加的批处理
+     * @param entity
+     * @param listFieldsMap
+     * @return
+     * @throws GenericEntityException
+     */
+    public int[] createBatch(ModelEntity entity,List listFieldsMap ) throws GenericEntityException ;
+    /**
+     * 修该批处理
+     * @param entity
+     * @param listGenericValue
+     * @return
+     * @throws GenericEntityException
+     */
+    public int[] updateBatch(ModelEntity entity,List listGenericValue)throws GenericEntityException;
+    public int[] executeBatch(ModelEntity entity,Collection listSql ) throws GenericEntityException ;
+    public ResultSet executeQuery(ModelEntity entity,String Sql)throws GenericEntityException;
 }

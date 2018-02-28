@@ -74,6 +74,8 @@ public class SQLProcessor {
 
     // / The SQL String used. Use for debugging only
     private String _sql;
+    // The database resources to be used
+    private Statement _stmt = null;
 
     // / Index to be used with preparedStatement.setValue(_ind, ...)
     private int _ind;
@@ -882,4 +884,83 @@ public class SQLProcessor {
             TransactionUtil.printAllThreadsTransactionBeginStacks();
         }
     }
+
+	public void Statement() throws GenericDataSourceException, GenericEntityException {
+		if (Debug.verboseOn())
+			Debug.logVerbose("[SQLProcessor.Statement] sql=", module);
+
+		if (_connection == null) {
+			getConnection();
+		}
+		try {
+			_ind = 1;
+			_stmt = _connection.createStatement();
+		} catch (SQLException sqle) {
+			throw new GenericDataSourceException("SQL Exception while executing the following:", sqle);
+		}
+	}
+
+	public void addStatementBatch(String sql) throws GenericDataSourceException {
+		try {
+			_stmt.addBatch(sql);
+		} catch (SQLException sqle) {
+			// don't display this here, may not be critical, allow handling further up...
+			// Debug.logError(sqle, "SQLProcessor.executeUpdate() : ERROR : ", module);
+			throw new GenericDataSourceException("SQL Exception while executing the following:" + get_sql(), sqle);
+		}
+	}
+
+	public String get_sql() {
+		return _sql;
+	}
+
+	public int[] excuteStatementBatch() throws GenericDataSourceException {
+		try {
+			// if (Debug.verboseOn()) Debug.logVerbose("[SQLProcessor.executeUpdate] ps=" +
+			// _ps.toString(), module);
+			return _stmt.executeBatch();
+		} catch (SQLException sqle) {
+			// don't display this here, may not be critical, allow handling further up...
+			// Debug.logError(sqle, "SQLProcessor.executeUpdate() : ERROR : ", module);
+			throw new GenericDataSourceException("SQL Exception while executing the following:" + get_sql(), sqle);
+		}
+
+	}
+
+	public void setInd(int i) {
+		_ind = i;
+	}
+
+	public void addBatch() throws GenericDataSourceException {
+		try {
+			_ps.addBatch();
+		} catch (SQLException sqle) {
+			// don't display this here, may not be critical, allow handling further up...
+			// Debug.logError(sqle, "SQLProcessor.executeUpdate() : ERROR : ", module);
+			throw new GenericDataSourceException("SQL Exception while executing the following:" + get_sql(), sqle);
+		}
+	}
+
+	public void addBatch(String sql) throws GenericDataSourceException {
+		try {
+			_ps.addBatch(sql);
+		} catch (SQLException sqle) {
+			// don't display this here, may not be critical, allow handling further up...
+			// Debug.logError(sqle, "SQLProcessor.executeUpdate() : ERROR : ", module);
+			throw new GenericDataSourceException("SQL Exception while executing the following:" + get_sql(), sqle);
+		}
+	}
+
+	public int[] excuteBatch() throws GenericDataSourceException {
+		try {
+			// if (Debug.verboseOn()) Debug.logVerbose("[SQLProcessor.executeUpdate] ps=" +
+			// _ps.toString(), module);
+			return _ps.executeBatch();
+		} catch (SQLException sqle) {
+			// don't display this here, may not be critical, allow handling further up...
+			// Debug.logError(sqle, "SQLProcessor.executeUpdate() : ERROR : ", module);
+			throw new GenericDataSourceException("SQL Exception while executing the following:" + get_sql(), sqle);
+		}
+
+	}
 }

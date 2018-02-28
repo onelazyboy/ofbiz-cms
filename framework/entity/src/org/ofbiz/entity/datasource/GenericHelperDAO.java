@@ -18,6 +18,7 @@
  *******************************************************************************/
 package org.ofbiz.entity.datasource;
 
+import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,5 +193,53 @@ public class GenericHelperDAO implements GenericHelper {
      */
     public void checkDataSource(Map<String, ModelEntity> modelEntities, List<String> messages, boolean addMissing) throws GenericEntityException {
         genericDAO.checkDb(modelEntities, messages, addMissing);
+    }
+    
+    public List findBySQL(String selectSQL)throws GenericEntityException{
+        return genericDAO.selectBySQL(selectSQL);
+    }
+    public String findByConditionGetSQL(ModelEntity modelEntity, EntityCondition whereEntityCondition,
+            EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions)
+            throws GenericEntityException {
+            return genericDAO.selectByConditionGetSQL(modelEntity, whereEntityCondition, havingEntityCondition, fieldsToSelect, orderBy, findOptions);
+        }
+    public int[] createBatch(ModelEntity entity,List listFieldsMap ) throws GenericEntityException {
+        if (entity == null) {
+            return null;
+        }
+        int[] retVal = genericDAO.insertBatch(entity,listFieldsMap);
+        if (Debug.verboseOn()) Debug.logVerbose("Insert batch Return Value : " + retVal, module);
+        return retVal;
+    }
+    /**
+     * @param entity
+     * @param listGenericValue
+     * @return
+     * @throws GenericEntityException
+     */
+    public int[] updateBatch(ModelEntity entity,List listGenericValue)throws GenericEntityException{
+    	if (entity == null) {
+            return null;
+        }
+    	int[] retVal = genericDAO.updateBatch( entity,listGenericValue);
+    	if (Debug.verboseOn()) Debug.logVerbose("update batch Return Value : " + retVal, module);
+    	return retVal;
+    }
+    public int[] executeBatch(ModelEntity entity,Collection listSql) throws GenericEntityException {
+        if (entity == null) {
+            return null;
+        }
+        int[] retVal = genericDAO.executeBatch(entity,listSql);
+        if (Debug.verboseOn()) Debug.logVerbose("Insert batch Return Value : " + retVal, module);
+        return retVal;
+    }
+    public ResultSet executeQuery (ModelEntity entity,String Sql) throws GenericEntityException {
+        if (entity == null) {
+            return null;
+        }
+        ResultSet rs= genericDAO.ExcuteQuery(entity,Sql);
+//        int[] retVal = genericDAO.executeBatch(entity,listSql);
+        if (Debug.verboseOn()) Debug.logVerbose("Insert batch Return Value : " + Sql, module);
+        return rs;
     }
 }

@@ -9,6 +9,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.ofbiz.base.util.Debug;
 import org.ofbiz.base.util.UtilHttp;
 import org.ofbiz.base.util.UtilMisc;
@@ -43,8 +47,97 @@ public class TestServer {
 
 		return result;
 	}
-
+	
 	public static void testResponse(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+		GenericDelegator delegator = (GenericDelegator) request.getAttribute("delegator");
+
+		Map<String, Object> result = new HashMap();
+		if (true) {
+			List<GenericValue> list = delegator.findByAnd("CmsArticle", new HashMap());
+			Document doc = null;
+			Elements links = null;
+			List imgs = new ArrayList();
+			Map<String, Object> mapT = null;
+			List lst = new ArrayList();
+			for (GenericValue value : list) {
+				String articleId = value.getString("articleId");
+				String content = value.getString("content");
+				if (UtilValidate.isNotEmpty(content)) {
+					doc = Jsoup.parse(content);
+					links = doc.getElementsByTag("img");
+					imgs = new ArrayList();
+					for (Element link : links) {
+						String imgHref = link.attr("src");
+						String imgAlt = link.attr("alt");
+						imgs.add(UtilMisc.toMap("src", imgHref, "alt", imgAlt));
+					}
+				}
+
+				mapT = new HashMap<String, Object>();
+				mapT.putAll(value);
+				mapT.put("contentImgs", imgs);
+				lst.add(mapT);
+			}
+
+			result.put("article", lst);
+			
+			List<GenericValue> leaveword = delegator.findByAnd("CmsLeaveword", new HashMap());
+			result.put("leaveword", leaveword);
+			
+			List<Map<String,String>> leavewordCount = new ArrayList();
+			List<Map> leavewordCountT= delegator.findBySQL("SELECT ARTICLE_ID,CAST(COUNT(1) AS CHAR) LEAVEWORD_COUNT FROM CMS_LEAVEWORD GROUP BY ARTICLE_ID");
+			for(Map<String,String> map : leavewordCountT) {
+				String articleId = map.get("ARTICLE_ID").toString();
+				String leavewordC = map.get("LEAVEWORD_COUNT").toString();
+				leavewordCount.add(UtilMisc.toMap("articleId", articleId,"leavewordCount",leavewordC));
+			}
+			result.put("leavewordCount", leavewordCount);
+
+			List<GenericValue> like = delegator.findByAnd("CmsLike", new HashMap());
+			result.put("like", like);
+			
+			List<Map<String,String>> likeCount = new ArrayList();
+			List<Map> likeCountT= delegator.findBySQL("SELECT ARTICLE_ID,CAST(COUNT(1) AS CHAR) LIKE_COUNT FROM CMS_LIKE GROUP BY ARTICLE_ID");
+			for(Map<String,String> map : likeCountT) {
+				String articleId = map.get("ARTICLE_ID").toString();
+				String likeC = map.get("LIKE_COUNT").toString();
+				likeCount.add(UtilMisc.toMap("articleId", articleId,"likeCount",likeC));
+			}
+			result.put("likeCount", likeCount);
+			
+
+			List<GenericValue> share = delegator.findByAnd("CmsShare", new HashMap());
+			result.put("share", share);
+			
+			List<Map<String,String>> shareCount = new ArrayList();
+			List<Map> shareCountT= delegator.findBySQL("SELECT ARTICLE_ID,CAST(COUNT(1) AS CHAR) SHARE_COUNT FROM CMS_SHARE GROUP BY ARTICLE_ID");
+			for(Map<String,String> map : shareCountT) {
+				String articleId = map.get("ARTICLE_ID").toString();
+				String shareC = map.get("SHARE_COUNT").toString();
+				shareCount.add(UtilMisc.toMap("articleId", articleId,"shareCount",shareC));
+			}
+			result.put("shareCount", shareCount);
+			
+
+			List<GenericValue> collect = delegator.findByAnd("CmsCollect", new HashMap());
+			result.put("collect", collect);
+			
+			List<Map<String,String>> collectCount = new ArrayList();
+			List<Map> collectCountT= delegator.findBySQL("SELECT ARTICLE_ID,CAST(COUNT(1) AS CHAR) COLLECT_COUNT FROM CMS_COLLECT GROUP BY ARTICLE_ID");
+			for(Map<String,String> map : collectCountT) {
+				String articleId = map.get("ARTICLE_ID").toString();
+				String collectC = map.get("COLLECT_COUNT").toString();
+				collectCount.add(UtilMisc.toMap("articleId", articleId,"collectCount",collectC));
+			}
+			result.put("collectCount", collectCount);
+			
+		}
+		// 输出到界面
+		printWriterJsonInfo(response, result);
+	}
+
+	public static void testResponse1(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		GenericDelegator delegator = (GenericDelegator) request.getAttribute("delegator");
 
 		Map<String, String> parm = new HashMap<String, String>();
@@ -69,7 +162,7 @@ public class TestServer {
 		}
 		List<GenericValue> list = null;
 		List<Map> result = new ArrayList<Map>();
-		Map<String,Object> map = null;
+		Map<String, Object> map = null;
 		if (UtilValidate.isNotEmpty(tableName)) {
 			list = delegator.findByAnd(tableName, parm);
 
@@ -96,23 +189,37 @@ public class TestServer {
 			long collectCount = 0;
 			long leavewordCount = 0;
 			if (UtilValidate.isEmpty(articleIdVal)) {
+				Document doc = null;
+				Elements links = null;
+				List imgs = new ArrayList();
 				list = list.subList(startNumber, endNumber);
-				for(GenericValue value : list) {
+				for (GenericValue value : list) {
 					String articleId = value.getString("articleId");
-					
+					String content = value.getString("content");
+					if (UtilValidate.isNotEmpty(content)) {
+						doc = Jsoup.parse(content);
+						links = doc.getElementsByTag("img");
+						imgs = new ArrayList();
+						for (Element link : links) {
+							String imgHref = link.attr("src");
+							String imgAlt = link.attr("alt");
+							imgs.add(UtilMisc.toMap("src", imgHref, "alt", imgAlt));
+						}
+					}
+
 					leaveword = delegator.findByAnd("CmsLeaveword", UtilMisc.toMap("articleId", articleId));
 					leavewordCount = delegator.findCountByCondition("CmsLeaveword", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
-					
+
 					like = delegator.findByAnd("CmsLike", UtilMisc.toMap("articleId", articleId));
 					likeCount = delegator.findCountByCondition("CmsLike", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
-					
+
 					share = delegator.findByAnd("CmsShare", UtilMisc.toMap("articleId", articleId));
 					shareCount = delegator.findCountByCondition("CmsCollect", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
 
 					collect = delegator.findByAnd("CmsCollect", UtilMisc.toMap("articleId", articleId));
 					collectCount = delegator.findCountByCondition("CmsCollect", EntityExpr.makeCondition("articleId", EntityJoinOperator.EQUALS, articleId), null, null);
 
-					map = new HashMap<String,Object>();
+					map = new HashMap<String, Object>();
 					map.put("article", value);
 					map.put("leaveword", leaveword);
 					map.put("leavewordCount", leavewordCount);
@@ -122,6 +229,7 @@ public class TestServer {
 					map.put("collectCount", collectCount);
 					map.put("share", share);
 					map.put("shareCount", shareCount);
+					map.put("contentImgs", imgs);
 					result.add(map);
 				}
 			}

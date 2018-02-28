@@ -2863,4 +2863,130 @@ public class GenericDelegator implements Delegator {
         return this.getDelegatorInfo().useDistributedCacheClear;
     }
     
+    /**
+	 * 根据一个完整的SQL语句，查找出结果
+	 * 在特殊情况下使用，不推荐使用这个方法。
+	 * @param SQL语句
+	 *            
+	 * @return List 返回的结果，二维结构，每一行为一个Map.
+	 */
+	public List findBySQL(String selectSQl) throws GenericEntityException {
+	    //helper与smSourceCollect的相同
+	    GenericHelper helper = getEntityHelper("smSourceCollect");
+	    List list =  helper.findBySQL(selectSQl);
+		return list;
+	}
+	
+	public String findByConditionGetSQL(DynamicViewEntity dynamicViewEntity, EntityCondition whereEntityCondition,
+            EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions)
+            throws GenericEntityException {
+        ModelViewEntity modelViewEntity = dynamicViewEntity.makeModelViewEntity(this);
+        if (whereEntityCondition != null) whereEntityCondition.checkCondition(modelViewEntity);
+        if (havingEntityCondition != null) havingEntityCondition.checkCondition(modelViewEntity);
+
+        GenericHelper helper = getEntityHelper(dynamicViewEntity.getOneRealEntityName());
+        String eli = helper.findByConditionGetSQL(modelViewEntity, whereEntityCondition,
+                havingEntityCondition, fieldsToSelect, orderBy, findOptions);
+        //TODO: add decrypt fields
+        return eli;
+    }
+	
+	/**
+	 * 增加的批处理
+	 * 
+	 * @param entityName
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] createBatch(String entityName, List listFieldsMap)
+			throws GenericEntityException {
+		if (entityName == null || listFieldsMap == null) {
+			return null;
+		}
+		ModelEntity entity = this.getModelReader().getModelEntity(entityName);
+		GenericHelper helper = getEntityHelper(entityName);
+		return helper.createBatch(entity, listFieldsMap);
+	}
+
+	public int[] executeBatch(String entityName,Collection listSql)
+			throws GenericEntityException {
+		if (listSql == null || listSql.size()<1) {
+			return null;
+		}
+		ModelEntity entity = this.getModelReader().getModelEntity(entityName);
+		GenericHelper helper = getEntityHelper(entityName);
+		return helper.executeBatch(entity, listSql);
+	}
+    public boolean checkSql(String entityName, String Sql){
+		if (entityName != null && entityName.equals("") && Sql != null) {
+			return false;
+		}		
+		try {
+			ModelEntity entity = this.getModelReader().getModelEntity(entityName);
+			GenericHelper helper = getEntityHelper(entityName);
+			helper.executeQuery(entity,Sql);
+		} catch (GenericEntityException e) {
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * 修改的批处理
+	 * 
+	 * @param entityName
+	 * @param listFieldsMap
+	 * @return
+	 * @throws GenericEntityException
+	 */
+	public int[] updateBatch(String entityName, List listGenericValue)
+			throws GenericEntityException {
+		if (entityName == null || listGenericValue == null) {
+			return null;
+		}
+		ModelEntity entity = this.getModelReader().getModelEntity(entityName);
+		GenericHelper helper = getEntityHelper(entityName);
+		return helper.updateBatch(entity, listGenericValue);
+	}
+	/**
+	 * 获得数据库的类型，由于hrplan一个运行的系统只有一种数据库
+	 * 判断依据为实体配置文件中的“datasource” 元素下的
+	 * “field-type-name”元素的名字
+	 * @return
+	 */
+	public String getDataBaseType(){	    
+	    Map gm = getDelegatorInfo().groupMap;
+	    Object[] helpers = gm.values().toArray();
+	    String helperName = (String)helpers[0];
+	    DatasourceInfo datasourceInfo = EntityConfigUtil.getDatasourceInfo(helperName);
+	    String name = datasourceInfo.fieldTypeName;
+	    String dbType = "";
+	    name = name.toUpperCase();
+	    if(name.matches("ORACLE")){
+	        dbType ="ORACLE";
+	    }else if(name.matches("MSSQL")){
+	        dbType ="MSSQL";
+	    }else if(name.matches("SYBASE")){
+	        dbType ="SYBASE";
+	    }else if(name.matches("MYSQL")){
+	        dbType ="MYSQL";
+	    }else if(name.matches("POSTGRESQL")){
+	        dbType ="POSTGRESQL";
+	    }
+	    return dbType;
+	}
+	/**
+	 * 获得在数据库中两个字符相加的符号
+	 * 如：mssql 为 "+",oracle postgresql 为" || " 
+	 * 在报表构成sql语句的时使用
+	 * @return
+	 */
+	public String getStringAddSign(){
+	    if(getDataBaseType().equals("ORACLE") || getDataBaseType().equals("POSTGRESQL")){
+	        return "||";
+	    }else {
+	        return "+";
+	    }	   
+	}
+    
 }

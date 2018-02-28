@@ -164,7 +164,11 @@ public class GenericEntity extends Observable implements Map<String, Object>, Lo
         }
         this.modelEntity = modelEntity;
         this.entityName = modelEntity.getEntityName();
-        this.delegatorName = delegator.getDelegatorName();
+        if(UtilValidate.isNotEmpty(delegator)) {
+        	this.delegatorName = delegator.getDelegatorName();
+        }else {
+        	this.delegatorName = "default";
+        }
         this.internalDelegator = delegator;
         setFields(fields);
 

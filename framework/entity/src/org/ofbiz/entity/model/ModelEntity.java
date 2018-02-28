@@ -1672,4 +1672,15 @@ public class ModelEntity extends ModelInfo implements Comparable<ModelEntity>, S
 
         return topLevelMap;
     }
+    
+    public List<ModelField> getFieldsCopy() {
+		List<ModelField> newList = FastList.newInstance();
+		newList.addAll(this.fields);
+		return newList;
+	}
+    public List<ModelField> getPksCopy() {
+		List<ModelField> newList = FastList.newInstance();
+		newList.addAll(this.pks);
+		return newList;
+	}
 }
