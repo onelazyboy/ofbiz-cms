@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="con" path="GROOVY_SUPPORT"/>
 	<classpathentry kind="lib" path="framework/base/lib/ant-1.7.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/ant-junit-1.7.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/ant-launcher-1.7.1.jar"/>
@@ -15,7 +14,6 @@
 	<classpathentry kind="lib" path="framework/base/lib/clhm-release-1.0-lru.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/hamcrest-all-1.2.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/fop-1.0.jar"/>
-	<classpathentry kind="lib" path="framework/base/lib/httpclient-4.1.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/httpclient-cache-4.1.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/httpcore-4.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/httpmime-4.1.1.jar"/>
@@ -30,8 +28,6 @@
 	<classpathentry kind="lib" path="framework/base/lib/jdom-1.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/jpim-0.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/juel-2.2.1.jar"/>
-	<classpathentry kind="lib" path="framework/base/lib/junit.jar"/>
-	<classpathentry kind="lib" path="framework/base/lib/junitperf.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/mail.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/mx4j-3.0.1.jar"/>
@@ -58,7 +54,6 @@
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-fileupload-1.2.2.jar"/>
-	<classpathentry kind="lib" path="framework/base/lib/commons/commons-io-1.3.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-lang-2.4.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/commons/commons-modeler-2.0.jar"/>
@@ -192,6 +187,7 @@
 	<classpathentry kind="src" path="framework/webslinger/src"/>
 	<classpathentry kind="src" path="framework/webtools/src"/>
 	<classpathentry kind="src" path="framework/widget/src"/>
+	<classpathentry kind="src" path="hot-deploy/webapi/src"/>
 	<classpathentry kind="lib" path="framework/base/cert"/>
 	<classpathentry kind="lib" path="framework/base/config"/>
 	<classpathentry kind="lib" path="framework/base/dtd"/>
@@ -221,5 +217,35 @@
 	<classpathentry kind="lib" path="framework/base/lib/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/gson-2.8.2.jar"/>
 	<classpathentry kind="lib" path="framework/base/lib/jsoup-1.11.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="framework/base/lib/junitperf.jar"/>
+	<classpathentry kind="lib" path="framework/base/lib/junit.jar"/>
+	<classpathentry kind="lib" path="framework/base/lib/commons/commons-compress-1.1.jar"/>
+	<classpathentry kind="lib" path="framework/base/lib/commons/commons-io-1.3.1.jar"/>
+	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/aopalliance-repackaged-2.4.0-b31.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/asm-debug-all-5.0.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/hk2-api-2.4.0-b31.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/hk2-locator-2.4.0-b31.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/hk2-utils-2.4.0-b31.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/javassist-3.18.1-GA.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/javax.inject-2.4.0-b31.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-client-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-common-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-container-servlet-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-container-servlet-core-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-guava-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-media-jaxb-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-server-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-test-framework-core-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-test-framework-provider-simple-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/osgi-resource-locator-1.0.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/simple-5.1.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

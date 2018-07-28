@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-engine-xml>
+    <SecurityPermission description="View operations in the Webapi Component." permissionId="WEBAPI_VIEW"/>
+    <SecurityPermission description="Create operations in the Webapi Component." permissionId="WEBAPI_CREATE"/>
+    <SecurityPermission description="Update operations in the Webapi Component." permissionId="WEBAPI_UPDATE"/>
+    <SecurityPermission description="Delete operations in the Webapi Component." permissionId="WEBAPI_DELETE"/>
+    <SecurityPermission description="ALL operations in the Webapi Component." permissionId="WEBAPI_ADMIN"/>
+    <SecurityGroupPermission groupId="FULLADMIN" permissionId="WEBAPI_ADMIN"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="WEBAPI_CREATE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="WEBAPI_DELETE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="WEBAPI_UPDATE"/>
+    <SecurityGroupPermission groupId="FLEXADMIN" permissionId="WEBAPI_VIEW"/>
+    <SecurityGroupPermission groupId="VIEWADMIN" permissionId="WEBAPI_VIEW"/>
+    <SecurityGroupPermission groupId="BIZADMIN" permissionId="WEBAPI_ADMIN"/>
+</entity-engine-xml>

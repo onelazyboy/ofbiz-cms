@@ -1092,4 +1092,21 @@ public class UtilMisc {
         }
         return (listSize / viewSize) ;
     }
+
+	public static Boolean booleanValue(Object value) {
+        if (value == null || value instanceof Boolean) {
+            return (Boolean) value;
+        } else if ("true".equals(value)) {
+            return Boolean.TRUE;
+        } else if ("false".equals(value)) {
+            return Boolean.FALSE;
+        } else {
+            return null;
+        }
+    }
+
+	 public static boolean booleanValue(Object value, boolean defaultValue) {
+        Boolean res = booleanValue(value);
+        return res != null ? res : defaultValue;
+    }
 }

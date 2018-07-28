@@ -21,6 +21,7 @@ package org.ofbiz.base.container;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.ofbiz.base.util.Debug;
@@ -57,7 +58,7 @@ public class JunitContainer implements Container {
             Class<?> clz = null;
             try {
                 clz = ObjectType.loadClass(prop.value);
-                suite.addTestSuite(clz);
+                suite.addTestSuite((Class<? extends TestCase>) clz);
             } catch (Exception e) {
                 Debug.logError(e, "Unable to load test suite class : " + prop.value, module);
             }
