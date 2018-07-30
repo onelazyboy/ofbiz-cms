@@ -247,5 +247,15 @@
 	<classpathentry kind="lib" path="hot-deploy/webapi/lib/osgi-resource-locator-1.0.1.jar"/>
 	<classpathentry kind="lib" path="hot-deploy/webapi/lib/simple-5.1.4.jar"/>
 	<classpathentry kind="lib" path="hot-deploy/webapi/lib/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-grizzly-connector-2.22.2.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-container-simple-http-2.22.1.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-media-json-jackson-2.22.2.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-annotations-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-core-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-databind-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-jaxrs-base-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-jaxrs-json-provider-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jackson-module-jaxb-annotations-2.5.4.jar"/>
+	<classpathentry kind="lib" path="hot-deploy/webapi/lib/jersey-entity-filtering-2.22.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
