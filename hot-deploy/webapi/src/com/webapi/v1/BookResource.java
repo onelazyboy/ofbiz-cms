@@ -1,6 +1,4 @@
-package com.restful.v1;
-
-import com.restful.pojo.Book;
+package com.webapi.v1;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -12,11 +10,13 @@ import javax.ws.rs.core.MediaType;
 
 import org.ofbiz.base.util.Debug;
 
-@Path("book")
+import com.webapi.pojo.Book;
+
+@Path("books/book")
 public class BookResource {
 	public static AtomicLong serverBookSequence = new AtomicLong();
     @GET
-    public String getWeight() {
+    public String getBook() {
     	 return "150M";
     }
 

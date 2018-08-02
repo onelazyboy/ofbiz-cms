@@ -1,7 +1,7 @@
-package com.restful.test.v1;
+package com.webapi.test.v1;
 
-import com.restful.pojo.Book;
-import com.restful.v1.BookResource;
+import com.webapi.pojo.Book;
+import com.webapi.v1.BookResource;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;

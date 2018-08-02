@@ -1,4 +1,4 @@
-package com.restful.v1;
+package com.webapi.v1;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

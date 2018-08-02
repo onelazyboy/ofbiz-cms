@@ -1,4 +1,4 @@
-package com.restful.pojo;
+package com.webapi.pojo;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;

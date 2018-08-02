@@ -59,7 +59,7 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping><servlet-name>ControlServlet</servlet-name><url-pattern>/control/*</url-pattern></servlet-mapping>
-
+	<!--  
 	<servlet>
         <servlet-name>Jersey_webapi</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -73,7 +73,7 @@
         <servlet-name>Jersey_webapi</servlet-name>
         <url-pattern>/v1/*</url-pattern>
     </servlet-mapping>
-
+    -->
 
     <session-config><session-timeout>60</session-timeout><!-- in minutes --></session-config>
 

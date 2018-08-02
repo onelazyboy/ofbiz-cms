@@ -206,6 +206,21 @@ under the License.
         <property name="delegator-group-helper-name" value="org.ofbiz"/>
     </container>
 
+	<container name="webapi-container" class="com.webapi.container.webapiContainer">
+		<property name="mountPoint" value="webapi" />
+        <property name="port" value="8089"/>
+		<property name="protocol" value="HTTP/1.1"/>
+		<property name="scheme" value="http"/>
+		<property name="secure" value="false"/>
+		<property name="URIEncoding" value="UTF-8"/>
+		<property name="xpoweredBy" value="false"/>
+		<property name="compression" value="on"/>
+		<property name="compressableMimeType" value="text/html,text/xml,text/plain,text/javascript,text/css,application/json"/>
+		<property name="delegator-name" value="default"/>
+        <property name="dispatcher-name" value="webapi-dispatcher"/>
+        <property name="delegator-group-helper-name" value="org.ofbiz"/>
+    </container>
+
     <!-- load BeanShell remote telnet server -->
     <!-- Uncommented by default for security reasons -->
     <!-- the port below and port-1 will be opened by Beanshell -->

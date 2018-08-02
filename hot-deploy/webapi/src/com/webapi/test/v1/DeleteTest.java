@@ -1,4 +1,4 @@
-package com.restful.test.v1;
+package com.webapi.test.v1;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -7,7 +7,7 @@ import org.glassfish.jersey.test.TestProperties;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.restful.v1.BookResource;
+import com.webapi.v1.BookResource;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
