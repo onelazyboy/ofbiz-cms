@@ -1,7 +1,7 @@
-package com.webapi.test.v1;
+package com.webapi.test;
 
-import com.webapi.pojo.Book;
-import com.webapi.v1.BookResource;
+import com.webapi.entity.Book;
+import com.webapi.resource.BookResource;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;

@@ -1,4 +1,4 @@
-package com.webapi.pojo;
+package com.webapi.entity;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;

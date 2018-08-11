@@ -1,21 +1,25 @@
-package com.webapi.v1;
+package com.webapi.resource;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import org.ofbiz.base.util.Debug;
 
-import com.webapi.pojo.Book;
+import com.webapi.entity.Book;
 
 @Path("books/book")
+@PermitAll
 public class BookResource {
 	public static AtomicLong serverBookSequence = new AtomicLong();
-    @GET
+    @RolesAllowed("user")
+	@GET
     public String getBook() {
     	 return "150M";
     }

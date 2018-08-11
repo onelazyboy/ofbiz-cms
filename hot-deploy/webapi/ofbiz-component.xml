@@ -30,10 +30,10 @@
     <test-suite loader="main" location="testdef/WebapiTests.xml"/>
 
     <!-- web applications; will be mounted when using the embedded container -->
-    <!-- <webapp name="webapi"
+    <webapp name="webapi"
         title="Webapi"
         server="default-server"
         location="webapp/webapi"
         base-permission="OFBTOOLS,WEBAPI"
-        mount-point="/webapi"/> -->
+        mount-point="/webapi"/>
 </ofbiz-component>
